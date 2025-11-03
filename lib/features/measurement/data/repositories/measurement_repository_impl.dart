@@ -20,6 +20,7 @@ class MeasurementRepositoryImpl implements MeasurementRepository {
     required List<Point> points,
     Map<String, double>? dimensions,
     Map<int, double> sideMeasurements = const {},
+    Map<String, double> diagonalMeasurements = const {},
   }) async {
     try {
       // Validate input
@@ -62,7 +63,11 @@ class MeasurementRepositoryImpl implements MeasurementRepository {
 
         case ShapeType.polygon:
           if (points.length >= 3) {
-            area = _calculatePolygonArea(points, sideMeasurements);
+            area = _calculatePolygonArea(
+              points,
+              sideMeasurements,
+              diagonalMeasurements,
+            );
           } else {
             return const Left(
               ValidationFailure('Polygon requires at least 3 points'),
@@ -178,33 +183,9 @@ class MeasurementRepositoryImpl implements MeasurementRepository {
   double _calculatePolygonArea(
     List<Point> points,
     Map<int, double> sideMeasurements,
+    Map<String, double> diagonalMeasurements,
   ) {
-    // If we have all side measurements, use better calculation
-    if (sideMeasurements.length == points.length) {
-      // We have measurements for all sides - scale using first side ratio
-      final side0PixelDistance = _distance(points[0], points[1]);
-      final side0Measured = sideMeasurements[0] ?? 1.0;
-
-      if (side0PixelDistance > 0) {
-        // Calculate pixel-based area using Shoelace
-        double pixelArea = 0;
-        final n = points.length;
-
-        for (int i = 0; i < n; i++) {
-          final j = (i + 1) % n;
-          pixelArea += points[i].x * points[j].y;
-          pixelArea -= points[j].x * points[i].y;
-        }
-
-        pixelArea = pixelArea.abs() / 2;
-
-        // Scale by square of the ratio
-        final scaleFactor = side0Measured / side0PixelDistance;
-        return pixelArea * (scaleFactor * scaleFactor);
-      }
-    }
-
-    // Fallback: calculate pixel-based area and scale it
+    // Calculate pixel-based area using Shoelace Formula first
     double area = 0;
     final n = points.length;
 
@@ -216,19 +197,138 @@ class MeasurementRepositoryImpl implements MeasurementRepository {
 
     final pixelArea = area.abs() / 2;
 
-    // If we have at least one side measurement, use it to scale
+    // MOST ACCURATE APPROACH: Use diagonals + sides for exact triangulation
+    // For a 4-sided polygon: only 1 diagonal is needed (not 2)
+    // For N-sided polygon (N>4): need (N-2) diagonals
+    int requiredDiagonals = 1; // Default for quadrilateral
+    if (points.length > 4) {
+      requiredDiagonals = points.length - 2;
+    }
+
+    if (diagonalMeasurements.length >= requiredDiagonals &&
+        sideMeasurements.length == points.length) {
+      print(
+        'Using TRIANGULATION METHOD with ${points.length} sides + ${diagonalMeasurements.length} diagonals',
+      );
+      return _calculatePolygonAreaWithDiagonals(
+        points,
+        sideMeasurements,
+        diagonalMeasurements,
+      );
+    }
+
+    // BEST APPROACH: Use ALL side measurements for accuracy
+    if (sideMeasurements.length == points.length) {
+      // All sides are measured - calculate average scale factor for best accuracy
+      List<double> scaleFactors = [];
+
+      for (int i = 0; i < n; i++) {
+        final pixelSide = _distance(points[i], points[(i + 1) % n]);
+        final measuredSide = sideMeasurements[i] ?? 0;
+
+        if (pixelSide > 0 && measuredSide > 0) {
+          scaleFactors.add(measuredSide / pixelSide);
+        }
+      }
+
+      if (scaleFactors.isNotEmpty) {
+        // Use average scale factor for best accuracy
+        final avgScaleFactor =
+            scaleFactors.reduce((a, b) => a + b) / scaleFactors.length;
+        print(
+          'Using average scale factor: $avgScaleFactor from ${scaleFactors.length} sides',
+        );
+        return pixelArea * (avgScaleFactor * avgScaleFactor);
+      }
+    }
+
+    // FALLBACK: If not all sides measured, use first side
     if (sideMeasurements.isNotEmpty && sideMeasurements.values.isNotEmpty) {
       final side0Distance = _distance(points[0], points[1]);
       final measuredSideMeters = sideMeasurements[0] ?? 1.0;
 
       if (side0Distance > 0) {
         final scaleFactor = measuredSideMeters / side0Distance;
+        print('Using single side scale factor: $scaleFactor');
         // Area scales by square of linear scale factor
         return pixelArea * (scaleFactor * scaleFactor);
       }
     }
 
+    print('WARNING: No measurements provided. Returning pixel area.');
     return pixelArea;
+  }
+
+  /// Calculate polygon area using triangulation method with diagonals
+  /// This is the most accurate method for polygons
+  double _calculatePolygonAreaWithDiagonals(
+    List<Point> points,
+    Map<int, double> sideMeasurements,
+    Map<String, double> diagonalMeasurements,
+  ) {
+    print(
+      'Triangulation Method: Breaking polygon into triangles using diagonals',
+    );
+
+    double totalArea = 0;
+
+    // For a polygon with N sides, we can split it into (N-2) triangles using (N-2) diagonals
+    // Pattern: from point 0, draw diagonals to points 2, 3, 4, ..., N-2
+    // This creates triangles: (0,1,2), (0,2,3), (0,3,4), ..., (0,N-2,N-1)
+
+    for (int i = 0; i < points.length - 2; i++) {
+      final p1Index = 0;
+      final p2Index = i + 1;
+      final p3Index = i + 2;
+
+      // Get the three side lengths for this triangle
+      final side1Key = '$p1Index-$p2Index'; // Might be an edge or diagonal
+      final side2Key = '$p2Index-$p3Index'; // Might be an edge or diagonal
+      final side3Key =
+          '$p1Index-$p3Index'; // Diagonal for all but last triangle
+
+      double side1 = 0, side2 = 0, side3 = 0;
+
+      // Get side 1 (from p1 to p2)
+      if (p2Index - p1Index == 1) {
+        // It's an edge
+        side1 = sideMeasurements[p1Index] ?? 0;
+      } else {
+        // It's a diagonal
+        side1 = diagonalMeasurements[side1Key] ?? 0;
+      }
+
+      // Get side 2 (from p2 to p3)
+      if (p3Index - p2Index == 1) {
+        // It's an edge
+        side2 = sideMeasurements[p2Index] ?? 0;
+      } else {
+        // It's a diagonal
+        side2 = diagonalMeasurements[side2Key] ?? 0;
+      }
+
+      // Get side 3 (from p3 to p1)
+      if (i == points.length - 3) {
+        // Last triangle: side is an edge
+        side3 = sideMeasurements[p3Index] ?? 0;
+      } else {
+        // It's a diagonal
+        side3 = diagonalMeasurements[side3Key] ?? 0;
+      }
+
+      print('  Triangle $i: sides = ${side1}m, ${side2}m, ${side3}m');
+
+      if (side1 > 0 && side2 > 0 && side3 > 0) {
+        final triangleArea = _heronArea(side1, side2, side3);
+        print('    Area: $triangleArea m²');
+        totalArea += triangleArea;
+      } else {
+        print('    WARNING: Missing measurements for this triangle');
+      }
+    }
+
+    print('Total area using triangulation: $totalArea m²');
+    return totalArea;
   }
 
   double _distance(Point p1, Point p2) {

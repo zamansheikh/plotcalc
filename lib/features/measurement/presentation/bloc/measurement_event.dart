@@ -11,15 +11,22 @@ class CalculateAreaEvent extends MeasurementEvent {
   final List<Point> points;
   final Map<String, double>? dimensions;
   final Map<int, double> sideMeasurements;
+  final Map<String, double> diagonalMeasurements;
 
   const CalculateAreaEvent({
     required this.points,
     this.dimensions,
     this.sideMeasurements = const {},
+    this.diagonalMeasurements = const {},
   });
 
   @override
-  List<Object?> get props => [points, dimensions, sideMeasurements];
+  List<Object?> get props => [
+    points,
+    dimensions,
+    sideMeasurements,
+    diagonalMeasurements,
+  ];
 }
 
 class SaveMeasurementEvent extends MeasurementEvent {

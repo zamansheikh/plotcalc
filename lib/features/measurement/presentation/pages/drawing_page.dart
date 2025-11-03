@@ -18,6 +18,8 @@ class _DrawingPageState extends State<DrawingPage> {
   final List<Point> _points = [];
   final Map<int, double> _sideMeasurements =
       {}; // Index -> measurement in meters
+  final Map<String, double> _diagonalMeasurements =
+      {}; // "0-2" -> measurement (from point 0 to point 2)
   ShapeType _selectedShape = ShapeType.polygon;
   bool _isShapeComplete = false; // Track if shape is closed/complete
   final TextEditingController _widthController = TextEditingController();
@@ -151,6 +153,7 @@ class _DrawingPageState extends State<DrawingPage> {
     setState(() {
       _points.clear();
       _sideMeasurements.clear();
+      _diagonalMeasurements.clear();
       _isShapeComplete = false;
       _widthController.clear();
       _heightController.clear();
@@ -220,17 +223,59 @@ class _DrawingPageState extends State<DrawingPage> {
         );
         return;
       }
+
+      // IMPORTANT: For accuracy, require ALL side measurements
+      if (_sideMeasurements.length != _points.length) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Please measure ALL ${_points.length} sides for accurate calculation. You have measured ${_sideMeasurements.length}.',
+            ),
+            backgroundColor: Colors.orange,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+        return;
+      }
+
+      // NEW: For polygons with 4+ sides, require diagonals for exact calculation
+      if (_points.length >= 4) {
+        // For 4-sided: need 1 diagonal. For N-sided (N>4): need (N-2) diagonals
+        int requiredDiagonals = 1;
+        if (_points.length > 4) {
+          requiredDiagonals = _points.length - 2;
+        }
+
+        if (_diagonalMeasurements.length < requiredDiagonals) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'For a ${_points.length}-sided polygon, you need $requiredDiagonals diagonal(s) for exact calculation. You have measured ${_diagonalMeasurements.length}.',
+              ),
+              backgroundColor: Colors.orange,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+          // Open diagonal measurement dialog
+          _showDiagonalInput();
+          return;
+        }
+      }
     }
 
     // Calculate area
     print(
       'DEBUG: _calculateArea - sideMeasurements being sent: $_sideMeasurements',
     );
+    print(
+      'DEBUG: _calculateArea - diagonalMeasurements being sent: $_diagonalMeasurements',
+    );
     context.read<MeasurementBloc>().add(
       CalculateAreaEvent(
         points: _points,
         dimensions: dimensions,
         sideMeasurements: _sideMeasurements,
+        diagonalMeasurements: _diagonalMeasurements,
       ),
     );
   }
@@ -440,6 +485,129 @@ class _DrawingPageState extends State<DrawingPage> {
     );
   }
 
+  void _showDiagonalInput() {
+    final loc = AppLocalizations.of(context);
+
+    // For 4-sided: need 1 diagonal. For N-sided (N>4): need (N-2) diagonals
+    int requiredDiagonals = 1;
+    if (_points.length > 4) {
+      requiredDiagonals = _points.length - 2;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Diagonal Measurements (Required: $requiredDiagonals)'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'For a ${_points.length}-sided polygon, measure $requiredDiagonals diagonal(s) to calculate exact area:',
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+              const SizedBox(height: 16),
+              // Generate diagonal input fields
+              ..._generateDiagonalInputs(),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(loc.cancel),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (_diagonalMeasurements.length >= requiredDiagonals) {
+                Navigator.pop(context);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'Please enter all $requiredDiagonals diagonals. You have entered ${_diagonalMeasurements.length}.',
+                    ),
+                    backgroundColor: Colors.orange,
+                  ),
+                );
+              }
+            },
+            child: Text(loc.done),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _generateDiagonalInputs() {
+    final widgets = <Widget>[];
+
+    // For 4-sided: need 1 diagonal. For N-sided (N>4): need (N-2) diagonals
+    int requiredDiagonals = 1;
+    if (_points.length > 4) {
+      requiredDiagonals = _points.length - 2;
+    }
+
+    // For a polygon with N sides, suggest diagonals
+    // For simplicity, suggest diagonals from point 0 to points 2, 3, 4, etc.
+    for (int i = 0; i < requiredDiagonals; i++) {
+      final fromPoint = 0;
+      final toPoint = i + 2;
+      final diagonalKey = '$fromPoint-$toPoint';
+
+      widgets.add(
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Point $fromPoint to Point $toPoint:',
+                  style: const TextStyle(fontWeight: FontWeight.w500),
+                ),
+              ),
+              SizedBox(
+                width: 100,
+                child: TextField(
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(),
+                    hintText: '0.0',
+                    suffixText: 'm',
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                  ),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  controller: TextEditingController(
+                    text: _diagonalMeasurements[diagonalKey]?.toString() ?? '',
+                  ),
+                  onChanged: (value) {
+                    final measurement = double.tryParse(value);
+                    if (measurement != null && measurement > 0) {
+                      setState(() {
+                        _diagonalMeasurements[diagonalKey] = measurement;
+                      });
+                    } else {
+                      setState(() {
+                        _diagonalMeasurements.remove(diagonalKey);
+                      });
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return widgets;
+  }
+
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
@@ -528,6 +696,7 @@ class _DrawingPageState extends State<DrawingPage> {
                             ? null
                             : double.tryParse(_radiusController.text),
                         _sideMeasurements,
+                        _diagonalMeasurements,
                       ),
                       child: Container(),
                     ),
@@ -806,8 +975,15 @@ class ShapePainter extends CustomPainter {
   final ShapeType shapeType;
   final double? radius;
   final Map<int, double> sideMeasurements;
+  final Map<String, double> diagonalMeasurements;
 
-  ShapePainter(this.points, this.shapeType, this.radius, this.sideMeasurements);
+  ShapePainter(
+    this.points,
+    this.shapeType,
+    this.radius,
+    this.sideMeasurements,
+    this.diagonalMeasurements,
+  );
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -885,6 +1061,16 @@ class ShapePainter extends CustomPainter {
             ..strokeWidth = 2
             ..style = PaintingStyle.stroke,
         );
+      }
+
+      // Draw point numbers (labels: 0, 1, 2, 3...)
+      for (int i = 0; i < points.length; i++) {
+        _drawPointNumber(canvas, Offset(points[i].x, points[i].y), i);
+      }
+
+      // Draw diagonals if they exist
+      if (diagonalMeasurements.isNotEmpty) {
+        _drawDiagonals(canvas);
       }
 
       // Draw side labels with measurements
@@ -981,6 +1167,104 @@ class ShapePainter extends CustomPainter {
         midpoint.dy - textPainter.height / 2,
       ),
     );
+  }
+
+  void _drawPointNumber(Canvas canvas, Offset pointPosition, int pointIndex) {
+    // Draw a small label with the point number next to the point
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: '$pointIndex',
+        style: const TextStyle(
+          color: Colors.black,
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    );
+
+    textPainter.layout();
+
+    // Draw label above and to the right of the point
+    textPainter.paint(
+      canvas,
+      Offset(pointPosition.dx + 12, pointPosition.dy - 16),
+    );
+  }
+
+  void _drawDiagonals(Canvas canvas) {
+    // Draw diagonal lines between the specified points
+    final diagonalPaint = Paint()
+      ..color = Colors.blue.withValues(alpha: 0.6)
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+
+    for (String diagonalKey in diagonalMeasurements.keys) {
+      final parts = diagonalKey.split('-');
+      if (parts.length == 2) {
+        final fromIndex = int.tryParse(parts[0]);
+        final toIndex = int.tryParse(parts[1]);
+
+        if (fromIndex != null &&
+            toIndex != null &&
+            fromIndex < points.length &&
+            toIndex < points.length) {
+          final fromPoint = Offset(points[fromIndex].x, points[fromIndex].y);
+          final toPoint = Offset(points[toIndex].x, points[toIndex].y);
+
+          // Draw the diagonal line
+          canvas.drawLine(fromPoint, toPoint, diagonalPaint);
+
+          // Draw label at midpoint
+          final midpoint = Offset(
+            (fromPoint.dx + toPoint.dx) / 2,
+            (fromPoint.dy + toPoint.dy) / 2,
+          );
+
+          final measurement = diagonalMeasurements[diagonalKey]!;
+          final labelText = '${measurement.toStringAsFixed(1)}m';
+
+          final textPainter = TextPainter(
+            text: TextSpan(
+              text: labelText,
+              style: const TextStyle(
+                color: Colors.blue,
+                fontSize: 9,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            textDirection: TextDirection.ltr,
+          );
+
+          textPainter.layout();
+
+          // Draw label background
+          const labelPadding = 4.0;
+          final labelBgRect = Rect.fromLTWH(
+            midpoint.dx - textPainter.width / 2 - labelPadding,
+            midpoint.dy - textPainter.height / 2 - labelPadding,
+            textPainter.width + labelPadding * 2,
+            textPainter.height + labelPadding * 2,
+          );
+
+          canvas.drawRRect(
+            RRect.fromRectAndRadius(labelBgRect, const Radius.circular(3)),
+            Paint()
+              ..color = Colors.white
+              ..style = PaintingStyle.fill,
+          );
+
+          // Draw text
+          textPainter.paint(
+            canvas,
+            Offset(
+              midpoint.dx - textPainter.width / 2,
+              midpoint.dy - textPainter.height / 2,
+            ),
+          );
+        }
+      }
+    }
   }
 
   @override
