@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/utils/land_measurement_converter.dart';
 import '../../domain/entities/measurement.dart';
 import '../bloc/measurement_bloc.dart';
 
@@ -183,16 +182,6 @@ class _HistoryPageState extends State<HistoryPage> {
                         ),
                       ),
                       Text(
-                        LandMeasurementConverter.formatLandMeasurement(
-                          measurement.area,
-                        ),
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.green[700],
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      Text(
                         '${measurement.points.length} points',
                         style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                       ),
@@ -294,37 +283,6 @@ class _HistoryPageState extends State<HistoryPage> {
                   ),
                 ),
               ),
-              const Divider(),
-              const Text(
-                'Land Units:',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  color: Colors.green,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                LandMeasurementConverter.formatLandMeasurement(
-                  measurement.area,
-                ),
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: Colors.green,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                loc.breakdown,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[700],
-                ),
-              ),
-              const SizedBox(height: 6),
-              ..._buildLandMeasurementDetails(measurement.area, loc),
             ],
           ),
         ),
@@ -336,133 +294,6 @@ class _HistoryPageState extends State<HistoryPage> {
         ],
       ),
     );
-  }
-
-  List<Widget> _buildLandMeasurementDetails(
-    double sqMeters,
-    AppLocalizations loc,
-  ) {
-    final measurements = LandMeasurementConverter.convertToLandUnits(sqMeters);
-    final details = <Widget>[];
-
-    if (measurements.containsKey('acres')) {
-      details.add(
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 2),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('${loc.acre}:', style: const TextStyle(fontSize: 12)),
-              Text(
-                '${measurements['acres']}',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    if (measurements.containsKey('bighas')) {
-      details.add(
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 2),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('${loc.bigha}:', style: const TextStyle(fontSize: 12)),
-              Text(
-                '${measurements['bighas']}',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    if (measurements.containsKey('kathas')) {
-      details.add(
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 2),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('${loc.katha}:', style: const TextStyle(fontSize: 12)),
-              Text(
-                '${measurements['kathas']}',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    if (measurements.containsKey('shataks')) {
-      details.add(
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 2),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('${loc.shatak}:', style: const TextStyle(fontSize: 12)),
-              Text(
-                '${measurements['shataks']}',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    if (measurements.containsKey('shotoks')) {
-      details.add(
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 2),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('${loc.shotok}:', style: const TextStyle(fontSize: 12)),
-              Text(
-                '${measurements['shotoks']}',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    if (details.isEmpty) {
-      details.add(
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 2),
-          child: Text(
-            loc.lessThan1Shotok,
-            style: const TextStyle(fontSize: 12),
-          ),
-        ),
-      );
-    }
-
-    return details;
   }
 
   Widget _buildDetailRow(String label, String value) {
