@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/land_measurement_converter.dart';
 import '../../domain/entities/measurement.dart';
@@ -24,9 +25,11 @@ class _HistoryPageState extends State<HistoryPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Measurement History'),
+        title: Text(loc.measurementHistory),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
@@ -55,19 +58,19 @@ class _HistoryPageState extends State<HistoryPage> {
                     Icon(Icons.history, size: 80, color: Colors.grey[400]),
                     const SizedBox(height: 16),
                     Text(
-                      'No measurements yet',
+                      loc.noMeasurements,
                       style: TextStyle(fontSize: 18, color: Colors.grey[600]),
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Start measuring to see your history',
+                      loc.startMeasuring,
                       style: TextStyle(fontSize: 14, color: Colors.grey[500]),
                     ),
                     const SizedBox(height: 24),
                     ElevatedButton.icon(
                       onPressed: () => context.pop(),
                       icon: const Icon(Icons.add),
-                      label: const Text('New Measurement'),
+                      label: Text(loc.newMeasurement),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.primaryColor,
                         foregroundColor: Colors.white,
@@ -83,7 +86,7 @@ class _HistoryPageState extends State<HistoryPage> {
               itemCount: state.measurements.length,
               itemBuilder: (context, index) {
                 final measurement = state.measurements[index];
-                return _buildMeasurementCard(context, measurement);
+                return _buildMeasurementCard(context, measurement, loc);
               },
             );
           } else if (state is MeasurementError) {
@@ -94,7 +97,7 @@ class _HistoryPageState extends State<HistoryPage> {
                   const Icon(Icons.error_outline, size: 80, color: Colors.red),
                   const SizedBox(height: 16),
                   Text(
-                    'Error: ${state.message}',
+                    '${loc.failedToCalculateArea}: ${state.message}',
                     style: const TextStyle(fontSize: 16),
                     textAlign: TextAlign.center,
                   ),
@@ -105,7 +108,7 @@ class _HistoryPageState extends State<HistoryPage> {
                         const LoadAllMeasurementsEvent(),
                       );
                     },
-                    child: const Text('Retry'),
+                    child: Text(loc.retry),
                   ),
                 ],
               ),
@@ -118,11 +121,15 @@ class _HistoryPageState extends State<HistoryPage> {
     );
   }
 
-  Widget _buildMeasurementCard(BuildContext context, Measurement measurement) {
+  Widget _buildMeasurementCard(
+    BuildContext context,
+    Measurement measurement,
+    AppLocalizations loc,
+  ) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
-        onTap: () => _showMeasurementDetails(context, measurement),
+        onTap: () => _showMeasurementDetails(context, measurement, loc),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -199,14 +206,14 @@ class _HistoryPageState extends State<HistoryPage> {
                 children: [
                   TextButton.icon(
                     onPressed: () =>
-                        _showMeasurementDetails(context, measurement),
+                        _showMeasurementDetails(context, measurement, loc),
                     icon: const Icon(Icons.visibility, size: 18),
-                    label: const Text('View'),
+                    label: Text(loc.view),
                   ),
                   TextButton.icon(
                     onPressed: () => _confirmDelete(context, measurement.id),
                     icon: const Icon(Icons.delete, size: 18),
-                    label: const Text('Delete'),
+                    label: Text(loc.delete),
                     style: TextButton.styleFrom(foregroundColor: Colors.red),
                   ),
                 ],
@@ -246,7 +253,11 @@ class _HistoryPageState extends State<HistoryPage> {
     }
   }
 
-  void _showMeasurementDetails(BuildContext context, Measurement measurement) {
+  void _showMeasurementDetails(
+    BuildContext context,
+    Measurement measurement,
+    AppLocalizations loc,
+  ) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -256,13 +267,16 @@ class _HistoryPageState extends State<HistoryPage> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildDetailRow('Created', _formatDate(measurement.createdAt)),
+              _buildDetailRow(loc.created, _formatDate(measurement.createdAt)),
               const Divider(),
-              _buildDetailRow('Points', '${measurement.points.length}'),
+              _buildDetailRow(loc.points, '${measurement.points.length}'),
               const Divider(),
-              const Text(
-                'Area in different units:',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              Text(
+                loc.areaInDifferentUnits,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
               ),
               const SizedBox(height: 8),
               ...MeasurementUnit.values.map(
@@ -302,7 +316,7 @@ class _HistoryPageState extends State<HistoryPage> {
               ),
               const SizedBox(height: 12),
               Text(
-                'Breakdown:',
+                loc.breakdown,
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
@@ -310,21 +324,24 @@ class _HistoryPageState extends State<HistoryPage> {
                 ),
               ),
               const SizedBox(height: 6),
-              ..._buildLandMeasurementDetails(measurement.area),
+              ..._buildLandMeasurementDetails(measurement.area, loc),
             ],
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            child: Text(loc.close),
           ),
         ],
       ),
     );
   }
 
-  List<Widget> _buildLandMeasurementDetails(double sqMeters) {
+  List<Widget> _buildLandMeasurementDetails(
+    double sqMeters,
+    AppLocalizations loc,
+  ) {
     final measurements = LandMeasurementConverter.convertToLandUnits(sqMeters);
     final details = <Widget>[];
 
@@ -335,7 +352,7 @@ class _HistoryPageState extends State<HistoryPage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Acres:', style: TextStyle(fontSize: 12)),
+              Text('${loc.acre}:', style: const TextStyle(fontSize: 12)),
               Text(
                 '${measurements['acres']}',
                 style: const TextStyle(
@@ -356,7 +373,7 @@ class _HistoryPageState extends State<HistoryPage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Bighas:', style: TextStyle(fontSize: 12)),
+              Text('${loc.bigha}:', style: const TextStyle(fontSize: 12)),
               Text(
                 '${measurements['bighas']}',
                 style: const TextStyle(
@@ -377,7 +394,7 @@ class _HistoryPageState extends State<HistoryPage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Kathas:', style: TextStyle(fontSize: 12)),
+              Text('${loc.katha}:', style: const TextStyle(fontSize: 12)),
               Text(
                 '${measurements['kathas']}',
                 style: const TextStyle(
@@ -398,7 +415,7 @@ class _HistoryPageState extends State<HistoryPage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Shataks:', style: TextStyle(fontSize: 12)),
+              Text('${loc.shatak}:', style: const TextStyle(fontSize: 12)),
               Text(
                 '${measurements['shataks']}',
                 style: const TextStyle(
@@ -419,7 +436,7 @@ class _HistoryPageState extends State<HistoryPage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Shotoks:', style: TextStyle(fontSize: 12)),
+              Text('${loc.shotok}:', style: const TextStyle(fontSize: 12)),
               Text(
                 '${measurements['shotoks']}',
                 style: const TextStyle(
@@ -435,9 +452,12 @@ class _HistoryPageState extends State<HistoryPage> {
 
     if (details.isEmpty) {
       details.add(
-        const Padding(
-          padding: EdgeInsets.symmetric(vertical: 2),
-          child: Text('Less than 1 shotok', style: TextStyle(fontSize: 12)),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 2),
+          child: Text(
+            loc.lessThan1Shotok,
+            style: const TextStyle(fontSize: 12),
+          ),
         ),
       );
     }
@@ -462,25 +482,24 @@ class _HistoryPageState extends State<HistoryPage> {
   }
 
   void _confirmDelete(BuildContext context, String id) {
+    final loc = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Measurement'),
-        content: const Text(
-          'Are you sure you want to delete this measurement? This action cannot be undone.',
-        ),
+        title: Text(loc.deleteMeasurement),
+        content: Text(loc.deleteConfirmation),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(loc.cancel),
           ),
           ElevatedButton(
             onPressed: () {
               context.read<MeasurementBloc>().add(DeleteMeasurementEvent(id));
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Measurement deleted'),
+                SnackBar(
+                  content: Text(loc.measurementDeleted),
                   backgroundColor: Colors.red,
                 ),
               );
@@ -489,7 +508,7 @@ class _HistoryPageState extends State<HistoryPage> {
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Delete'),
+            child: Text(loc.delete),
           ),
         ],
       ),

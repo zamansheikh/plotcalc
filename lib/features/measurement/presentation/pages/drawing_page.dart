@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:plotcalc/core/localization/app_localizations.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/land_measurement_converter.dart';
@@ -58,10 +59,11 @@ class _DrawingPageState extends State<DrawingPage> {
   }
 
   void _completePolygon() async {
+    final loc = AppLocalizations.of(context);
     if (_points.length < 3) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Add at least 3 points before completing the polygon'),
+        SnackBar(
+          content: Text(loc.addThreePoints),
           backgroundColor: Colors.orange,
         ),
       );
@@ -78,25 +80,26 @@ class _DrawingPageState extends State<DrawingPage> {
 
   Future<void> _askForSideMeasurement(int sideIndex) async {
     print('DEBUG: _askForSideMeasurement called with sideIndex: $sideIndex');
+    final loc = AppLocalizations.of(context);
     final controller = TextEditingController();
     final result = await showDialog<double>(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: Text('Side ${sideIndex + 1} Length'),
+        title: Text('${loc.enterMeasurement} ${sideIndex + 1}'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Enter the length of side ${sideIndex + 1} in meters',
+              loc.sideLengthInMeters,
               style: TextStyle(color: Colors.grey[600]),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: controller,
-              decoration: const InputDecoration(
-                labelText: 'Length (meters)',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: '${loc.enterMeasurement} (m)',
+                border: const OutlineInputBorder(),
                 suffixText: 'm',
               ),
               keyboardType: const TextInputType.numberWithOptions(
@@ -109,14 +112,14 @@ class _DrawingPageState extends State<DrawingPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, null),
-            child: const Text('Skip'),
+            child: Text(loc.skip),
           ),
           ElevatedButton(
             onPressed: () {
               final value = double.tryParse(controller.text);
               Navigator.pop(context, value);
             },
-            child: const Text('OK'),
+            child: Text(loc.ok),
           ),
         ],
       ),
@@ -157,6 +160,7 @@ class _DrawingPageState extends State<DrawingPage> {
   }
 
   void _calculateArea() {
+    final loc = AppLocalizations.of(context);
     Map<String, double>? dimensions;
 
     // For specific shapes, we need dimensions
@@ -166,8 +170,8 @@ class _DrawingPageState extends State<DrawingPage> {
 
       if (width == null || height == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Please enter valid width and height'),
+          SnackBar(
+            content: Text(loc.enterValidWidthHeight),
             backgroundColor: Colors.orange,
           ),
         );
@@ -191,8 +195,8 @@ class _DrawingPageState extends State<DrawingPage> {
 
       if (radius == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Please enter valid radius'),
+          SnackBar(
+            content: Text(loc.enterValidRadius),
             backgroundColor: Colors.orange,
           ),
         );
@@ -210,8 +214,8 @@ class _DrawingPageState extends State<DrawingPage> {
       // For polygon and triangle, check points
       if (_points.length < 3) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Please add at least 3 points'),
+          SnackBar(
+            content: Text(loc.addThreePoints),
             backgroundColor: Colors.orange,
           ),
         );
@@ -233,6 +237,7 @@ class _DrawingPageState extends State<DrawingPage> {
   }
 
   void _showShapeOptions() {
+    final loc = AppLocalizations.of(context);
     showModalBottomSheet(
       context: context,
       builder: (context) => Container(
@@ -241,9 +246,9 @@ class _DrawingPageState extends State<DrawingPage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
-              'Select Shape Type',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              loc.selectShape,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             ...ShapeType.values.map(
@@ -280,28 +285,29 @@ class _DrawingPageState extends State<DrawingPage> {
   }
 
   void _showDimensionInput() {
+    final loc = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Enter ${_selectedShape.displayName} Dimensions'),
+        title: Text('${loc.enterMeasurement} ${_selectedShape.displayName}'),
         content: _selectedShape == ShapeType.rectangle
             ? Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TextField(
                     controller: _widthController,
-                    decoration: const InputDecoration(
-                      labelText: 'Width (meters)',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: '${loc.width} (m)',
+                      border: const OutlineInputBorder(),
                     ),
                     keyboardType: TextInputType.number,
                   ),
                   const SizedBox(height: 16),
                   TextField(
                     controller: _heightController,
-                    decoration: const InputDecoration(
-                      labelText: 'Height (meters)',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: '${loc.height} (m)',
+                      border: const OutlineInputBorder(),
                     ),
                     keyboardType: TextInputType.number,
                   ),
@@ -309,16 +315,16 @@ class _DrawingPageState extends State<DrawingPage> {
               )
             : TextField(
                 controller: _radiusController,
-                decoration: const InputDecoration(
-                  labelText: 'Radius (meters)',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: '${loc.radius} (m)',
+                  border: const OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.number,
               ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(loc.cancel),
           ),
           ElevatedButton(
             onPressed: () {
@@ -339,7 +345,7 @@ class _DrawingPageState extends State<DrawingPage> {
               });
               Navigator.pop(context);
             },
-            child: const Text('OK'),
+            child: Text(loc.ok),
           ),
         ],
       ),
@@ -360,6 +366,7 @@ class _DrawingPageState extends State<DrawingPage> {
   }
 
   void _showSideMeasurements() {
+    final loc = AppLocalizations.of(context);
     // Calculate total number of sides
     final totalSides = _points.length >= 3
         ? _points.length
@@ -368,13 +375,12 @@ class _DrawingPageState extends State<DrawingPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Edit Side Measurements'),
+        title: Text(loc.editSideMeasurements),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (_points.length < 2)
-                const Text('Add at least 2 points to see sides'),
+              if (_points.length < 2) Text(loc.addAtLeast2Points),
               for (int i = 0; i < totalSides; i++)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
@@ -428,7 +434,7 @@ class _DrawingPageState extends State<DrawingPage> {
               setState(() {}); // Refresh to show updated measurements
               Navigator.pop(context);
             },
-            child: const Text('Done'),
+            child: Text(loc.done),
           ),
         ],
       ),
@@ -437,6 +443,8 @@ class _DrawingPageState extends State<DrawingPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(_selectedShape.displayName),
@@ -448,14 +456,14 @@ class _DrawingPageState extends State<DrawingPage> {
           IconButton(
             icon: const Icon(Icons.category),
             onPressed: _showShapeOptions,
-            tooltip: 'Change Shape',
+            tooltip: loc.selectShape,
           ),
           if (_selectedShape == ShapeType.rectangle ||
               _selectedShape == ShapeType.circle)
             IconButton(
               icon: const Icon(Icons.edit),
               onPressed: _showDimensionInput,
-              tooltip: 'Edit Dimensions',
+              tooltip: loc.enterMeasurement,
             ),
           if ((_selectedShape == ShapeType.polygon ||
                   _selectedShape == ShapeType.triangle) &&
@@ -463,7 +471,7 @@ class _DrawingPageState extends State<DrawingPage> {
             IconButton(
               icon: const Icon(Icons.straighten),
               onPressed: _showSideMeasurements,
-              tooltip: 'Edit Side Measurements',
+              tooltip: loc.enterMeasurement,
             ),
         ],
       ),
@@ -494,7 +502,7 @@ class _DrawingPageState extends State<DrawingPage> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        _getInstructionText(),
+                        _getInstructionText(loc),
                         style: const TextStyle(fontSize: 14),
                       ),
                     ),
@@ -626,7 +634,7 @@ class _DrawingPageState extends State<DrawingPage> {
                                           color: Colors.white,
                                         ),
                                       )
-                                    : const Text('Calculate'),
+                                    : Text(loc.calculate),
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -653,7 +661,7 @@ class _DrawingPageState extends State<DrawingPage> {
                             child: ElevatedButton.icon(
                               onPressed: _completePolygon,
                               icon: const Icon(Icons.check_circle),
-                              label: const Text('Complete Polygon'),
+                              label: Text(loc.completePolygon),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppTheme.accentColor,
                                 foregroundColor: Colors.white,
@@ -689,28 +697,29 @@ class _DrawingPageState extends State<DrawingPage> {
     );
   }
 
-  String _getInstructionText() {
+  String _getInstructionText(AppLocalizations loc) {
     switch (_selectedShape) {
       case ShapeType.rectangle:
-        return 'Enter width and height in meters';
+        return '${loc.width} & ${loc.height} ${loc.sideLengthInMeters}';
       case ShapeType.circle:
-        return 'Enter radius in meters';
+        return '${loc.radius} ${loc.sideLengthInMeters}';
       case ShapeType.triangle:
         if (_isShapeComplete) {
-          return 'Triangle complete! You can now calculate the area';
+          return '${loc.triangle} ${loc.complete}! ${loc.calculate}';
         }
-        return 'Tap to add 3 points for triangle';
+        return 'Tap to add 3 points for ${loc.triangle}';
       case ShapeType.polygon:
         if (_isShapeComplete) {
-          return 'Polygon complete! You can now calculate the area';
+          return '${loc.polygon} ${loc.complete}! ${loc.calculate}';
         } else if (_points.length >= 3) {
-          return 'Tap "Complete" to close the polygon, or keep adding points';
+          return 'Tap "${loc.complete}" to close the ${loc.polygon}, or keep adding points';
         }
         return 'Tap to add points (minimum 3)';
     }
   }
 
   void _showResultDialog(Measurement measurement) {
+    final loc = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -718,7 +727,7 @@ class _DrawingPageState extends State<DrawingPage> {
           children: [
             const Icon(Icons.check_circle, color: AppTheme.successColor),
             const SizedBox(width: 8),
-            const Text('Area Calculated'),
+            Text(loc.area),
           ],
         ),
         content: SingleChildScrollView(
@@ -731,9 +740,12 @@ class _DrawingPageState extends State<DrawingPage> {
                 style: const TextStyle(fontSize: 16),
               ),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'Area in Standard Units:',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               ...MeasurementUnit.values.map(
@@ -754,9 +766,12 @@ class _DrawingPageState extends State<DrawingPage> {
               const SizedBox(height: 16),
               const Divider(),
               const SizedBox(height: 12),
-              const Text(
+              Text(
                 'Area in Land Units:',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
@@ -776,6 +791,7 @@ class _DrawingPageState extends State<DrawingPage> {
               const SizedBox(height: 6),
               ..._buildLandMeasurementDetails(
                 measurement.getAreaIn(MeasurementUnit.squareMeters),
+                loc,
               ),
             ],
           ),
@@ -786,7 +802,7 @@ class _DrawingPageState extends State<DrawingPage> {
               Navigator.pop(context);
               context.pop(); // Go back to home
             },
-            child: const Text('Discard'),
+            child: Text(loc.cancel),
           ),
           ElevatedButton.icon(
             onPressed: () {
@@ -796,14 +812,14 @@ class _DrawingPageState extends State<DrawingPage> {
               Navigator.pop(context);
               context.pop(); // Go back to home
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Measurement saved successfully!'),
+                SnackBar(
+                  content: Text(loc.measurementSaved),
                   backgroundColor: AppTheme.successColor,
                 ),
               );
             },
             icon: const Icon(Icons.save),
-            label: const Text('Save'),
+            label: Text(loc.save),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.primaryColor,
               foregroundColor: Colors.white,
@@ -815,7 +831,10 @@ class _DrawingPageState extends State<DrawingPage> {
   }
 
   /// Helper function to build land measurement detail rows
-  List<Widget> _buildLandMeasurementDetails(double sqMeters) {
+  List<Widget> _buildLandMeasurementDetails(
+    double sqMeters,
+    AppLocalizations loc,
+  ) {
     final measurements = LandMeasurementConverter.convertToLandUnits(sqMeters);
     final details = <Widget>[];
 
@@ -826,7 +845,7 @@ class _DrawingPageState extends State<DrawingPage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Acres:', style: TextStyle(fontSize: 12)),
+              Text('${loc.acre}:', style: const TextStyle(fontSize: 12)),
               Text(
                 '${measurements['acres']}',
                 style: const TextStyle(
@@ -847,7 +866,7 @@ class _DrawingPageState extends State<DrawingPage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Bighas:', style: TextStyle(fontSize: 12)),
+              Text('${loc.bigha}:', style: const TextStyle(fontSize: 12)),
               Text(
                 '${measurements['bighas']}',
                 style: const TextStyle(
@@ -868,7 +887,7 @@ class _DrawingPageState extends State<DrawingPage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Kathas:', style: TextStyle(fontSize: 12)),
+              Text('${loc.katha}:', style: const TextStyle(fontSize: 12)),
               Text(
                 '${measurements['kathas']}',
                 style: const TextStyle(
@@ -889,7 +908,7 @@ class _DrawingPageState extends State<DrawingPage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Shataks:', style: TextStyle(fontSize: 12)),
+              Text('${loc.shatak}:', style: const TextStyle(fontSize: 12)),
               Text(
                 '${measurements['shataks']}',
                 style: const TextStyle(
@@ -910,7 +929,7 @@ class _DrawingPageState extends State<DrawingPage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Shotoks:', style: TextStyle(fontSize: 12)),
+              Text('${loc.shotok}:', style: const TextStyle(fontSize: 12)),
               Text(
                 '${measurements['shotoks']}',
                 style: const TextStyle(
@@ -926,9 +945,12 @@ class _DrawingPageState extends State<DrawingPage> {
 
     if (details.isEmpty) {
       details.add(
-        const Padding(
-          padding: EdgeInsets.symmetric(vertical: 2),
-          child: Text('Less than 1 shotok', style: TextStyle(fontSize: 12)),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 2),
+          child: Text(
+            loc.lessThan1Shotok,
+            style: const TextStyle(fontSize: 12),
+          ),
         ),
       );
     }

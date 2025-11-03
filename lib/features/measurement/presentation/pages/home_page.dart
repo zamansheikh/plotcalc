@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:plotcalc/core/localization/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
 
 class HomePage extends StatelessWidget {
@@ -7,8 +8,10 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('PlotCalc')),
+      appBar: AppBar(title: Text(loc.appTitle)),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -23,16 +26,19 @@ class HomePage extends StatelessWidget {
                 color: AppTheme.primaryColor,
               ),
               const SizedBox(height: 20),
-              const Text(
-                'PlotCalc',
+              Text(
+                loc.appTitle,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 10),
-              const Text(
-                'Measure land area with ease',
+              Text(
+                loc.homeTitle,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, color: Colors.grey),
+                style: const TextStyle(fontSize: 16, color: Colors.grey),
               ),
               const SizedBox(height: 60),
 
@@ -40,7 +46,7 @@ class HomePage extends StatelessWidget {
               ElevatedButton.icon(
                 onPressed: () => context.push('/drawing'),
                 icon: const Icon(Icons.add, size: 28),
-                label: const Text('Start New Measurement'),
+                label: Text(loc.drawingTitle),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 20),
                   backgroundColor: AppTheme.primaryColor,
@@ -52,7 +58,7 @@ class HomePage extends StatelessWidget {
               OutlinedButton.icon(
                 onPressed: () => context.push('/history'),
                 icon: const Icon(Icons.history, size: 28),
-                label: const Text('View Past Calculations'),
+                label: Text(loc.historyTitle),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 20),
                 ),
@@ -62,7 +68,7 @@ class HomePage extends StatelessWidget {
               OutlinedButton.icon(
                 onPressed: () => context.push('/settings'),
                 icon: const Icon(Icons.settings, size: 28),
-                label: const Text('Settings'),
+                label: Text(loc.settings),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 20),
                 ),

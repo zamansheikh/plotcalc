@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'core/di/injection.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'core/localization/app_localizations.dart';
 import 'features/measurement/presentation/bloc/measurement_bloc.dart';
+import 'features/settings/presentation/bloc/language_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,14 +23,29 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
-      providers: [BlocProvider(create: (context) => getIt<MeasurementBloc>())],
-      child: MaterialApp.router(
-        title: 'PlotCalc : LandSketch',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.system,
-        routerConfig: AppRouter.router,
+      providers: [
+        BlocProvider(create: (context) => getIt<MeasurementBloc>()),
+        BlocProvider(create: (context) => LanguageBloc()),
+      ],
+      child: BlocBuilder<LanguageBloc, LanguageState>(
+        builder: (context, languageState) {
+          return MaterialApp.router(
+            title: 'PlotCalc : LandSketch',
+            debugShowCheckedModeBanner: false,
+            locale: languageState.locale,
+            localizationsDelegates: [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: [Locale('en'), Locale('bn')],
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: ThemeMode.system,
+            routerConfig: AppRouter.router,
+          );
+        },
       ),
     );
   }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../features/measurement/presentation/pages/home_page.dart';
 import '../../features/measurement/presentation/pages/drawing_page.dart';
 import '../../features/measurement/presentation/pages/history_page.dart';
+import '../../features/settings/presentation/pages/settings_page.dart';
 
 class AppRouter {
   static const String home = '/';
@@ -56,12 +57,8 @@ class AppRouter {
       GoRoute(
         path: settings,
         name: 'settings',
-        pageBuilder: (context, state) => MaterialPage(
-          key: state.pageKey,
-          child: const Scaffold(
-            body: Center(child: Text('Settings Page - Coming Soon')),
-          ),
-        ),
+        pageBuilder: (context, state) =>
+            MaterialPage(key: state.pageKey, child: const SettingsPage()),
       ),
     ],
   );
