@@ -115,6 +115,11 @@ class MeasurementRepositoryImpl implements MeasurementRepository {
     List<Point> points,
     Map<int, double> sideMeasurements,
   ) {
+    print('DEBUG: _calculateTriangleArea');
+    print('  sideMeasurements: $sideMeasurements');
+    print('  sideMeasurements.length: ${sideMeasurements.length}');
+    print('  points.length: ${points.length}');
+
     // If we have all 3 side measurements, use Heron's formula with actual measurements
     if (sideMeasurements.length >= 3) {
       // Get all 3 side measurements
@@ -122,9 +127,13 @@ class MeasurementRepositoryImpl implements MeasurementRepository {
       final sideB = sideMeasurements[1] ?? 0;
       final sideC = sideMeasurements[2] ?? 0;
 
+      print('  sideA: $sideA, sideB: $sideB, sideC: $sideC');
+
       if (sideA > 0 && sideB > 0 && sideC > 0) {
         // Use Heron's formula directly with measured sides
-        return _heronArea(sideA, sideB, sideC);
+        final result = _heronArea(sideA, sideB, sideC);
+        print('  Using direct Heron with measured sides: $result');
+        return result;
       }
     }
 
@@ -133,8 +142,11 @@ class MeasurementRepositoryImpl implements MeasurementRepository {
     final b = _distance(points[1], points[2]);
     final c = _distance(points[2], points[0]);
 
+    print('  Using fallback - pixel distances: a=$a, b=$b, c=$c');
+
     // Calculate pixel-based area
     final pixelArea = _heronArea(a, b, c);
+    print('  pixelArea: $pixelArea');
 
     // If we have at least one side measurement, use it to scale
     if (sideMeasurements.isNotEmpty && sideMeasurements.values.isNotEmpty) {
@@ -142,13 +154,19 @@ class MeasurementRepositoryImpl implements MeasurementRepository {
       final sideMeasurement = sideMeasurements.values.first;
       final pixelSide = a; // First side in pixels
 
+      print(
+        '  Scaling with sideMeasurement: $sideMeasurement, pixelSide: $pixelSide',
+      );
+
       if (pixelSide > 0) {
         final scaleFactor = sideMeasurement / pixelSide;
-        // Area scales by square of linear scale factor
-        return pixelArea * (scaleFactor * scaleFactor);
+        final result = pixelArea * (scaleFactor * scaleFactor);
+        print('  scaleFactor: $scaleFactor, scaledArea: $result');
+        return result;
       }
     }
 
+    print('  No measurements, returning pixelArea: $pixelArea');
     return pixelArea;
   }
 

@@ -77,6 +77,7 @@ class _DrawingPageState extends State<DrawingPage> {
   }
 
   Future<void> _askForSideMeasurement(int sideIndex) async {
+    print('DEBUG: _askForSideMeasurement called with sideIndex: $sideIndex');
     final controller = TextEditingController();
     final result = await showDialog<double>(
       context: context,
@@ -124,6 +125,9 @@ class _DrawingPageState extends State<DrawingPage> {
     if (result != null && result > 0) {
       setState(() {
         _sideMeasurements[sideIndex] = result;
+        print(
+          'DEBUG: Stored measurement - sideMeasurements: $_sideMeasurements',
+        );
       });
     }
   }
@@ -216,6 +220,9 @@ class _DrawingPageState extends State<DrawingPage> {
     }
 
     // Calculate area
+    print(
+      'DEBUG: _calculateArea - sideMeasurements being sent: $_sideMeasurements',
+    );
     context.read<MeasurementBloc>().add(
       CalculateAreaEvent(
         points: _points,
