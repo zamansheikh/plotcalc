@@ -18,6 +18,7 @@ class _DrawingPageState extends State<DrawingPage> {
   final Map<int, double> _sideMeasurements =
       {}; // Index -> measurement in meters
   ShapeType _selectedShape = ShapeType.polygon;
+  bool _isShapeComplete = false; // Track if shape is closed/complete
   final TextEditingController _widthController = TextEditingController();
   final TextEditingController _heightController = TextEditingController();
   final TextEditingController _radiusController = TextEditingController();
@@ -31,6 +32,9 @@ class _DrawingPageState extends State<DrawingPage> {
   }
 
   void _addPoint(Offset position) async {
+    // Don't add points if shape is already complete
+    if (_isShapeComplete) return;
+
     setState(() {
       _points.add(Point(position.dx, position.dy));
     });
@@ -39,8 +43,36 @@ class _DrawingPageState extends State<DrawingPage> {
     if (_points.length >= 2 &&
         (_selectedShape == ShapeType.polygon ||
             _selectedShape == ShapeType.triangle)) {
+      // Ask for the side that was just created (from previous point to this point)
       await _askForSideMeasurement(_points.length - 2);
+
+      // For triangle, complete the shape after 3rd point
+      if (_selectedShape == ShapeType.triangle && _points.length == 3) {
+        await _askForSideMeasurement(_points.length - 1); // The closing side
+        setState(() {
+          _isShapeComplete = true;
+        });
+      }
     }
+  }
+
+  void _completePolygon() async {
+    if (_points.length < 3) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Add at least 3 points before completing the polygon'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    // Ask for the closing side measurement
+    await _askForSideMeasurement(_points.length - 1);
+
+    setState(() {
+      _isShapeComplete = true;
+    });
   }
 
   Future<void> _askForSideMeasurement(int sideIndex) async {
@@ -103,6 +135,7 @@ class _DrawingPageState extends State<DrawingPage> {
           _sideMeasurements.remove(_points.length - 2);
         }
         _points.removeLast();
+        _isShapeComplete = false; // Allow adding points again
       });
     }
   }
@@ -111,6 +144,7 @@ class _DrawingPageState extends State<DrawingPage> {
     setState(() {
       _points.clear();
       _sideMeasurements.clear();
+      _isShapeComplete = false;
       _widthController.clear();
       _heightController.clear();
       _radiusController.clear();
@@ -276,6 +310,21 @@ class _DrawingPageState extends State<DrawingPage> {
           ),
           ElevatedButton(
             onPressed: () {
+              // Trigger redraw when dimensions are entered
+              setState(() {
+                if (_selectedShape == ShapeType.circle) {
+                  if (_points.isEmpty) {
+                    _points.add(const Point(200, 200));
+                  }
+                } else if (_selectedShape == ShapeType.rectangle) {
+                  if (_points.isEmpty) {
+                    _points.add(const Point(100, 150));
+                    _points.add(const Point(300, 150));
+                    _points.add(const Point(300, 350));
+                    _points.add(const Point(100, 350));
+                  }
+                }
+              });
               Navigator.pop(context);
             },
             child: const Text('OK'),
@@ -522,50 +571,83 @@ class _DrawingPageState extends State<DrawingPage> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Action Buttons
-                    Row(
+                    // Action Buttons - Organized Layout
+                    Column(
+                      spacing: 12,
                       children: [
-                        if (_points.isNotEmpty)
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: _undoLastPoint,
-                              icon: const Icon(Icons.undo),
-                              label: const Text('Undo'),
+                        // Primary Action Row
+                        Row(
+                          children: [
+                            // Undo Button
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: _points.isNotEmpty
+                                    ? _undoLastPoint
+                                    : null,
+                                child: const Icon(Icons.undo),
+                              ),
                             ),
-                          ),
-                        if (_points.isNotEmpty) const SizedBox(width: 8),
-                        Expanded(
-                          flex: 2,
-                          child: ElevatedButton.icon(
-                            onPressed: state is MeasurementLoading
-                                ? null
-                                : _calculateArea,
-                            icon: state is MeasurementLoading
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white,
-                                    ),
-                                  )
-                                : const Icon(Icons.calculate),
-                            label: const Text('Calculate Area'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppTheme.primaryColor,
-                              foregroundColor: Colors.white,
+                            const SizedBox(width: 8),
+                            // Calculate Area Button (Primary)
+                            Expanded(
+                              flex: 2,
+                              child: ElevatedButton(
+                                onPressed:
+                                    state is MeasurementLoading ||
+                                        (_selectedShape == ShapeType.polygon &&
+                                            !_isShapeComplete)
+                                    ? null
+                                    : _calculateArea,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppTheme.primaryColor,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                ),
+                                child: state is MeasurementLoading
+                                    ? const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Colors.white,
+                                        ),
+                                      )
+                                    : const Text('Calculate'),
+                              ),
                             ),
-                          ),
+                            const SizedBox(width: 8),
+                            // Clear Button
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: _points.isNotEmpty
+                                    ? _clearAll
+                                    : null,
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: Colors.red,
+                                ),
+                                child: const Icon(Icons.clear),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 8),
-                        if (_points.isNotEmpty)
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: _clearAll,
-                              icon: const Icon(Icons.clear),
-                              label: const Text('Clear'),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: Colors.red,
+                        // Secondary Action Row - Complete Button (if needed)
+                        if (_selectedShape == ShapeType.polygon &&
+                            _points.length >= 3 &&
+                            !_isShapeComplete)
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: _completePolygon,
+                              icon: const Icon(Icons.check_circle),
+                              label: const Text('Complete Polygon'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppTheme.accentColor,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
                               ),
                             ),
                           ),
@@ -602,8 +684,16 @@ class _DrawingPageState extends State<DrawingPage> {
       case ShapeType.circle:
         return 'Enter radius in meters';
       case ShapeType.triangle:
+        if (_isShapeComplete) {
+          return 'Triangle complete! You can now calculate the area';
+        }
         return 'Tap to add 3 points for triangle';
       case ShapeType.polygon:
+        if (_isShapeComplete) {
+          return 'Polygon complete! You can now calculate the area';
+        } else if (_points.length >= 3) {
+          return 'Tap "Complete" to close the polygon, or keep adding points';
+        }
         return 'Tap to add points (minimum 3)';
     }
   }
@@ -717,6 +807,30 @@ class ShapePainter extends CustomPainter {
       canvas.drawCircle(center, radius! * 10, fillPaint);
       canvas.drawCircle(center, radius! * 10, paint);
       canvas.drawCircle(center, 6, pointPaint);
+    } else if (shapeType == ShapeType.rectangle && points.length == 4) {
+      // Draw rectangle using the 4 corner points
+      final path = Path();
+      path.moveTo(points[0].x, points[0].y);
+      path.lineTo(points[1].x, points[1].y);
+      path.lineTo(points[2].x, points[2].y);
+      path.lineTo(points[3].x, points[3].y);
+      path.close();
+
+      canvas.drawPath(path, fillPaint);
+      canvas.drawPath(path, paint);
+
+      // Draw corner points
+      for (var point in points) {
+        canvas.drawCircle(Offset(point.x, point.y), 6, pointPaint);
+        canvas.drawCircle(
+          Offset(point.x, point.y),
+          6,
+          Paint()
+            ..color = Colors.white
+            ..strokeWidth = 2
+            ..style = PaintingStyle.stroke,
+        );
+      }
     } else if (points.length >= 2) {
       // Draw polygon/lines
       final path = Path();
