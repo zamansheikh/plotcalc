@@ -17,6 +17,7 @@ class CalculateArea implements UseCase<Measurement, CalculateAreaParams> {
     return await repository.calculateArea(
       points: params.points,
       dimensions: params.dimensions,
+      sideMeasurements: params.sideMeasurements,
     );
   }
 }
@@ -24,9 +25,14 @@ class CalculateArea implements UseCase<Measurement, CalculateAreaParams> {
 class CalculateAreaParams extends Equatable {
   final List<Point> points;
   final Map<String, double>? dimensions;
+  final Map<int, double> sideMeasurements; // Side measurements in meters
 
-  const CalculateAreaParams({required this.points, this.dimensions});
+  const CalculateAreaParams({
+    required this.points,
+    this.dimensions,
+    this.sideMeasurements = const {},
+  });
 
   @override
-  List<Object?> get props => [points, dimensions];
+  List<Object?> get props => [points, dimensions, sideMeasurements];
 }

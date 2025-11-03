@@ -19,6 +19,7 @@ class MeasurementRepositoryImpl implements MeasurementRepository {
   Future<Either<Failure, Measurement>> calculateArea({
     required List<Point> points,
     Map<String, double>? dimensions,
+    Map<int, double> sideMeasurements = const {},
   }) async {
     try {
       // Validate input
@@ -53,7 +54,7 @@ class MeasurementRepositoryImpl implements MeasurementRepository {
 
         case ShapeType.triangle:
           if (points.length == 3) {
-            area = _calculateTriangleArea(points);
+            area = _calculateTriangleArea(points, sideMeasurements);
           } else {
             return const Left(ValidationFailure('Triangle requires 3 points'));
           }
@@ -61,7 +62,7 @@ class MeasurementRepositoryImpl implements MeasurementRepository {
 
         case ShapeType.polygon:
           if (points.length >= 3) {
-            area = _calculatePolygonArea(points);
+            area = _calculatePolygonArea(points, sideMeasurements);
           } else {
             return const Left(
               ValidationFailure('Polygon requires at least 3 points'),
@@ -110,17 +111,82 @@ class MeasurementRepositoryImpl implements MeasurementRepository {
     return ShapeType.polygon;
   }
 
-  double _calculateTriangleArea(List<Point> points) {
-    // Using Heron's formula
+  double _calculateTriangleArea(
+    List<Point> points,
+    Map<int, double> sideMeasurements,
+  ) {
+    // If we have all 3 side measurements, use Heron's formula with actual measurements
+    if (sideMeasurements.length >= 3) {
+      // Get all 3 side measurements
+      final sideA = sideMeasurements[0] ?? 0;
+      final sideB = sideMeasurements[1] ?? 0;
+      final sideC = sideMeasurements[2] ?? 0;
+
+      if (sideA > 0 && sideB > 0 && sideC > 0) {
+        // Use Heron's formula directly with measured sides
+        return _heronArea(sideA, sideB, sideC);
+      }
+    }
+
+    // Fallback: calculate pixel-based area and scale it
     final a = _distance(points[0], points[1]);
     final b = _distance(points[1], points[2]);
     final c = _distance(points[2], points[0]);
+
+    // Calculate pixel-based area
+    final pixelArea = _heronArea(a, b, c);
+
+    // If we have at least one side measurement, use it to scale
+    if (sideMeasurements.isNotEmpty && sideMeasurements.values.isNotEmpty) {
+      // Get first available side measurement
+      final sideMeasurement = sideMeasurements.values.first;
+      final pixelSide = a; // First side in pixels
+
+      if (pixelSide > 0) {
+        final scaleFactor = sideMeasurement / pixelSide;
+        // Area scales by square of linear scale factor
+        return pixelArea * (scaleFactor * scaleFactor);
+      }
+    }
+
+    return pixelArea;
+  }
+
+  double _heronArea(double a, double b, double c) {
     final s = (a + b + c) / 2;
     return math.sqrt(s * (s - a) * (s - b) * (s - c));
   }
 
-  double _calculatePolygonArea(List<Point> points) {
-    // Using Shoelace formula
+  double _calculatePolygonArea(
+    List<Point> points,
+    Map<int, double> sideMeasurements,
+  ) {
+    // If we have all side measurements, use better calculation
+    if (sideMeasurements.length == points.length) {
+      // We have measurements for all sides - scale using first side ratio
+      final side0PixelDistance = _distance(points[0], points[1]);
+      final side0Measured = sideMeasurements[0] ?? 1.0;
+
+      if (side0PixelDistance > 0) {
+        // Calculate pixel-based area using Shoelace
+        double pixelArea = 0;
+        final n = points.length;
+
+        for (int i = 0; i < n; i++) {
+          final j = (i + 1) % n;
+          pixelArea += points[i].x * points[j].y;
+          pixelArea -= points[j].x * points[i].y;
+        }
+
+        pixelArea = pixelArea.abs() / 2;
+
+        // Scale by square of the ratio
+        final scaleFactor = side0Measured / side0PixelDistance;
+        return pixelArea * (scaleFactor * scaleFactor);
+      }
+    }
+
+    // Fallback: calculate pixel-based area and scale it
     double area = 0;
     final n = points.length;
 
@@ -130,7 +196,21 @@ class MeasurementRepositoryImpl implements MeasurementRepository {
       area -= points[j].x * points[i].y;
     }
 
-    return area.abs() / 2;
+    final pixelArea = area.abs() / 2;
+
+    // If we have at least one side measurement, use it to scale
+    if (sideMeasurements.isNotEmpty && sideMeasurements.values.isNotEmpty) {
+      final side0Distance = _distance(points[0], points[1]);
+      final measuredSideMeters = sideMeasurements[0] ?? 1.0;
+
+      if (side0Distance > 0) {
+        final scaleFactor = measuredSideMeters / side0Distance;
+        // Area scales by square of linear scale factor
+        return pixelArea * (scaleFactor * scaleFactor);
+      }
+    }
+
+    return pixelArea;
   }
 
   double _distance(Point p1, Point p2) {

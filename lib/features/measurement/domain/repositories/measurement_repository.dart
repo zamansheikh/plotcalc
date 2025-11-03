@@ -6,6 +6,7 @@ abstract class MeasurementRepository {
   Future<Either<Failure, Measurement>> calculateArea({
     required List<Point> points,
     Map<String, double>? dimensions,
+    Map<int, double> sideMeasurements = const {},
   });
 
   Future<Either<Failure, void>> saveMeasurement(Measurement measurement);

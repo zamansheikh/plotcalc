@@ -10,11 +10,16 @@ abstract class MeasurementEvent extends Equatable {
 class CalculateAreaEvent extends MeasurementEvent {
   final List<Point> points;
   final Map<String, double>? dimensions;
+  final Map<int, double> sideMeasurements;
 
-  const CalculateAreaEvent({required this.points, this.dimensions});
+  const CalculateAreaEvent({
+    required this.points,
+    this.dimensions,
+    this.sideMeasurements = const {},
+  });
 
   @override
-  List<Object?> get props => [points, dimensions];
+  List<Object?> get props => [points, dimensions, sideMeasurements];
 }
 
 class SaveMeasurementEvent extends MeasurementEvent {

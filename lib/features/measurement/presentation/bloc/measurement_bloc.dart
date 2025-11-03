@@ -38,7 +38,11 @@ class MeasurementBloc extends Bloc<MeasurementEvent, MeasurementState> {
     emit(const MeasurementLoading());
 
     final result = await calculateArea(
-      CalculateAreaParams(points: event.points, dimensions: event.dimensions),
+      CalculateAreaParams(
+        points: event.points,
+        dimensions: event.dimensions,
+        sideMeasurements: event.sideMeasurements,
+      ),
     );
 
     result.fold(

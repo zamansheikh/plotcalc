@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/land_measurement_converter.dart';
 import '../../domain/entities/measurement.dart';
 import '../bloc/measurement_bloc.dart';
 
@@ -216,7 +217,11 @@ class _DrawingPageState extends State<DrawingPage> {
 
     // Calculate area
     context.read<MeasurementBloc>().add(
-      CalculateAreaEvent(points: _points, dimensions: dimensions),
+      CalculateAreaEvent(
+        points: _points,
+        dimensions: dimensions,
+        sideMeasurements: _sideMeasurements,
+      ),
     );
   }
 
@@ -709,36 +714,64 @@ class _DrawingPageState extends State<DrawingPage> {
             const Text('Area Calculated'),
           ],
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Shape: ${measurement.shapeType.displayName}',
-              style: const TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Area:',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            ...MeasurementUnit.values.map(
-              (unit) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('${unit.symbol}:'),
-                    Text(
-                      measurement.getAreaIn(unit).toStringAsFixed(2),
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ],
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Shape: ${measurement.shapeType.displayName}',
+                style: const TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Area in Standard Units:',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              ...MeasurementUnit.values.map(
+                (unit) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('${unit.symbol}:'),
+                      Text(
+                        measurement.getAreaIn(unit).toStringAsFixed(2),
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 16),
+              const Divider(),
+              const SizedBox(height: 12),
+              const Text(
+                'Area in Land Units:',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                LandMeasurementConverter.formatLandMeasurement(
+                  measurement.getAreaIn(MeasurementUnit.squareMeters),
+                ),
+                style: const TextStyle(fontSize: 13, color: Colors.green),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Details:',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 6),
+              ..._buildLandMeasurementDetails(
+                measurement.getAreaIn(MeasurementUnit.squareMeters),
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -772,6 +805,128 @@ class _DrawingPageState extends State<DrawingPage> {
         ],
       ),
     );
+  }
+
+  /// Helper function to build land measurement detail rows
+  List<Widget> _buildLandMeasurementDetails(double sqMeters) {
+    final measurements = LandMeasurementConverter.convertToLandUnits(sqMeters);
+    final details = <Widget>[];
+
+    if (measurements.containsKey('acres')) {
+      details.add(
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 2),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Acres:', style: TextStyle(fontSize: 12)),
+              Text(
+                '${measurements['acres']}',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (measurements.containsKey('bighas')) {
+      details.add(
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 2),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Bighas:', style: TextStyle(fontSize: 12)),
+              Text(
+                '${measurements['bighas']}',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (measurements.containsKey('kathas')) {
+      details.add(
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 2),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Kathas:', style: TextStyle(fontSize: 12)),
+              Text(
+                '${measurements['kathas']}',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (measurements.containsKey('shataks')) {
+      details.add(
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 2),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Shataks:', style: TextStyle(fontSize: 12)),
+              Text(
+                '${measurements['shataks']}',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (measurements.containsKey('shotoks')) {
+      details.add(
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 2),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Shotoks:', style: TextStyle(fontSize: 12)),
+              Text(
+                '${measurements['shotoks']}',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (details.isEmpty) {
+      details.add(
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 2),
+          child: Text('Less than 1 shotok', style: TextStyle(fontSize: 12)),
+        ),
+      );
+    }
+
+    return details;
   }
 }
 
