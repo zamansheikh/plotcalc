@@ -24,8 +24,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (context) => getIt<MeasurementBloc>()),
-        BlocProvider(create: (context) => LanguageBloc()),
+        BlocProvider<MeasurementBloc>(create: (context) => getIt<MeasurementBloc>()),
+        BlocProvider<LanguageBloc>(create: (context) => LanguageBloc()),
       ],
       child: BlocBuilder<LanguageBloc, LanguageState>(
         builder: (context, languageState) {
