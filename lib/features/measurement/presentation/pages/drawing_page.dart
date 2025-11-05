@@ -1004,27 +1004,13 @@ class ShapePainter extends CustomPainter {
 
     // Draw shape based on type
     if (shapeType == ShapeType.circle && radius != null && points.isNotEmpty) {
-      // Draw circle with size constraint to prevent going out of screen
-      final center = Offset(points.first.x, points.first.y);
+      // Draw circle with fixed size, centered on canvas
+      // The radius value is only used for area calculation, not for visual scaling
+      final center = Offset(size.width / 2, size.height / 2);
+      const double fixedRadiusPixels = 80; // Fixed visual size
       
-      // Scale factor: use 0.1 for circles to keep them smaller and proportional
-      const double scaleFactor = 0.1;
-      final scaledRadius = (radius! * scaleFactor);
-      
-      // Calculate max radius to fit within canvas bounds (with padding)
-      final maxRadiusX = center.dx - 20;
-      final maxRadiusY = center.dy - 20;
-      final maxDistX = size.width - center.dx - 20;
-      final maxDistY = size.height - center.dy - 20;
-      
-      // Maximum allowed radius in pixels
-      final maxPixelRadius = [maxRadiusX, maxDistX, maxRadiusY, maxDistY].reduce((a, b) => a < b ? a : b).clamp(20.0, double.infinity);
-      
-      // Apply radius with constraint
-      final constrainedRadius = scaledRadius.clamp(5.0, maxPixelRadius);
-      
-      canvas.drawCircle(center, constrainedRadius, fillPaint);
-      canvas.drawCircle(center, constrainedRadius, paint);
+      canvas.drawCircle(center, fixedRadiusPixels, fillPaint);
+      canvas.drawCircle(center, fixedRadiusPixels, paint);
       canvas.drawCircle(center, 6, pointPaint);
     } else if (shapeType == ShapeType.rectangle && points.length == 4) {
       // Draw rectangle using the 4 corner points
