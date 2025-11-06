@@ -286,11 +286,9 @@ class _DrawingPageState extends State<DrawingPage> {
 
       // NEW: For polygons with 4+ sides, require diagonals for exact calculation
       if (_points.length >= 4) {
-        // For 4-sided: need 1 diagonal. For N-sided (N>4): need (N-2) diagonals
-        int requiredDiagonals = 1;
-        if (_points.length > 4) {
-          requiredDiagonals = _points.length - 2;
-        }
+        // Formula: For N-sided polygon, need (N-3) diagonals to triangulate
+        // 4-sided: 1 diagonal, 5-sided: 2 diagonals, 6-sided: 3 diagonals, etc.
+        int requiredDiagonals = _points.length - 3;
 
         if (_diagonalMeasurements.length < requiredDiagonals) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -534,11 +532,8 @@ class _DrawingPageState extends State<DrawingPage> {
   void _showDiagonalInput() {
     final loc = AppLocalizations.of(context);
 
-    // For 4-sided: need 1 diagonal. For N-sided (N>4): need (N-2) diagonals
-    int requiredDiagonals = 1;
-    if (_points.length > 4) {
-      requiredDiagonals = _points.length - 2;
-    }
+    // Formula: For N-sided polygon, need (N-3) diagonals to triangulate
+    int requiredDiagonals = _points.length - 3;
 
     showDialog(
       context: context,
@@ -591,11 +586,8 @@ class _DrawingPageState extends State<DrawingPage> {
   List<Widget> _generateDiagonalInputs() {
     final widgets = <Widget>[];
 
-    // For 4-sided: need 1 diagonal. For N-sided (N>4): need (N-2) diagonals
-    int requiredDiagonals = 1;
-    if (_points.length > 4) {
-      requiredDiagonals = _points.length - 2;
-    }
+    // Formula: For N-sided polygon, need (N-3) diagonals to triangulate
+    int requiredDiagonals = _points.length - 3;
 
     // For a polygon with N sides, suggest diagonals
     // For simplicity, suggest diagonals from point 0 to points 2, 3, 4, etc.
@@ -1030,7 +1022,7 @@ class _DrawingPageState extends State<DrawingPage> {
                 SaveMeasurementEvent(measurement),
               );
               Navigator.pop(context);
-              context.pop(); // Go back to home
+              // context.pop(); // Go back to home
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(loc.measurementSaved),
