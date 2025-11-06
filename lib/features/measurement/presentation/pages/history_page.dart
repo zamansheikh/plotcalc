@@ -297,7 +297,7 @@ class _HistoryPageState extends State<HistoryPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Area in Land Units:',
+                      'Area in Land Units (Standard):',
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
@@ -308,7 +308,24 @@ class _HistoryPageState extends State<HistoryPage> {
                     Text(
                       LandUnitConverter.fromSquareMeters(measurement.area).toString(),
                       style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    Text(
+                      'Area in Land Units (Mymensingh):',
+                      style: const TextStyle(
                         fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      LandUnitConverter.fromSquareMetersMymensingh(measurement.area).toString(),
+                      style: const TextStyle(
+                        fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: Colors.black87,
                       ),
