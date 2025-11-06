@@ -4,6 +4,7 @@ import '../../features/measurement/presentation/pages/home_page.dart';
 import '../../features/measurement/presentation/pages/drawing_page.dart';
 import '../../features/measurement/presentation/pages/history_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
+import '../../features/measurement/domain/entities/measurement.dart';
 
 class AppRouter {
   static const String home = '/';
@@ -25,8 +26,13 @@ class AppRouter {
       GoRoute(
         path: drawing,
         name: 'drawing',
-        pageBuilder: (context, state) =>
-            MaterialPage(key: state.pageKey, child: const DrawingPage()),
+        pageBuilder: (context, state) {
+          final measurement = state.extra as Measurement?;
+          return MaterialPage(
+            key: state.pageKey,
+            child: DrawingPage(measurement: measurement),
+          );
+        },
       ),
       GoRoute(
         path: measurement,

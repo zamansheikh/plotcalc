@@ -7,6 +7,7 @@ abstract class MeasurementRepository {
     required List<Point> points,
     Map<String, double>? dimensions,
     Map<int, double> sideMeasurements = const {},
+    Map<String, double> diagonalMeasurements = const {},
   });
 
   Future<Either<Failure, void>> saveMeasurement(Measurement measurement);

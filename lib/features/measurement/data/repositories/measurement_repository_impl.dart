@@ -86,6 +86,8 @@ class MeasurementRepositoryImpl implements MeasurementRepository {
         shapeType: shapeType,
         points: points,
         dimensions: dimensions,
+        sideMeasurements: sideMeasurements.isNotEmpty ? sideMeasurements : null,
+        diagonalMeasurements: diagonalMeasurements.isNotEmpty ? diagonalMeasurements : null,
         area: area,
         createdAt: DateTime.now(),
       );

@@ -42,6 +42,7 @@ class MeasurementBloc extends Bloc<MeasurementEvent, MeasurementState> {
         points: event.points,
         dimensions: event.dimensions,
         sideMeasurements: event.sideMeasurements,
+        diagonalMeasurements: event.diagonalMeasurements,
       ),
     );
 

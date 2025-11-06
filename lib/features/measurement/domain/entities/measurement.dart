@@ -17,6 +17,8 @@ class Measurement extends Equatable {
   final ShapeType shapeType;
   final List<Point> points;
   final Map<String, double>? dimensions; // For rectangles, circles, etc.
+  final Map<int, double>? sideMeasurements; // For polygons - side index to measurement
+  final Map<String, double>? diagonalMeasurements; // For polygons - "0-2" to measurement
   final double area; // in square meters
   final DateTime createdAt;
   final MeasurementUnit preferredUnit;
@@ -27,6 +29,8 @@ class Measurement extends Equatable {
     required this.shapeType,
     required this.points,
     this.dimensions,
+    this.sideMeasurements,
+    this.diagonalMeasurements,
     required this.area,
     required this.createdAt,
     this.preferredUnit = MeasurementUnit.squareMeters,
@@ -52,6 +56,8 @@ class Measurement extends Equatable {
     shapeType,
     points,
     dimensions,
+    sideMeasurements,
+    diagonalMeasurements,
     area,
     createdAt,
     preferredUnit,

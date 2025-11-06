@@ -7,6 +7,8 @@ class MeasurementModel {
   final String shapeType;
   final String points; // JSON string of List<PointModel>
   final String? dimensions; // JSON string of Map<String, double>
+  final String? sideMeasurements; // JSON string of Map<int, double>
+  final String? diagonalMeasurements; // JSON string of Map<String, double>
   final double area;
   final String createdAt;
   final String preferredUnit;
@@ -17,6 +19,8 @@ class MeasurementModel {
     required this.shapeType,
     required this.points,
     this.dimensions,
+    this.sideMeasurements,
+    this.diagonalMeasurements,
     required this.area,
     required this.createdAt,
     required this.preferredUnit,
@@ -31,6 +35,12 @@ class MeasurementModel {
       dimensions: measurement.dimensions != null
           ? _dimensionsToJson(measurement.dimensions!)
           : null,
+      sideMeasurements: measurement.sideMeasurements != null
+          ? _sideMeasurementsToJson(measurement.sideMeasurements!)
+          : null,
+      diagonalMeasurements: measurement.diagonalMeasurements != null
+          ? _dimensionsToJson(measurement.diagonalMeasurements!)
+          : null,
       area: measurement.area,
       createdAt: measurement.createdAt.toIso8601String(),
       preferredUnit: measurement.preferredUnit.name,
@@ -44,6 +54,12 @@ class MeasurementModel {
       shapeType: ShapeType.values.firstWhere((e) => e.name == shapeType),
       points: _jsonToPoints(points),
       dimensions: dimensions != null ? _jsonToDimensions(dimensions!) : null,
+      sideMeasurements: sideMeasurements != null 
+          ? _jsonToSideMeasurements(sideMeasurements!) 
+          : null,
+      diagonalMeasurements: diagonalMeasurements != null 
+          ? _jsonToDimensions(diagonalMeasurements!) 
+          : null,
       area: area,
       createdAt: DateTime.parse(createdAt),
       preferredUnit: MeasurementUnit.values.firstWhere(
@@ -59,6 +75,8 @@ class MeasurementModel {
       'shapeType': shapeType,
       'points': points,
       'dimensions': dimensions,
+      'sideMeasurements': sideMeasurements,
+      'diagonalMeasurements': diagonalMeasurements,
       'area': area,
       'createdAt': createdAt,
       'preferredUnit': preferredUnit,
@@ -72,6 +90,8 @@ class MeasurementModel {
       shapeType: map['shapeType'] as String,
       points: map['points'] as String,
       dimensions: map['dimensions'] as String?,
+      sideMeasurements: map['sideMeasurements'] as String?,
+      diagonalMeasurements: map['diagonalMeasurements'] as String?,
       area: map['area'] as double,
       createdAt: map['createdAt'] as String,
       preferredUnit: map['preferredUnit'] as String,
@@ -115,6 +135,23 @@ class MeasurementModel {
       final parts = pair.split(':');
       if (parts.length == 2) {
         map[parts[0].trim()] = double.parse(parts[1].trim());
+      }
+    }
+    return map;
+  }
+
+  static String _sideMeasurementsToJson(Map<int, double> sideMeasurements) {
+    return sideMeasurements.toString();
+  }
+
+  static Map<int, double> _jsonToSideMeasurements(String json) {
+    final map = <int, double>{};
+    final cleaned = json.replaceAll('{', '').replaceAll('}', '');
+    final pairs = cleaned.split(', ');
+    for (var pair in pairs) {
+      final parts = pair.split(':');
+      if (parts.length == 2) {
+        map[int.parse(parts[0].trim())] = double.parse(parts[1].trim());
       }
     }
     return map;

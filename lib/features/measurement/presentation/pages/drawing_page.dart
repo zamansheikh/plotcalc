@@ -4,11 +4,14 @@ import 'package:go_router/go_router.dart';
 import 'package:plotcalc/core/localization/app_localizations.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/land_measurement_converter.dart';
 import '../../domain/entities/measurement.dart';
 import '../bloc/measurement_bloc.dart';
 
 class DrawingPage extends StatefulWidget {
-  const DrawingPage({super.key});
+  final Measurement? measurement; // Optional measurement to restore
+  
+  const DrawingPage({super.key, this.measurement});
 
   @override
   State<DrawingPage> createState() => _DrawingPageState();
@@ -25,6 +28,49 @@ class _DrawingPageState extends State<DrawingPage> {
   final TextEditingController _widthController = TextEditingController();
   final TextEditingController _heightController = TextEditingController();
   final TextEditingController _radiusController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    // Load measurement data if provided
+    if (widget.measurement != null) {
+      _loadMeasurement(widget.measurement!);
+    }
+  }
+
+  void _loadMeasurement(Measurement measurement) {
+    setState(() {
+      _selectedShape = measurement.shapeType;
+      _points.clear();
+      _points.addAll(measurement.points);
+      _isShapeComplete = measurement.points.length >= 3;
+      
+      // Load dimensions for rectangles and circles
+      if (measurement.dimensions != null) {
+        if (measurement.dimensions!.containsKey('width')) {
+          _widthController.text = measurement.dimensions!['width'].toString();
+        }
+        if (measurement.dimensions!.containsKey('height')) {
+          _heightController.text = measurement.dimensions!['height'].toString();
+        }
+        if (measurement.dimensions!.containsKey('radius')) {
+          _radiusController.text = measurement.dimensions!['radius'].toString();
+        }
+      }
+      
+      // Load side measurements for polygons
+      if (measurement.sideMeasurements != null) {
+        _sideMeasurements.clear();
+        _sideMeasurements.addAll(measurement.sideMeasurements!);
+      }
+      
+      // Load diagonal measurements for polygons
+      if (measurement.diagonalMeasurements != null) {
+        _diagonalMeasurements.clear();
+        _diagonalMeasurements.addAll(measurement.diagonalMeasurements!);
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -932,15 +978,50 @@ class _DrawingPageState extends State<DrawingPage> {
                 ),
               ),
               const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.green.shade200),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Area in Land Units:',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      LandUnitConverter.fromSquareMeters(measurement.area).toString(),
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
         actions: [
-          TextButton(
+          OutlinedButton(
             onPressed: () {
               Navigator.pop(context);
               context.pop(); // Go back to home
             },
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppTheme.primaryColor,
+              side: const BorderSide(color: AppTheme.primaryColor),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            ),
             child: Text(loc.cancel),
           ),
           ElevatedButton.icon(
@@ -962,6 +1043,7 @@ class _DrawingPageState extends State<DrawingPage> {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.primaryColor,
               foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             ),
           ),
         ],

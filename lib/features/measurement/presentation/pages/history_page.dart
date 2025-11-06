@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/land_measurement_converter.dart';
 import '../../domain/entities/measurement.dart';
 import '../bloc/measurement_bloc.dart';
 
@@ -283,10 +284,54 @@ class _HistoryPageState extends State<HistoryPage> {
                   ),
                 ),
               ),
+              const SizedBox(height: 16),
+              const Divider(),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.green.shade200),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Area in Land Units:',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      LandUnitConverter.fromSquareMeters(measurement.area).toString(),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
         actions: [
+          OutlinedButton.icon(
+            onPressed: () {
+              Navigator.pop(context);
+              _viewShape(context, measurement);
+            },
+            icon: const Icon(Icons.visibility),
+            label: const Text('View Shape'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppTheme.primaryColor,
+              side: const BorderSide(color: AppTheme.primaryColor),
+            ),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(loc.close),
@@ -294,6 +339,11 @@ class _HistoryPageState extends State<HistoryPage> {
         ],
       ),
     );
+  }
+
+  void _viewShape(BuildContext context, Measurement measurement) {
+    // Navigate to drawing page with the measurement data
+    context.push('/drawing', extra: measurement);
   }
 
   Widget _buildDetailRow(String label, String value) {
