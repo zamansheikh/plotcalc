@@ -5,6 +5,7 @@ import 'package:plotcalc/core/localization/app_localizations.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/land_measurement_converter.dart';
+import '../../../settings/presentation/bloc/measurement_unit_bloc.dart';
 import '../../domain/entities/measurement.dart';
 import '../bloc/measurement_bloc.dart';
 
@@ -128,6 +129,10 @@ class _DrawingPageState extends State<DrawingPage> {
   Future<void> _askForSideMeasurement(int sideIndex) async {
     print('DEBUG: _askForSideMeasurement called with sideIndex: $sideIndex');
     final loc = AppLocalizations.of(context);
+    final measurementUnitState = context.read<MeasurementUnitBloc>().state;
+    final unitSymbol = measurementUnitState.unit.symbol;
+    final inputUnit = measurementUnitState.unit;
+    
     final controller = TextEditingController();
     final result = await showDialog<double>(
       context: context,
@@ -138,16 +143,16 @@ class _DrawingPageState extends State<DrawingPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              loc.sideLengthInMeters,
+              'Side length in $unitSymbol',
               style: TextStyle(color: Colors.grey[600]),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: controller,
               decoration: InputDecoration(
-                labelText: '${loc.enterMeasurement} (m)',
+                labelText: '${loc.enterMeasurement} ($unitSymbol)',
                 border: const OutlineInputBorder(),
-                suffixText: 'm',
+                suffixText: unitSymbol,
               ),
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
@@ -173,8 +178,10 @@ class _DrawingPageState extends State<DrawingPage> {
     );
 
     if (result != null && result > 0) {
+      // Convert to meters before storing
+      final valueInMeters = inputUnit.toMeters(result);
       setState(() {
-        _sideMeasurements[sideIndex] = result;
+        _sideMeasurements[sideIndex] = valueInMeters;
         print(
           'DEBUG: Stored measurement - sideMeasurements: $_sideMeasurements',
         );
@@ -209,6 +216,9 @@ class _DrawingPageState extends State<DrawingPage> {
 
   void _calculateArea() {
     final loc = AppLocalizations.of(context);
+    final measurementUnitState = context.read<MeasurementUnitBloc>().state;
+    final inputUnit = measurementUnitState.unit;
+    
     Map<String, double>? dimensions;
 
     // For specific shapes, we need dimensions
@@ -226,7 +236,11 @@ class _DrawingPageState extends State<DrawingPage> {
         return;
       }
 
-      dimensions = {'width': width, 'height': height};
+      // Convert to meters before calculation
+      final widthInMeters = inputUnit.toMeters(width);
+      final heightInMeters = inputUnit.toMeters(height);
+      
+      dimensions = {'width': widthInMeters, 'height': heightInMeters};
       // Create 4 points for rectangle visualization
       if (_points.isEmpty) {
         setState(() {
@@ -251,7 +265,10 @@ class _DrawingPageState extends State<DrawingPage> {
         return;
       }
 
-      dimensions = {'radius': radius};
+      // Convert to meters before calculation
+      final radiusInMeters = inputUnit.toMeters(radius);
+      
+      dimensions = {'radius': radiusInMeters};
       // Create center point if empty
       if (_points.isEmpty) {
         setState(() {
@@ -308,18 +325,26 @@ class _DrawingPageState extends State<DrawingPage> {
     }
 
     // Calculate area
+    // Convert side measurements and diagonal measurements to meters
+    final sideMeasurementsInMeters = _sideMeasurements.map(
+      (key, value) => MapEntry(key, inputUnit.toMeters(value)),
+    );
+    final diagonalMeasurementsInMeters = _diagonalMeasurements.map(
+      (key, value) => MapEntry(key, inputUnit.toMeters(value)),
+    );
+    
     print(
-      'DEBUG: _calculateArea - sideMeasurements being sent: $_sideMeasurements',
+      'DEBUG: _calculateArea - sideMeasurements being sent: $sideMeasurementsInMeters',
     );
     print(
-      'DEBUG: _calculateArea - diagonalMeasurements being sent: $_diagonalMeasurements',
+      'DEBUG: _calculateArea - diagonalMeasurements being sent: $diagonalMeasurementsInMeters',
     );
     context.read<MeasurementBloc>().add(
       CalculateAreaEvent(
         points: _points,
         dimensions: dimensions,
-        sideMeasurements: _sideMeasurements,
-        diagonalMeasurements: _diagonalMeasurements,
+        sideMeasurements: sideMeasurementsInMeters,
+        diagonalMeasurements: diagonalMeasurementsInMeters,
       ),
     );
   }
@@ -376,66 +401,72 @@ class _DrawingPageState extends State<DrawingPage> {
     final loc = AppLocalizations.of(context);
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('${loc.enterMeasurement} ${_selectedShape.displayName}'),
-        content: _selectedShape == ShapeType.rectangle
-            ? Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: _widthController,
+      builder: (context) => BlocBuilder<MeasurementUnitBloc, MeasurementUnitState>(
+        builder: (context, state) {
+          final unitSymbol = state.unit.symbol;
+          
+          return AlertDialog(
+            title: Text('${loc.enterMeasurement} ${_selectedShape.displayName}'),
+            content: _selectedShape == ShapeType.rectangle
+                ? Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextField(
+                        controller: _widthController,
+                        decoration: InputDecoration(
+                          labelText: '${loc.width} ($unitSymbol)',
+                          border: const OutlineInputBorder(),
+                        ),
+                        keyboardType: TextInputType.number,
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: _heightController,
+                        decoration: InputDecoration(
+                          labelText: '${loc.height} ($unitSymbol)',
+                          border: const OutlineInputBorder(),
+                        ),
+                        keyboardType: TextInputType.number,
+                      ),
+                    ],
+                  )
+                : TextField(
+                    controller: _radiusController,
                     decoration: InputDecoration(
-                      labelText: '${loc.width} (m)',
+                      labelText: '${loc.radius} ($unitSymbol)',
                       border: const OutlineInputBorder(),
                     ),
                     keyboardType: TextInputType.number,
                   ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _heightController,
-                    decoration: InputDecoration(
-                      labelText: '${loc.height} (m)',
-                      border: const OutlineInputBorder(),
-                    ),
-                    keyboardType: TextInputType.number,
-                  ),
-                ],
-              )
-            : TextField(
-                controller: _radiusController,
-                decoration: InputDecoration(
-                  labelText: '${loc.radius} (m)',
-                  border: const OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(loc.cancel),
               ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(loc.cancel),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              // Trigger redraw when dimensions are entered
-              setState(() {
-                if (_selectedShape == ShapeType.circle) {
-                  if (_points.isEmpty) {
-                    _points.add(const Point(200, 200));
-                  }
-                } else if (_selectedShape == ShapeType.rectangle) {
-                  if (_points.isEmpty) {
-                    _points.add(const Point(100, 150));
-                    _points.add(const Point(300, 150));
-                    _points.add(const Point(300, 350));
-                    _points.add(const Point(100, 350));
-                  }
-                }
-              });
-              Navigator.pop(context);
-            },
-            child: Text(loc.ok),
-          ),
-        ],
+              ElevatedButton(
+                onPressed: () {
+                  // Trigger redraw when dimensions are entered
+                  setState(() {
+                    if (_selectedShape == ShapeType.circle) {
+                      if (_points.isEmpty) {
+                        _points.add(const Point(200, 200));
+                      }
+                    } else if (_selectedShape == ShapeType.rectangle) {
+                      if (_points.isEmpty) {
+                        _points.add(const Point(100, 150));
+                        _points.add(const Point(300, 150));
+                        _points.add(const Point(300, 350));
+                        _points.add(const Point(100, 350));
+                      }
+                    }
+                  });
+                  Navigator.pop(context);
+                },
+                child: Text(loc.ok),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -585,6 +616,9 @@ class _DrawingPageState extends State<DrawingPage> {
 
   List<Widget> _generateDiagonalInputs() {
     final widgets = <Widget>[];
+    final measurementUnitState = context.read<MeasurementUnitBloc>().state;
+    final unitSymbol = measurementUnitState.unit.symbol;
+    final inputUnit = measurementUnitState.unit;
 
     // Formula: For N-sided polygon, need (N-3) diagonals to triangulate
     int requiredDiagonals = _points.length - 3;
@@ -613,7 +647,7 @@ class _DrawingPageState extends State<DrawingPage> {
                   decoration: InputDecoration(
                     border: const OutlineInputBorder(),
                     hintText: '0.0',
-                    suffixText: 'm',
+                    suffixText: unitSymbol,
                     filled: true,
                     fillColor: Colors.grey[100],
                   ),
@@ -621,13 +655,17 @@ class _DrawingPageState extends State<DrawingPage> {
                     decimal: true,
                   ),
                   controller: TextEditingController(
-                    text: _diagonalMeasurements[diagonalKey]?.toString() ?? '',
+                    text: _diagonalMeasurements[diagonalKey] != null
+                        ? inputUnit.fromMeters(_diagonalMeasurements[diagonalKey]!).toStringAsFixed(2)
+                        : '',
                   ),
                   onChanged: (value) {
                     final measurement = double.tryParse(value);
                     if (measurement != null && measurement > 0) {
+                      // Convert to meters before storing
+                      final valueInMeters = inputUnit.toMeters(measurement);
                       setState(() {
-                        _diagonalMeasurements[diagonalKey] = measurement;
+                        _diagonalMeasurements[diagonalKey] = valueInMeters;
                       });
                     } else {
                       setState(() {

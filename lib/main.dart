@@ -7,6 +7,7 @@ import 'core/theme/app_theme.dart';
 import 'core/localization/app_localizations.dart';
 import 'features/measurement/presentation/bloc/measurement_bloc.dart';
 import 'features/settings/presentation/bloc/language_bloc.dart';
+import 'features/settings/presentation/bloc/measurement_unit_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,6 +27,9 @@ class MyApp extends StatelessWidget {
       providers: [
         BlocProvider<MeasurementBloc>(create: (context) => getIt<MeasurementBloc>()),
         BlocProvider<LanguageBloc>(create: (context) => LanguageBloc()),
+        BlocProvider<MeasurementUnitBloc>(
+          create: (context) => MeasurementUnitBloc(),
+        ),
       ],
       child: BlocBuilder<LanguageBloc, LanguageState>(
         builder: (context, languageState) {
