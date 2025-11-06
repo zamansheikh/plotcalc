@@ -1007,7 +1007,7 @@ class _DrawingPageState extends State<DrawingPage> {
           OutlinedButton(
             onPressed: () {
               Navigator.pop(context);
-              context.pop(); // Go back to home
+              // context.pop(); // Go back to home
             },
             style: OutlinedButton.styleFrom(
               foregroundColor: AppTheme.primaryColor,
@@ -1022,7 +1022,7 @@ class _DrawingPageState extends State<DrawingPage> {
                 SaveMeasurementEvent(measurement),
               );
               Navigator.pop(context);
-              // context.pop(); // Go back to home
+              context.pop(); // Go back to home
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(loc.measurementSaved),
