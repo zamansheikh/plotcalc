@@ -66,6 +66,11 @@ class LandUnitConverter {
   static const double _sqftToSqm = 0.09290304; // 1 sq.ft = 0.09290304 sq.m
   static const double _sqmToSqft = 10.7639104167; // 1 sq.m = 10.76... sq.ft
 
+  // ---- Mymensingh Constants (sq.ft) -------------------------------------
+  // 1 Shatak = 435.60 sq.ft (Standard)
+  static const double _sqftPerKathaMymensingh = 435.60 * 6.5; // 2831.4 sq.ft
+  static const double _sqftPerBighaMymensingh = _sqftPerKathaMymensingh * 20; // 56628.0 sq.ft
+
   // ------------------------------------------------------------------------
   static LandUnit fromSquareMeters(double sqm) {
     // 1 sq.m = 10.76... sq.ft, তাই গুণ হবে
@@ -77,6 +82,17 @@ class LandUnitConverter {
 
   static LandUnit fromSquareFeet(double sqft) {
     return _convert(sqft);
+  }
+
+  // ---- Mymensingh Methods -----------------------------------------------
+
+  static LandUnit fromSquareMetersMymensingh(double sqm) {
+    final sqft = sqm * _sqmToSqft;
+    return _convertMymensingh(sqft);
+  }
+
+  static LandUnit fromSquareFeetMymensingh(double sqft) {
+    return _convertMymensingh(sqft);
   }
 
   // ------------------------------------------------------------------------
@@ -114,9 +130,38 @@ class LandUnitConverter {
       squareMeters: roundedSqm,
     );
   }
+
+  static LandUnit _convertMymensingh(double totalSqft) {
+    double sqft = totalSqft;
+
+    // 1. Bigha (Mymensingh)
+    final bighas = (sqft / _sqftPerBighaMymensingh).floor();
+    sqft -= bighas * _sqftPerBighaMymensingh;
+
+    // 2. Katha (Mymensingh)
+    final kathas = (sqft / _sqftPerKathaMymensingh).floor();
+    sqft -= kathas * _sqftPerKathaMymensingh;
+
+    // 3. Shatak (Standard)
+    final shataks = (sqft / _sqftPerShatak).floor();
+    sqft -= shataks * _sqftPerShatak;
+
+    // Remainder in sq.m
+    final sqmRemainder = (sqft * _sqftToSqm);
+    final roundedSqm = (sqmRemainder * 100).round() / 100.0;
+
+    return LandUnit(
+      acres: 0, // Acre isn't typically used in this specific system
+      bighas: bighas,
+      kathas: kathas,
+      shataks: shataks,
+      chotaks: 0, // Chotak isn't typically used in this specific system
+      squareMeters: roundedSqm,
+    );
+  }
 }
 
-// // ====================== USAGE EXAMPLE (you can paste in main()) ==========
+// ====================== USAGE EXAMPLE (you can paste in main()) ==========
 // void main() {
 //   // From square-feet
 //   final resultFt = LandUnitConverter.fromSquareFeet(59734.43);
@@ -129,4 +174,10 @@ class LandUnitConverter {
 //   final resultM = LandUnitConverter.fromSquareMeters(5550.0);
 //   print("5550.0 sq.m = $resultM");
 //   // আউটপুট: 1 একর 1 বিঘা 2 কাঠা 4 ছটাক 0.93 বর্গমিটার
+
+//   // --- Mymensingh Example ---
+//   // 60,000 sq.ft = 1 Bigha (56628) + 1 Katha (2831.4) + 1 Shatak (435.6) + 105 sq.ft remainder
+//   final resultMym = LandUnitConverter.fromSquareFeetMymensingh(60000.0);
+//   print("60000.0 sq.ft (Mymensingh) = $resultMym");
+//   // আউটপুট: 1 বিঘা 1 কাঠা 1 শতাংশ 9.75 বর্গমিটার
 // }
