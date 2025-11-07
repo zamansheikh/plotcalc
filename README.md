@@ -1,7 +1,6 @@
 # PlotCalc - Professional Land Area Calculator
 
-<div align="center">PlotCalc
-
+<div align="center">
   <img src="assets/icon/icon.png" alt="PlotCalc Icon" width="120" height="120">
 
   **PlotCalc** - A professional land measurement calculator for surveying, real estate, farming, and construction.
@@ -9,7 +8,7 @@
 </div>
 
 
-## 🎯 Features[online documentation](https://docs.flutter.dev/), which offers tutorials,
+## 🎯 Features
 
 samples, guidance on mobile development, and a full API reference.
 
