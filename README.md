@@ -1,30 +1,13 @@
-# PlotCalc - Professional Land Area Calculator# plotcalc
+# PlotCalc - Professional Land Area Calculator
 
-
-
-<div align="center">A new Flutter project.
+<div align="center">PlotCalc
 
   <img src="assets/icon/icon.png" alt="PlotCalc Icon" width="120" height="120">
 
-  ## Getting Started
-
   **PlotCalc** - A professional land measurement calculator for surveying, real estate, farming, and construction.
 
-  This project is a starting point for a Flutter application.
+</div>
 
-  [![Flutter](https://img.shields.io/badge/Flutter-3.9.2+-blue.svg)](https://flutter.dev)
-
-  [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)A few resources to get you started if this is your first Flutter project:
-
-  [![GitHub](https://img.shields.io/badge/GitHub-zamansheikh-black.svg)](https://github.com/zamansheikh)
-
-</div>- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
----
-
-For help getting started with Flutter development, view the
 
 ## 🎯 Features[online documentation](https://docs.flutter.dev/), which offers tutorials,
 
@@ -45,17 +28,17 @@ samples, guidance on mobile development, and a full API reference.
 <table>
   <tr>
     <td align="center"><img src="docs/screenshots/flutter_01.png" width="200" alt="Home Screen"><br><b>Home Screen</b></td>
-    <td align="center"><img src="docs/screenshots/flutter_02.png" width="200" alt="Shape Selection"><br><b>Shape Selection</b></td>
-    <td align="center"><img src="docs/screenshots/flutter_03.png" width="200" alt="Rectangle Measurement"><br><b>Rectangle</b></td>
+    <td align="center"><img src="docs/screenshots/flutter_02.png" width="200" alt="Shape Selection"><br><b>Input Measurements</b></td>
+    <td align="center"><img src="docs/screenshots/flutter_03.png" width="200" alt="Rectangle Measurement"><br><b>Polygon</b></td>
   </tr>
   <tr>
-    <td align="center"><img src="docs/screenshots/flutter_04.png" width="200" alt="Triangle Measurement"><br><b>Triangle</b></td>
-    <td align="center"><img src="docs/screenshots/flutter_05.png" width="200" alt="Quadrilateral Measurement"><br><b>Quadrilateral</b></td>
-    <td align="center"><img src="docs/screenshots/flutter_06.png" width="200" alt="Circle Measurement"><br><b>Circle</b></td>
+    <td align="center"><img src="docs/screenshots/flutter_04.png" width="200" alt="Triangle Measurement"><br><b>View Results</b></td>
+    <td align="center"><img src="docs/screenshots/flutter_05.png" width="200" alt="Quadrilateral Measurement"><br><b>Rectangle</b></td>
+    <td align="center"><img src="docs/screenshots/flutter_06.png" width="200" alt="Circle Measurement"><br><b>Edit Measurements</b></td>
   </tr>
   <tr>
-    <td align="center"><img src="docs/screenshots/flutter_07.png" width="200" alt="Measurement Result"><br><b>Result Display</b></td>
-    <td align="center"><img src="docs/screenshots/flutter_08.png" width="200" alt="Measurement History"><br><b>History</b></td>
+    <td align="center"><img src="docs/screenshots/flutter_07.png" width="200" alt="Measurement Result"><br><b>Measurement Result</b></td>
+    <td align="center"><img src="docs/screenshots/flutter_08.png" width="200" alt="Measurement History"><br><b>Result Display</b></td>
     <td align="center"><img src="docs/screenshots/flutter_09.png" width="200" alt="Settings"><br><b>Settings & Preferences</b></td>
   </tr>
 </table>
