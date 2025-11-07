@@ -22,18 +22,25 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context);
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(title: Text(localizations.settings)),
       body: ListView(
         children: [
-          // Language Section
-          Padding(
-            padding: const EdgeInsets.all(16.0),
+          // Language Section Header
+          Container(
+            color: isDarkTheme 
+                ? Theme.of(context).primaryColor.withOpacity(0.2)
+                : Theme.of(context).primaryColor.withOpacity(0.1),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             child: Text(
               localizations.language,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
+                color: isDarkTheme 
+                    ? Colors.lightBlue.shade300
+                    : Theme.of(context).primaryColor,
               ),
             ),
           ),
@@ -42,13 +49,19 @@ class _SettingsPageState extends State<SettingsPage> {
           
           const Divider(height: 32),
           
-          // Measurement Unit Section
-          Padding(
-            padding: const EdgeInsets.all(16.0),
+          // Measurement Unit Section Header
+          Container(
+            color: isDarkTheme 
+                ? Theme.of(context).primaryColor.withOpacity(0.2)
+                : Theme.of(context).primaryColor.withOpacity(0.1),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             child: Text(
               localizations.measurementUnit,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
+                color: isDarkTheme 
+                    ? Colors.lightBlue.shade300
+                    : Theme.of(context).primaryColor,
               ),
             ),
           ),
@@ -62,6 +75,8 @@ class _SettingsPageState extends State<SettingsPage> {
             title: localizations.feetTitle,
             description: localizations.useFeetDescription,
           ),
+          
+          const SizedBox(height: 24),
         ],
       ),
     );
@@ -83,9 +98,20 @@ class _LanguageOption extends StatelessWidget {
         final isSelected = state.locale.languageCode == languageCode;
 
         return ListTile(
-          title: Text(language),
+          title: Text(
+            language,
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+            ),
+          ),
           trailing: isSelected
-              ? Icon(Icons.check, color: Theme.of(context).primaryColor)
+              ? Icon(
+                  Icons.check,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.lightGreen.shade300
+                      : Theme.of(context).primaryColor,
+                  size: 24,
+                )
               : null,
           onTap: () {
             context.read<LanguageBloc>().add(
@@ -123,11 +149,35 @@ class _MeasurementUnitOption extends StatelessWidget {
         final isSelected = state.unit == unit;
 
         return ListTile(
-          title: Text(title),
-          subtitle: Text(description),
+          title: Text(
+            title,
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+            ),
+          ),
+          subtitle: Text(
+            description,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.grey.shade400
+                  : Colors.grey.shade600,
+            ),
+          ),
           trailing: isSelected
-              ? Icon(Icons.check_circle, color: Theme.of(context).primaryColor)
-              : const Icon(Icons.circle_outlined),
+              ? Icon(
+                  Icons.check_circle,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.lightGreen.shade300
+                      : Theme.of(context).primaryColor,
+                  size: 24,
+                )
+              : Icon(
+                  Icons.circle_outlined,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.grey.shade500
+                      : Colors.grey.shade400,
+                  size: 24,
+                ),
           onTap: () {
             context.read<MeasurementUnitBloc>().add(
               ChangeMeasurementUnitEvent(unit),

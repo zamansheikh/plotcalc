@@ -47,7 +47,12 @@ class AppTheme {
       seedColor: primaryColor,
       brightness: Brightness.dark,
     ),
-    appBarTheme: const AppBarTheme(centerTitle: true, elevation: 0),
+    appBarTheme: const AppBarTheme(
+      centerTitle: true, 
+      elevation: 0,
+      backgroundColor: primaryColor,
+      foregroundColor: Colors.white,
+    ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
@@ -63,6 +68,15 @@ class AppTheme {
     ),
     inputDecorationTheme: InputDecorationTheme(
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      filled: true,
+      fillColor: Colors.grey[800],
+      hintStyle: const TextStyle(color: Colors.grey),
     ),
+    listTileTheme: ListTileThemeData(
+      textColor: Colors.white,
+      iconColor: Colors.lightGreen.shade300,
+      dense: false,
+    ),
+    iconTheme: const IconThemeData(color: Colors.lightGreen),
   );
 }

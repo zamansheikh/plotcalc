@@ -153,6 +153,18 @@ class AppLocalizations {
       isEnglish ? 'Diagonal Measurements' : 'কর্ণ পরিমাপ';
   String get diagonalMeasurementsRequired => 
       isEnglish ? 'Required' : 'প্রয়োজনীয়';
+  
+  // Calculator & Converter
+  String get calculator => isEnglish ? 'Calculator' : 'ক্যালকুলেটর';
+  String get unitConverter => isEnglish ? 'Unit Converter' : 'ইউনিট কনভার্টার';
+  String get enterAreaValue => isEnglish ? 'Enter area value' : 'এলাকার মান লিখুন';
+  String get convertFrom => isEnglish ? 'Convert From' : 'থেকে রূপান্তর করুন';
+  String get convertTo => isEnglish ? 'Convert To' : 'এতে রূপান্তর করুন';
+  String get result => isEnglish ? 'Result' : 'ফলাফল';
+  String get selectUnit => isEnglish ? 'Select Unit' : 'ইউনিট নির্বাচন করুন';
+  String get squareFeet => isEnglish ? 'Square Feet (ft²)' : 'বর্গফুট (ফি²)';
+  String get hectares => isEnglish ? 'Hectares (ha)' : 'হেক্টর (হে)';
+  String get acres => isEnglish ? 'Acres (ac)' : 'একর (ac)';
 }
 
 class _AppLocalizationsDelegate

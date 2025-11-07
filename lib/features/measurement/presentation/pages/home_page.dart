@@ -55,6 +55,30 @@ class HomePage extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
+              ElevatedButton.icon(
+                onPressed: () => context.push('/calculator'),
+                icon: const Icon(Icons.calculate, size: 28),
+                label: Text(loc.calculator),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  backgroundColor: Colors.amber.shade600,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              ElevatedButton.icon(
+                onPressed: () => context.push('/converter'),
+                icon: const Icon(Icons.swap_horiz, size: 28),
+                label: Text(loc.unitConverter),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  backgroundColor: Colors.teal,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 16),
+
               OutlinedButton.icon(
                 onPressed: () => context.push('/history'),
                 icon: const Icon(Icons.history, size: 28),

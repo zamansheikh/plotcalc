@@ -3,12 +3,16 @@ import 'package:flutter/material.dart';
 import '../../features/measurement/presentation/pages/home_page.dart';
 import '../../features/measurement/presentation/pages/drawing_page.dart';
 import '../../features/measurement/presentation/pages/history_page.dart';
+import '../../features/measurement/presentation/pages/calculator_page.dart';
+import '../../features/measurement/presentation/pages/unit_converter_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/measurement/domain/entities/measurement.dart';
 
 class AppRouter {
   static const String home = '/';
   static const String drawing = '/drawing';
+  static const String calculator = '/calculator';
+  static const String converter = '/converter';
   static const String measurement = '/measurement';
   static const String results = '/results';
   static const String history = '/history';
@@ -33,6 +37,18 @@ class AppRouter {
             child: DrawingPage(measurement: measurement),
           );
         },
+      ),
+      GoRoute(
+        path: calculator,
+        name: 'calculator',
+        pageBuilder: (context, state) =>
+            MaterialPage(key: state.pageKey, child: const CalculatorPage()),
+      ),
+      GoRoute(
+        path: converter,
+        name: 'converter',
+        pageBuilder: (context, state) =>
+            MaterialPage(key: state.pageKey, child: const UnitConverterPage()),
       ),
       GoRoute(
         path: measurement,
