@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="PlotCalc - Professional Land Measurement Calculator. Calculate land area with precision for surveying, real estate, farming, and more.">
+    <meta name="keywords" content="land calculator, area measurement, surveyor, real estate, farming, geometry calculator">
+    <meta name="author" content="Md. Shamsuzzaman - Programmer Nexus">
+    <meta property="og:title" content="PlotCalc - Land Area Calculator">
+    <meta property="og:description" content="Calculate land area with precision. Professional measurement calculator for surveyors, real estate, and farmers.">
+    <meta property="og:image" content="https://raw.githubusercontent.com/zamansheikh/plotcalc/main/assets/icon/icon.png">
+    <meta property="og:url" content="https://github.com/zamansheikh/plotcalc">
+    <title>PlotCalc - Professional Land Area Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f8f9fa;
+        }
+
+        /* Header & Navigation */
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            transition: opacity 0.3s;
+            font-weight: 500;
+        }
+
+        nav a:hover {
+            opacity: 0.8;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 6rem 2rem;
+            text-align: center;
+        }
+
+        .hero-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .hero-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 2rem;
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .hero-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #667eea;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-2px);
+        }
+
+        /* Features Section */
+        .features {
+            max-width: 1200px;
+            margin: -3rem auto 3rem;
+            padding: 0 2rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Section Styling */
+        section {
+            padding: 4rem 2rem;
+        }
+
+        section.light {
+            background: white;
+        }
+
+        section.dark {
+            background: #f8f9fa;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            color: #333;
+            text-align: center;
+        }
+
+        /* Screenshots Section */
+        .screenshots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .screenshot-item {
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .screenshot-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .screenshot-item img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .screenshot-label {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        /* Shapes Support */
+        .shapes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .shape-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        /* Units Support */
+        .units-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .unit-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 2px solid #667eea;
+            text-align: center;
+        }
+
+        .unit-card h4 {
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Use Cases */
+        .use-cases {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .use-case {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+        }
+
+        .use-case h4 {
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Footer */
+        footer {
+            background: #333;
+            color: white;
+            padding: 3rem 2rem 1rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h4 {
+            margin-bottom: 1rem;
+            color: #667eea;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-section a {
+            color: #ccc;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-section a:hover {
+            color: #667eea;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #555;
+            padding-top: 1.5rem;
+            text-align: center;
+            color: #999;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            nav ul {
+                gap: 1rem;
+                font-size: 0.9rem;
+            }
+
+            h2 {
+                font-size: 1.8rem;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+            }
+
+            .hero-icon {
+                width: 80px;
+                height: 80px;
+            }
+
+            .screenshots-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+        }
+
+        /* Highlight */
+        .highlight {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        /* Stats */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .stat {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Privacy Badge */
+        .privacy-badge {
+            background: #e8f5e9;
+            border: 2px solid #4caf50;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            color: #2e7d32;
+            margin: 2rem 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav>
+            <div class="logo">
+                <img src="../assets/icon/icon.png" alt="PlotCalc Logo">
+                PlotCalc
+            </div>
+            <ul>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#screenshots">Screenshots</a></li>
+                <li><a href="#shapes">Shapes</a></li>
+                <li><a href="#units">Units</a></li>
+                <li><a href="#contact">Contact</a></li>
+                <li><a href="privacy.html">Privacy</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-icon">
+                <img src="../assets/icon/icon.png" alt="PlotCalc Icon">
+            </div>
+            <h1>PlotCalc</h1>
+            <p>Professional Land Measurement Calculator</p>
+            <p style="font-size: 1.1rem; opacity: 0.9;">Calculate land area with precision for surveying, real estate, farming, and more</p>
+            <div class="cta-buttons">
+                <a href="https://github.com/zamansheikh/plotcalc" class="btn btn-primary">View on GitHub</a>
+                <a href="https://github.com/zamansheikh/plotcalc/releases" class="btn btn-secondary">Download APK</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Features -->
+    <div class="features">
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">📏</div>
+                <h3>Accurate Measurements</h3>
+                <p>Professional-grade calculations for all plot types</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🌍</div>
+                <h3>Multiple Units</h3>
+                <p>Meters, Feet, Acres, and more measurement options</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💾</div>
+                <h3>Save History</h3>
+                <p>Keep track of all your measurements</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔒</div>
+                <h3>100% Private</h3>
+                <p>All data stored locally on your device</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <section class="light" id="features">
+        <div class="container">
+            <h2>✨ Key Features</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;">
+                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px;">
+                    <h4 style="color: #667eea; margin-bottom: 1rem;">🎯 Multiple Shape Support</h4>
+                    <p>Calculate areas for rectangles, circles, triangles, and complex polygons with automatic validation</p>
+                </div>
+                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px;">
+                    <h4 style="color: #667eea; margin-bottom: 1rem;">🔄 Flexible Unit System</h4>
+                    <p>Switch between Meters and Feet with automatic conversion and calculation</p>
+                </div>
+                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px;">
+                    <h4 style="color: #667eea; margin-bottom: 1rem;">📊 Advanced Calculations</h4>
+                    <p>Smart diagonal calculations for complex polygons and unit conversions</p>
+                </div>
+                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px;">
+                    <h4 style="color: #667eea; margin-bottom: 1rem;">💾 Measurement History</h4>
+                    <p>Save all calculations automatically with timestamps and details</p>
+                </div>
+                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px;">
+                    <h4 style="color: #667eea; margin-bottom: 1rem;">🎨 Professional Interface</h4>
+                    <p>Intuitive drawing canvas with responsive design for all screens</p>
+                </div>
+                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px;">
+                    <h4 style="color: #667eea; margin-bottom: 1rem;">🌐 Multi-Language Support</h4>
+                    <p>Available in English, Bengali, Spanish, French, and German</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Screenshots Section -->
+    <section class="dark" id="screenshots">
+        <div class="container">
+            <h2>📱 App Screenshots</h2>
+            <p style="text-align: center; color: #666; margin-bottom: 2rem;">See PlotCalc in action</p>
+            <div class="screenshots-grid">
+                <div class="screenshot-item">
+                    <img src="screenshots/flutter_01.png" alt="Home Screen">
+                    <div class="screenshot-label">Home Screen</div>
+                </div>
+                <div class="screenshot-item">
+                    <img src="screenshots/flutter_02.png" alt="Shape Selection">
+                    <div class="screenshot-label">Shape Selection</div>
+                </div>
+                <div class="screenshot-item">
+                    <img src="screenshots/flutter_03.png" alt="Rectangle Measurement">
+                    <div class="screenshot-label">Rectangle</div>
+                </div>
+                <div class="screenshot-item">
+                    <img src="screenshots/flutter_04.png" alt="Triangle Measurement">
+                    <div class="screenshot-label">Triangle</div>
+                </div>
+                <div class="screenshot-item">
+                    <img src="screenshots/flutter_05.png" alt="Quadrilateral Measurement">
+                    <div class="screenshot-label">Quadrilateral</div>
+                </div>
+                <div class="screenshot-item">
+                    <img src="screenshots/flutter_06.png" alt="Circle Measurement">
+                    <div class="screenshot-label">Circle</div>
+                </div>
+                <div class="screenshot-item">
+                    <img src="screenshots/flutter_07.png" alt="Measurement Result">
+                    <div class="screenshot-label">Result Display</div>
+                </div>
+                <div class="screenshot-item">
+                    <img src="screenshots/flutter_08.png" alt="Measurement History">
+                    <div class="screenshot-label">History</div>
+                </div>
+                <div class="screenshot-item">
+                    <img src="screenshots/flutter_09.png" alt="Settings">
+                    <div class="screenshot-label">Settings</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Shapes Section -->
+    <section class="light" id="shapes">
+        <div class="container">
+            <h2>📐 Supported Shapes</h2>
+            <p style="text-align: center; color: #666; margin-bottom: 2rem;">Calculate area for various plot shapes with precision</p>
+            <div class="shapes-grid">
+                <div class="shape-item">▭ Rectangle</div>
+                <div class="shape-item">● Circle</div>
+                <div class="shape-item">△ Triangle</div>
+                <div class="shape-item">⬠ Pentagon</div>
+                <div class="shape-item">⬡ Hexagon</div>
+                <div class="shape-item">⬢ Polygon</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Units Section -->
+    <section class="dark" id="units">
+        <div class="container">
+            <h2>🌍 Supported Units</h2>
+            <p style="text-align: center; color: #666; margin-bottom: 2rem;">Calculate in your preferred measurement units</p>
+            <div class="units-grid">
+                <div class="unit-card">
+                    <h4>International Standard</h4>
+                    <p>• Square Meters (m²)<br>• Square Feet (ft²)<br>• Acres</p>
+                </div>
+                <div class="unit-card">
+                    <h4>Bangladesh Regional</h4>
+                    <p>• একর (Acre)<br>• বিঘা (Bigha)<br>• কাঠা (Katha)<br>• শতাংশ (Shatak)<br>• ছটাক (Chotak)</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Use Cases Section -->
+    <section class="light">
+        <div class="container">
+            <h2>👥 Perfect For</h2>
+            <div class="use-cases">
+                <div class="use-case">
+                    <h4>🏗️ Surveyors</h4>
+                    <p>Professional measurements for property documentation and land surveys</p>
+                </div>
+                <div class="use-case">
+                    <h4>🏢 Real Estate Agents</h4>
+                    <p>Quick area calculations during site visits and property evaluations</p>
+                </div>
+                <div class="use-case">
+                    <h4>🌾 Farmers</h4>
+                    <p>Calculate agricultural plot areas efficiently for crop planning</p>
+                </div>
+                <div class="use-case">
+                    <h4>🏛️ Architects</h4>
+                    <p>Design land planning measurements and layout calculations</p>
+                </div>
+                <div class="use-case">
+                    <h4>📚 Students</h4>
+                    <p>Learn geometry with practical applications and real-world calculations</p>
+                </div>
+                <div class="use-case">
+                    <h4>🏡 Property Owners</h4>
+                    <p>Verify land documentation and understand your property details</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Privacy Section -->
+    <section class="dark">
+        <div class="container">
+            <h2>🔒 Privacy & Security</h2>
+            <div class="privacy-badge">
+                <h3 style="margin-bottom: 0.5rem;">✓ Your Data, Your Device</h3>
+                <p>All calculations and measurements are processed locally on your device. No data is sent to external servers. No tracking, no ads, no unwanted permissions.</p>
+            </div>
+            <p style="text-align: center; color: #666;">
+                PlotCalc is an <span class="highlight">open-source project</span> for complete transparency. Review the source code anytime on <a href="https://github.com/zamansheikh/plotcalc" style="color: #667eea;">GitHub</a>.
+            </p>
+        </div>
+    </section>
+
+    <!-- How to Use -->
+    <section class="light">
+        <div class="container">
+            <h2>🚀 How to Use</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-top: 2rem;">
+                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #667eea;">
+                    <strong style="font-size: 1.2rem; color: #667eea;">1️⃣ Select Unit</strong>
+                    <p style="margin-top: 0.5rem;">Choose between Meters or Feet as your default measurement unit</p>
+                </div>
+                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #667eea;">
+                    <strong style="font-size: 1.2rem; color: #667eea;">2️⃣ Choose Shape</strong>
+                    <p style="margin-top: 0.5rem;">Select the shape of your plot (Rectangle, Circle, Triangle, Polygon)</p>
+                </div>
+                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #667eea;">
+                    <strong style="font-size: 1.2rem; color: #667eea;">3️⃣ Input Dimensions</strong>
+                    <p style="margin-top: 0.5rem;">Draw on canvas or input dimensions directly</p>
+                </div>
+                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #667eea;">
+                    <strong style="font-size: 1.2rem; color: #667eea;">4️⃣ Add Diagonals</strong>
+                    <p style="margin-top: 0.5rem;">Provide diagonal measurements for complex polygons</p>
+                </div>
+                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #667eea;">
+                    <strong style="font-size: 1.2rem; color: #667eea;">5️⃣ Get Results</strong>
+                    <p style="margin-top: 0.5rem;">View instant calculations in multiple units</p>
+                </div>
+                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #667eea;">
+                    <strong style="font-size: 1.2rem; color: #667eea;">6️⃣ Save History</strong>
+                    <p style="margin-top: 0.5rem;">Measurements are automatically saved for future reference</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="dark" id="contact">
+        <div class="container">
+            <h2>📧 Get in Touch</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-top: 2rem;">
+                <div style="text-align: center; background: #333; padding: 2rem; border-radius: 8px; border: 2px solid #667eea;">
+                    <h4 style="color: #667eea; margin-bottom: 0.5rem;">✉️ Email</h4>
+                    <p><a href="mailto:zaman6545@gmail.com" style="color: #00BCD4; text-decoration: none;">zaman6545@gmail.com</a></p>
+                </div>
+                <div style="text-align: center; background: #333; padding: 2rem; border-radius: 8px; border: 2px solid #667eea;">
+                    <h4 style="color: #667eea; margin-bottom: 0.5rem;">🌐 Website</h4>
+                    <p><a href="https://zamansheikh.com" style="color: #00BCD4; text-decoration: none;">zamansheikh.com</a></p>
+                </div>
+                <div style="text-align: center; background: #333; padding: 2rem; border-radius: 8px; border: 2px solid #667eea;">
+                    <h4 style="color: #667eea; margin-bottom: 0.5rem;">💼 Company</h4>
+                    <p><a href="https://programmernexus.com" style="color: #00BCD4; text-decoration: none;">Programmer Nexus</a></p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>📐 PlotCalc</h4>
+                <p>Professional land measurement calculator for accurate area calculations.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#screenshots">Screenshots</a></li>
+                    <li><a href="#shapes">Shapes</a></li>
+                    <li><a href="#units">Units</a></li>
+                    <li><a href="privacy.html">Privacy Policy</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Developer</h4>
+                <ul>
+                    <li><a href="https://github.com/zamansheikh">GitHub</a></li>
+                    <li><a href="https://zamansheikh.com">Website</a></li>
+                    <li><a href="https://github.com/zamansheikh/plotcalc">Project Repo</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Organization</h4>
+                <ul>
+                    <li><a href="https://programmernexus.com">Programmer Nexus</a></li>
+                    <li><a href="mailto:zaman6545@gmail.com">Contact Us</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 PlotCalc by Md. Shamsuzzaman. All rights reserved. | <a href="privacy.html" style="color: #667eea;">Privacy Policy</a></p>
+        </div>
+    </footer>
+</body>
+</html>
