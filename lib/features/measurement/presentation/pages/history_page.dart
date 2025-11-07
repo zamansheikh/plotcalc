@@ -126,10 +126,12 @@ class _HistoryPageState extends State<HistoryPage> {
     Measurement measurement,
     AppLocalizations loc,
   ) {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     return Card(
       elevation: 2,
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      color: isDarkTheme ? Colors.grey[900] : Colors.white,
       child: InkWell(
         onTap: () => _showMeasurementDetails(context, measurement, loc),
         borderRadius: BorderRadius.circular(12),
@@ -144,17 +146,16 @@ class _HistoryPageState extends State<HistoryPage> {
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [
-                          AppTheme.primaryColor,
-                          AppTheme.primaryColor.withValues(alpha: 0.7),
-                        ],
+                        colors: isDarkTheme
+                            ? [AppTheme.primaryColor.withOpacity(0.7), AppTheme.primaryColor.withOpacity(0.5)]
+                            : [AppTheme.primaryColor, AppTheme.primaryColor.withOpacity(0.7)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                          color: AppTheme.primaryColor.withOpacity(0.18),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -173,25 +174,22 @@ class _HistoryPageState extends State<HistoryPage> {
                       children: [
                         Text(
                           measurement.shapeType.displayName,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: Colors.black87,
+                            color: isDarkTheme ? Colors.white : Colors.black87,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            Icon(Icons.access_time, 
-                              size: 14, 
-                              color: Colors.grey[600],
-                            ),
+                            Icon(Icons.access_time, size: 14, color: isDarkTheme ? Colors.grey[400] : Colors.grey[600]),
                             const SizedBox(width: 4),
                             Text(
                               _formatDate(measurement.createdAt),
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.grey[600],
+                                color: isDarkTheme ? Colors.grey[400] : Colors.grey[600],
                               ),
                             ),
                           ],
@@ -205,9 +203,9 @@ class _HistoryPageState extends State<HistoryPage> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.green.shade50,
+                  color: isDarkTheme ? Colors.green.shade900.withOpacity(0.35) : Colors.green.shade50,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.green.shade200, width: 1),
+                  border: Border.all(color: isDarkTheme ? Colors.green.shade800 : Colors.green.shade200, width: 1),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -219,17 +217,17 @@ class _HistoryPageState extends State<HistoryPage> {
                           'Total Area',
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.grey[700],
+                            color: isDarkTheme ? Colors.grey[300] : Colors.grey[700],
                             fontWeight: FontWeight.w500,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           '${measurement.area.toStringAsFixed(2)} m²',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: AppTheme.primaryColor,
+                            color: isDarkTheme ? Colors.lightGreen.shade300 : AppTheme.primaryColor,
                           ),
                         ),
                       ],
@@ -240,7 +238,7 @@ class _HistoryPageState extends State<HistoryPage> {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                        color: isDarkTheme ? AppTheme.primaryColor.withOpacity(0.18) : AppTheme.primaryColor.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
@@ -248,15 +246,15 @@ class _HistoryPageState extends State<HistoryPage> {
                           Icon(
                             Icons.place,
                             size: 16,
-                            color: AppTheme.primaryColor,
+                            color: isDarkTheme ? Colors.lightGreen.shade300 : AppTheme.primaryColor,
                           ),
                           const SizedBox(width: 4),
                           Text(
                             '${measurement.points.length} points',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
-                              color: AppTheme.primaryColor,
+                              color: isDarkTheme ? Colors.lightGreen.shade300 : AppTheme.primaryColor,
                             ),
                           ),
                         ],
