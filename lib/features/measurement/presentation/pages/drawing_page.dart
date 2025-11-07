@@ -561,56 +561,59 @@ class _DrawingPageState extends State<DrawingPage> {
   }
 
   void _showDiagonalInput() {
-    final loc = AppLocalizations.of(context);
-
     // Formula: For N-sided polygon, need (N-3) diagonals to triangulate
     int requiredDiagonals = _points.length - 3;
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Diagonal Measurements (Required: $requiredDiagonals)'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'For a ${_points.length}-sided polygon, measure $requiredDiagonals diagonal(s) to calculate exact area:',
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-              const SizedBox(height: 16),
-              // Generate diagonal input fields
-              ..._generateDiagonalInputs(),
-            ],
+      builder: (context) {
+        final loc = AppLocalizations.of(context);
+        return AlertDialog(
+          title: Text(
+            '${loc.diagonalMeasurementsTitle} (${loc.diagonalMeasurementsRequired}: $requiredDiagonals)',
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(loc.cancel),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (_diagonalMeasurements.length >= requiredDiagonals) {
-                Navigator.pop(context);
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      'Please enter all $requiredDiagonals diagonals. You have entered ${_diagonalMeasurements.length}.',
-                    ),
-                    backgroundColor: Colors.orange,
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'For a ${_points.length}-sided polygon, measure $requiredDiagonals diagonal(s) to calculate exact area:',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontStyle: FontStyle.italic,
                   ),
-                );
-              }
-            },
-            child: Text(loc.done),
+                ),
+                const SizedBox(height: 16),
+                // Generate diagonal input fields
+                ..._generateDiagonalInputs(),
+              ],
+            ),
           ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(loc.cancel),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (_diagonalMeasurements.length >= requiredDiagonals) {
+                  Navigator.pop(context);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Please enter all $requiredDiagonals diagonals. You have entered ${_diagonalMeasurements.length}.',
+                      ),
+                      backgroundColor: Colors.orange,
+                    ),
+                  );
+                }
+              },
+              child: Text(loc.done),
+            ),
+          ],
+        );
+      },
     );
   }
 

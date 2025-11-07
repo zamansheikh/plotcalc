@@ -133,6 +133,26 @@ class AppLocalizations {
   String get language => isEnglish ? 'Language' : 'ভাষা';
   String get english => isEnglish ? 'English' : 'ইংরেজি';
   String get bengali => isEnglish ? 'Bengali' : 'বাংলা';
+  
+  // Measurement Unit
+  String get measurementUnit => isEnglish ? 'Measurement Unit' : 'পরিমাপ ইউনিট';
+  String get metersTitle => isEnglish ? 'Meters (m)' : 'মিটার (মি)';
+  String get feetTitle => isEnglish ? 'Feet (ft)' : 'ফুট (ফি)';
+  String get useMetersDescription => 
+      isEnglish ? 'Use meters for all measurements' : 'সমস্ত পরিমাপের জন্য মিটার ব্যবহার করুন';
+  String get useFeetDescription => 
+      isEnglish ? 'Use feet for all measurements' : 'সমস্ত পরিমাপের জন্য ফুট ব্যবহার করুন';
+  String get languageChangedTo => 
+      isEnglish ? 'Language changed to' : 'ভাষা পরিবর্তিত হয়েছে';
+  String get measurementUnitChanged => 
+      isEnglish ? 'Measurement unit changed to' : 'পরিমাপ ইউনিট পরিবর্তিত হয়েছে';
+  
+  // Additional Dialog & Button Texts
+  String get viewShape => isEnglish ? 'View Shape' : 'আকৃতি দেখুন';
+  String get diagonalMeasurementsTitle => 
+      isEnglish ? 'Diagonal Measurements' : 'কর্ণ পরিমাপ';
+  String get diagonalMeasurementsRequired => 
+      isEnglish ? 'Required' : 'প্রয়োজনীয়';
 }
 
 class _AppLocalizationsDelegate

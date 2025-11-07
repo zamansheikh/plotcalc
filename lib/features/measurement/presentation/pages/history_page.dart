@@ -441,7 +441,7 @@ class _HistoryPageState extends State<HistoryPage> {
               _viewShape(context, measurement);
             },
             icon: const Icon(Icons.visibility),
-            label: const Text('View Shape'),
+            label: Text(loc.viewShape),
             style: OutlinedButton.styleFrom(
               foregroundColor: AppTheme.primaryColor,
               side: const BorderSide(color: AppTheme.primaryColor),

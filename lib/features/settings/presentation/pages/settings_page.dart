@@ -46,21 +46,21 @@ class _SettingsPageState extends State<SettingsPage> {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Text(
-              'Measurement Unit',
+              localizations.measurementUnit,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
-          const _MeasurementUnitOption(
+          _MeasurementUnitOption(
             unit: InputUnit.meters,
-            title: 'Meters (m)',
-            description: 'Use meters for all measurements',
+            title: localizations.metersTitle,
+            description: localizations.useMetersDescription,
           ),
-          const _MeasurementUnitOption(
+          _MeasurementUnitOption(
             unit: InputUnit.feet,
-            title: 'Feet (ft)',
-            description: 'Use feet for all measurements',
+            title: localizations.feetTitle,
+            description: localizations.useFeetDescription,
           ),
         ],
       ),
@@ -76,6 +76,8 @@ class _LanguageOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
+    
     return BlocBuilder<LanguageBloc, LanguageState>(
       builder: (context, state) {
         final isSelected = state.locale.languageCode == languageCode;
@@ -90,7 +92,9 @@ class _LanguageOption extends StatelessWidget {
               ChangeLanguageEvent(Locale(languageCode)),
             );
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Language changed to $language')),
+              SnackBar(
+                content: Text('${localizations.languageChangedTo} $language'),
+              ),
             );
           },
         );
@@ -112,6 +116,8 @@ class _MeasurementUnitOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
+    
     return BlocBuilder<MeasurementUnitBloc, MeasurementUnitState>(
       builder: (context, state) {
         final isSelected = state.unit == unit;
@@ -127,7 +133,11 @@ class _MeasurementUnitOption extends StatelessWidget {
               ChangeMeasurementUnitEvent(unit),
             );
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Measurement unit changed to ${unit.displayName}')),
+              SnackBar(
+                content: Text(
+                  '${localizations.measurementUnitChanged} ${unit.displayName}',
+                ),
+              ),
             );
           },
         );
