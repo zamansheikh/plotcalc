@@ -1,20 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:plotcalc/core/localization/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
-
-class LandUnitDef {
-  final String id;
-  final String name;
-  final double sqftFactor;
-  bool isEnabled;
-
-  LandUnitDef({
-    required this.id,
-    required this.name,
-    required this.sqftFactor,
-    this.isEnabled = true,
-  });
-}
+import '../../../../core/utils/land_area_breakdown.dart';
+import '../widgets/land_area_breakdown_widget.dart';
 
 class LandCalculatorPage extends StatefulWidget {
   const LandCalculatorPage({super.key});
@@ -42,23 +30,7 @@ class _LandCalculatorPageState extends State<LandCalculatorPage> {
 
   void _resetUnits() {
     setState(() {
-      _units = [
-        LandUnitDef(
-          id: 'bighaMymensingh',
-          name: 'Bigha (Mymensingh)',
-          sqftFactor: 56628.0,
-        ),
-        LandUnitDef(id: 'acre', name: 'Acre', sqftFactor: 43560.0),
-        LandUnitDef(id: 'bigha', name: 'Bigha (Standard)', sqftFactor: 14520.0),
-        LandUnitDef(
-          id: 'kathaMymensingh',
-          name: 'Katha (Mymensingh)',
-          sqftFactor: 2831.4,
-        ),
-        LandUnitDef(id: 'katha', name: 'Katha (Standard)', sqftFactor: 721.46),
-        LandUnitDef(id: 'shatak', name: 'Shatak', sqftFactor: 435.6),
-        LandUnitDef(id: 'chotak', name: 'Chotak', sqftFactor: 45.09),
-      ];
+      _units = LandAreaCalculator.getDefaultUnits();
       _calculate();
     });
   }
@@ -112,49 +84,12 @@ class _LandCalculatorPageState extends State<LandCalculatorPage> {
         break;
     }
 
-    List<String> results = [];
-    double currentArea = totalSqFt;
-    LandUnitDef? lastUsedUnit;
-    int lastUsedUnitCount = 0;
-
-    // Calculate based on the current order of units
-    for (var unit in _units) {
-      if (unit.isEnabled && currentArea >= unit.sqftFactor) {
-        // Avoid tiny floating point errors by using a small epsilon if needed,
-        // but floor() usually handles it.
-        int count = (currentArea / unit.sqftFactor).floor();
-        if (count > 0) {
-          results.add('$count ${unit.name}');
-          currentArea -= count * unit.sqftFactor;
-          lastUsedUnit = unit;
-          lastUsedUnitCount = count;
-        }
-      }
-    }
-
-    // Calculate decimal version for the last unit
-    String? decimalStr;
-    if (lastUsedUnit != null && currentArea > 0.01) {
-      double decimalPart = currentArea / lastUsedUnit.sqftFactor;
-      double totalDecimal = lastUsedUnitCount + decimalPart;
-      decimalStr = '${totalDecimal.toStringAsFixed(2)} ${lastUsedUnit.name}';
-    } else if (results.isEmpty && currentArea > 0.01) {
-      // If no units were large enough, try to show in the smallest enabled unit
-      // or just show sq ft.
-      // Let's find the smallest enabled unit
-      try {
-        final smallestUnit = _units.lastWhere((u) => u.isEnabled);
-        double val = totalSqFt / smallestUnit.sqftFactor;
-        decimalStr = '${val.toStringAsFixed(2)} ${smallestUnit.name}';
-      } catch (e) {
-        // No units enabled
-      }
-    }
+    final result = LandAreaCalculator.calculate(totalSqFt, _units);
 
     setState(() {
-      _breakdown = results;
-      _remainderSqFt = currentArea;
-      _lastUnitDecimal = decimalStr;
+      _breakdown = result.breakdown;
+      _remainderSqFt = result.remainderSqFt;
+      _lastUnitDecimal = result.lastUnitDecimal;
     });
   }
 
@@ -329,120 +264,12 @@ class _LandCalculatorPageState extends State<LandCalculatorPage> {
                   if (_breakdown.isNotEmpty || _remainderSqFt > 0)
                     Container(
                       margin: const EdgeInsets.only(bottom: 24),
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: isDarkTheme
-                              ? [Colors.green.shade900, Colors.teal.shade900]
-                              : [Colors.green.shade50, Colors.teal.shade50],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+                      child: LandAreaBreakdownWidget(
+                        result: LandAreaResult(
+                          breakdown: _breakdown,
+                          remainderSqFt: _remainderSqFt,
+                          lastUnitDecimal: _lastUnitDecimal,
                         ),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: isDarkTheme
-                              ? Colors.green.shade800
-                              : Colors.green.shade100,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.green.withOpacity(0.1),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        children: [
-                          Text(
-                            'Calculation Result',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: isDarkTheme
-                                  ? Colors.green.shade100
-                                  : Colors.green.shade800,
-                              letterSpacing: 1,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          if (_breakdown.isNotEmpty)
-                            Wrap(
-                              alignment: WrapAlignment.center,
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: _breakdown.map((part) {
-                                return Chip(
-                                  label: Text(
-                                    part,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: isDarkTheme
-                                          ? Colors.white
-                                          : Colors.green.shade900,
-                                    ),
-                                  ),
-                                  backgroundColor: isDarkTheme
-                                      ? Colors.green.shade800
-                                      : Colors.white,
-                                  elevation: 0,
-                                  side: BorderSide.none,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                );
-                              }).toList(),
-                            ),
-                          if (_remainderSqFt > 0.01) ...[
-                            const SizedBox(height: 16),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: isDarkTheme
-                                    ? Colors.black26
-                                    : Colors.white54,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Text(
-                                '+ ${_remainderSqFt.toStringAsFixed(2)} sq.ft remainder',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                  color: isDarkTheme
-                                      ? Colors.grey.shade300
-                                      : Colors.grey.shade700,
-                                ),
-                              ),
-                            ),
-                          ],
-                          if (_lastUnitDecimal != null) ...[
-                            const SizedBox(height: 12),
-                            Text(
-                              'OR',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: isDarkTheme
-                                    ? Colors.green.shade200
-                                    : Colors.green.shade700,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '≈ $_lastUnitDecimal',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: isDarkTheme
-                                    ? Colors.white
-                                    : Colors.green.shade900,
-                              ),
-                            ),
-                          ],
-                        ],
                       ),
                     ),
 

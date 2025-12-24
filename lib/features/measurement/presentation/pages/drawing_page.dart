@@ -6,6 +6,8 @@ import 'package:plotcalc/core/localization/app_localizations.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/land_measurement_converter.dart';
+import '../../../../core/utils/land_area_breakdown.dart';
+import '../widgets/land_area_breakdown_widget.dart';
 import '../../../settings/presentation/bloc/measurement_unit_bloc.dart';
 import '../../domain/entities/measurement.dart';
 import '../bloc/measurement_bloc.dart';
@@ -968,8 +970,8 @@ class _DrawingPageState extends State<DrawingPage> {
       body: BlocConsumer<MeasurementBloc, MeasurementState>(
         listener: (context, state) {
           if (state is MeasurementCalculated) {
-            // Show result dialog instead of navigating
-            _showResultDialog(state.measurement);
+            // Show result bottom sheet instead of dialog
+            _showResultBottomSheet(state.measurement);
           } else if (state is MeasurementError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -1209,181 +1211,203 @@ class _DrawingPageState extends State<DrawingPage> {
     }
   }
 
-  void _showResultDialog(Measurement measurement) {
+  void _showResultBottomSheet(Measurement measurement) {
     final loc = AppLocalizations.of(context);
-    showDialog(
+    final totalSqFt = measurement.getAreaIn(MeasurementUnit.squareFeet);
+    final units = LandAreaCalculator.getDefaultUnits();
+    final breakdownResult = LandAreaCalculator.calculate(totalSqFt, units);
+
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            const Icon(Icons.check_circle, color: AppTheme.successColor),
-            const SizedBox(width: 8),
-            Text(loc.area),
-          ],
-        ),
-        content: SingleChildScrollView(
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        minChildSize: 0.4,
+        maxChildSize: 0.9,
+        expand: false,
+        builder: (context, scrollController) => SingleChildScrollView(
+          controller: scrollController,
+          padding: const EdgeInsets.all(20),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                'Shape: ${measurement.shapeType.displayName}',
-                style: const TextStyle(fontSize: 16),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Area in Standard Units:',
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              ...MeasurementUnit.values.map(
-                (unit) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('${unit.symbol}:'),
-                      Text(
-                        measurement.getAreaIn(unit).toStringAsFixed(2),
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ],
+              Row(
+                children: [
+                  const Icon(
+                    Icons.check_circle,
+                    color: AppTheme.successColor,
+                    size: 28,
                   ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('Bigha (Mym):'),
-                    Text(
-                      (measurement.area / 5260.91).toStringAsFixed(2),
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                  const SizedBox(width: 12),
+                  Text(
+                    loc.area,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
                     ),
-                  ],
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              // Detailed Breakdown
+              LandAreaBreakdownWidget(result: breakdownResult),
+
+              const SizedBox(height: 24),
+
+              // Standard Units
+              Text(
+                'Standard Units',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[700],
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('Katha (Mym):'),
-                    Text(
-                      (measurement.area / 263.046).toStringAsFixed(2),
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('Chotak:'),
-                    Text(
-                      (measurement.area / 4.189).toStringAsFixed(2),
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.green.shade50,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.green.shade200),
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  children: MeasurementUnit.values.map((unit) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            unit.symbol,
+                            style: const TextStyle(fontSize: 15),
+                          ),
+                          Text(
+                            measurement.getAreaIn(unit).toStringAsFixed(4),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              // Future Feature: Target Area Adjustment
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: AppTheme.primaryColor.withOpacity(0.3),
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  color: AppTheme.primaryColor.withOpacity(0.05),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Area in Land Units (Standard):',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green,
-                      ),
+                    Row(
+                      children: [
+                        Icon(Icons.aspect_ratio, color: AppTheme.primaryColor),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Target Area Adjustment',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.primaryColor,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      LandUnitConverter.fromSquareMeters(
-                        measurement.area,
-                      ).toString(),
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87,
-                      ),
+                      'Want to adjust this shape to exactly 1.00 Acre?',
+                      style: TextStyle(color: Colors.grey[700]),
                     ),
-                    Text(
-                      'Area in Land Units (Mymensingh):',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      LandUnitConverter.fromSquareMetersMymensingh(
-                        measurement.area,
-                      ).toString(),
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87,
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        onPressed: () {
+                          // TODO: Implement Target Area Adjustment
+                          // 1. Ask for target area (e.g., 1.0 Acre)
+                          // 2. Ask which sides to expand/move
+                          // 3. Calculate new vertices
+                          // 4. Visualize changes
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Feature coming soon!'),
+                            ),
+                          );
+                        },
+                        child: const Text('Expand/Shrink to Target Area'),
                       ),
                     ),
                   ],
                 ),
               ),
+
+              const SizedBox(height: 24),
+
+              // Actions
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      child: Text(loc.cancel),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        context.read<MeasurementBloc>().add(
+                          SaveMeasurementEvent(measurement),
+                        );
+                        Navigator.pop(context);
+                        context.pop(); // Go back to home
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(loc.measurementSaved),
+                            backgroundColor: AppTheme.successColor,
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.save),
+                      label: Text(loc.save),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primaryColor,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
             ],
           ),
         ),
-        actions: [
-          OutlinedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // context.pop(); // Go back to home
-            },
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppTheme.primaryColor,
-              side: const BorderSide(color: AppTheme.primaryColor),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            ),
-            child: Text(loc.cancel),
-          ),
-          ElevatedButton.icon(
-            onPressed: () {
-              context.read<MeasurementBloc>().add(
-                SaveMeasurementEvent(measurement),
-              );
-              Navigator.pop(context);
-              context.pop(); // Go back to home
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(loc.measurementSaved),
-                  backgroundColor: AppTheme.successColor,
-                ),
-              );
-            },
-            icon: const Icon(Icons.save),
-            label: Text(loc.save),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryColor,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            ),
-          ),
-        ],
       ),
     );
   }
