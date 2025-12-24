@@ -44,6 +44,34 @@ class _UnitConverterPageState extends State<UnitConverterPage> {
     },
   };
 
+  String _getLocalizedUnitName(BuildContext context, String unitId) {
+    final loc = AppLocalizations.of(context);
+    switch (unitId) {
+      case 'squareMeters':
+        return loc.metersTitle;
+      case 'squareFeet':
+        return loc.squareFeet;
+      case 'hectares':
+        return loc.hectares;
+      case 'acres':
+        return loc.acres;
+      case 'bigha':
+        return loc.bighaStandard;
+      case 'katha':
+        return loc.kathaStandard;
+      case 'shatak':
+        return loc.shatak;
+      case 'chotak':
+        return loc.chotak;
+      case 'bighaMymensingh':
+        return loc.bighaMymensingh;
+      case 'kathaMymensingh':
+        return loc.kathaMymensingh;
+      default:
+        return unitId;
+    }
+  }
+
   @override
   void dispose() {
     _inputController.dispose();
@@ -117,7 +145,7 @@ class _UnitConverterPageState extends State<UnitConverterPage> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Convert area units instantly',
+                      loc.convertInstantly,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: isDarkTheme
                             ? Colors.grey.shade200
@@ -166,7 +194,7 @@ class _UnitConverterPageState extends State<UnitConverterPage> {
               items: units.entries.map((e) {
                 return DropdownMenuItem(
                   value: e.key,
-                  child: Text(e.value['label']),
+                  child: Text(_getLocalizedUnitName(context, e.key)),
                 );
               }).toList(),
               onChanged: (value) {
@@ -216,7 +244,7 @@ class _UnitConverterPageState extends State<UnitConverterPage> {
               items: units.entries.map((e) {
                 return DropdownMenuItem(
                   value: e.key,
-                  child: Text(e.value['label']),
+                  child: Text(_getLocalizedUnitName(context, e.key)),
                 );
               }).toList(),
               onChanged: (value) {
@@ -279,7 +307,7 @@ class _UnitConverterPageState extends State<UnitConverterPage> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        units[_toUnit]!['label'],
+                        _getLocalizedUnitName(context, _toUnit),
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: isDarkTheme
                               ? Colors.grey.shade400

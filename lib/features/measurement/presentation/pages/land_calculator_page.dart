@@ -107,8 +107,36 @@ class _LandCalculatorPageState extends State<LandCalculatorPage> {
     });
   }
 
+  String _getLocalizedUnitName(BuildContext context, String unitId) {
+    final loc = AppLocalizations.of(context);
+    switch (unitId) {
+      case 'squareFeet':
+        return loc.squareFeet;
+      case 'squareMeters':
+        return loc.metersTitle; // Using full title for dropdown
+      case 'acres':
+      case 'acre':
+        return loc.acres;
+      case 'bigha':
+        return loc.bighaStandard;
+      case 'katha':
+        return loc.kathaStandard;
+      case 'shatak':
+        return loc.shatak;
+      case 'bighaMymensingh':
+        return loc.bighaMymensingh;
+      case 'kathaMymensingh':
+        return loc.kathaMymensingh;
+      case 'chotak':
+        return loc.chotak;
+      default:
+        return unitId;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = AppTheme.primaryColor;
     final backgroundColor = isDarkTheme
@@ -118,11 +146,11 @@ class _LandCalculatorPageState extends State<LandCalculatorPage> {
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-        title: const Text('Land Calculator'),
+        title: Text(loc.landCalculator),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            tooltip: 'Reset Units',
+            tooltip: loc.resetUnits,
             onPressed: _resetUnits,
           ),
         ],
@@ -149,7 +177,7 @@ class _LandCalculatorPageState extends State<LandCalculatorPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Total Area',
+                            loc.totalArea,
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
@@ -208,42 +236,42 @@ class _LandCalculatorPageState extends State<LandCalculatorPage> {
                                     icon: const Icon(
                                       Icons.keyboard_arrow_down_rounded,
                                     ),
-                                    items: const [
+                                    items: [
                                       DropdownMenuItem(
                                         value: 'squareFeet',
-                                        child: Text('Square Feet'),
+                                        child: Text(loc.squareFeet),
                                       ),
                                       DropdownMenuItem(
                                         value: 'squareMeters',
-                                        child: Text('Square Meters'),
+                                        child: Text(loc.metersTitle),
                                       ),
                                       DropdownMenuItem(
                                         value: 'acres',
-                                        child: Text('Acres'),
+                                        child: Text(loc.acres),
                                       ),
                                       DropdownMenuItem(
                                         value: 'bigha',
-                                        child: Text('Bigha (Std)'),
+                                        child: Text(loc.bighaStandard),
                                       ),
                                       DropdownMenuItem(
                                         value: 'katha',
-                                        child: Text('Katha (Std)'),
+                                        child: Text(loc.kathaStandard),
                                       ),
                                       DropdownMenuItem(
                                         value: 'shatak',
-                                        child: Text('Shatak'),
+                                        child: Text(loc.shatak),
                                       ),
                                       DropdownMenuItem(
                                         value: 'bighaMymensingh',
-                                        child: Text('Bigha (Mym)'),
+                                        child: Text(loc.bighaMymensingh),
                                       ),
                                       DropdownMenuItem(
                                         value: 'kathaMymensingh',
-                                        child: Text('Katha (Mym)'),
+                                        child: Text(loc.kathaMymensingh),
                                       ),
                                       DropdownMenuItem(
                                         value: 'chotak',
-                                        child: Text('Chotak'),
+                                        child: Text(loc.chotak),
                                       ),
                                     ],
                                     onChanged: (value) {
@@ -284,9 +312,9 @@ class _LandCalculatorPageState extends State<LandCalculatorPage> {
                       children: [
                         Icon(Icons.tune, size: 20, color: primaryColor),
                         const SizedBox(width: 8),
-                        const Text(
-                          'Unit Configuration',
-                          style: TextStyle(
+                        Text(
+                          loc.unitConfiguration,
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
@@ -296,7 +324,7 @@ class _LandCalculatorPageState extends State<LandCalculatorPage> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Drag to reorder priority. Uncheck to skip unit.',
+                    loc.dragToReorder,
                     style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
                   ),
                   const SizedBox(height: 16),
@@ -344,13 +372,13 @@ class _LandCalculatorPageState extends State<LandCalculatorPage> {
                               vertical: 4,
                             ),
                             title: Text(
-                              unit.name,
+                              _getLocalizedUnitName(context, unit.id),
                               style: const TextStyle(
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                             subtitle: Text(
-                              '1 ${unit.name} ≈ ${unit.sqftFactor.toStringAsFixed(1)} sq.ft',
+                              '1 ${_getLocalizedUnitName(context, unit.id)} ≈ ${unit.sqftFactor.toStringAsFixed(1)} sq.ft',
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Colors.grey.shade500,

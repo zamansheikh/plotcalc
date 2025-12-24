@@ -82,7 +82,7 @@ class HomePage extends StatelessWidget {
               ElevatedButton.icon(
                 onPressed: () => context.push('/land-calculator'),
                 icon: const Icon(Icons.landscape, size: 28),
-                label: const Text('Land Calculator'),
+                label: Text(loc.landCalculator),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 20),
                   backgroundColor: Colors.brown,

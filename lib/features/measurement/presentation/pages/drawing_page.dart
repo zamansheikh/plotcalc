@@ -174,9 +174,10 @@ class _DrawingPageState extends State<DrawingPage> {
 
       _calculateArea();
 
+      final loc = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Circle resized successfully.'),
+        SnackBar(
+          content: Text(loc.circleResized),
           backgroundColor: Colors.green,
         ),
       );
@@ -1660,15 +1661,15 @@ class _DrawingPageState extends State<DrawingPage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
-                                  'Resize Mode',
-                                  style: TextStyle(
+                                Text(
+                                  loc.resizeMode,
+                                  style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: Colors.deepOrange,
                                   ),
                                 ),
                                 Text(
-                                  'Select points to move. Unselected points will stay fixed.',
+                                  loc.resizeInstruction,
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: Colors.orange.shade900,
@@ -1685,12 +1686,12 @@ class _DrawingPageState extends State<DrawingPage> {
                         children: [
                           TextButton(
                             onPressed: _cancelResize,
-                            child: const Text('Cancel'),
+                            child: Text(loc.cancel),
                           ),
                           const SizedBox(width: 8),
                           ElevatedButton(
                             onPressed: _confirmResize,
-                            child: const Text('Apply'),
+                            child: Text(loc.apply),
                           ),
                         ],
                       ),
@@ -1968,14 +1969,14 @@ class _DrawingPageState extends State<DrawingPage> {
         if (_isShapeComplete) {
           return '${loc.triangle} ${loc.complete}! ${loc.calculate}';
         }
-        return 'Tap to add 3 points for ${loc.triangle}';
+        return '${loc.tapToAdd3Points} ${loc.triangle}';
       case ShapeType.polygon:
         if (_isShapeComplete) {
           return '${loc.polygon} ${loc.complete}! ${loc.calculate}';
         } else if (_points.length >= 3) {
-          return 'Tap "${loc.complete}" to close the ${loc.polygon}, or keep adding points';
+          return loc.tapCompleteToClose;
         }
-        return 'Tap to add points (minimum 3)';
+        return loc.tapToAddPointsMin3;
     }
   }
 

@@ -133,7 +133,7 @@ class _CalculatorPageState extends State<CalculatorPage> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Convert between different area units',
+                      loc.convertBetweenUnits,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: isDarkTheme
                             ? Colors.grey.shade200
@@ -158,14 +158,17 @@ class _CalculatorPageState extends State<CalculatorPage> {
 
             TextField(
               controller: _areaController,
-              keyboardType: TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               decoration: InputDecoration(
-                hintText: 'Enter value...',
+                hintText: loc.enterValue,
                 prefixIcon: const Icon(Icons.input),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
+              onChanged: (_) => _calculateConversions(),
             ),
             const SizedBox(height: 16),
 
@@ -183,7 +186,7 @@ class _CalculatorPageState extends State<CalculatorPage> {
               items: [
                 DropdownMenuItem(
                   value: 'squareMeters',
-                  child: Text(loc.squareMeters),
+                  child: Text(loc.metersTitle),
                 ),
                 DropdownMenuItem(
                   value: 'squareFeet',
@@ -191,18 +194,24 @@ class _CalculatorPageState extends State<CalculatorPage> {
                 ),
                 DropdownMenuItem(value: 'hectares', child: Text(loc.hectares)),
                 DropdownMenuItem(value: 'acres', child: Text(loc.acres)),
-                DropdownMenuItem(value: 'bigha', child: Text(loc.bigha)),
-                DropdownMenuItem(value: 'katha', child: Text(loc.katha)),
+                DropdownMenuItem(
+                  value: 'bigha',
+                  child: Text(loc.bighaStandard),
+                ),
+                DropdownMenuItem(
+                  value: 'katha',
+                  child: Text(loc.kathaStandard),
+                ),
                 DropdownMenuItem(value: 'shatak', child: Text(loc.shatak)),
                 DropdownMenuItem(
                   value: 'bighaMymensingh',
-                  child: Text('Bigha (Mymensingh)'),
+                  child: Text(loc.bighaMymensingh),
                 ),
                 DropdownMenuItem(
                   value: 'kathaMymensingh',
-                  child: Text('Katha (Mymensingh)'),
+                  child: Text(loc.kathaMymensingh),
                 ),
-                DropdownMenuItem(value: 'chotak', child: Text('Chotak')),
+                DropdownMenuItem(value: 'chotak', child: Text(loc.chotak)),
               ],
               onChanged: (value) {
                 setState(() => _selectedUnit = value!);

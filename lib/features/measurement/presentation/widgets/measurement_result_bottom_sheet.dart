@@ -98,6 +98,7 @@ class _MeasurementResultBottomSheetState
   }
 
   void _showResizeDialog() {
+    final loc = AppLocalizations.of(context);
     final units = LandAreaCalculator.getDefaultUnits();
     final controllers = <String, TextEditingController>{};
 
@@ -114,7 +115,7 @@ class _MeasurementResultBottomSheetState
       builder: (context) => StatefulBuilder(
         builder: (context, setState) {
           return AlertDialog(
-            title: const Text('Resize Area'),
+            title: Text(loc.resizeArea),
             content: SizedBox(
               width: double.maxFinite,
               child: SingleChildScrollView(
@@ -122,9 +123,9 @@ class _MeasurementResultBottomSheetState
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Enter target area (combine multiple units if needed):',
-                      style: TextStyle(fontSize: 13, color: Colors.grey),
+                    Text(
+                      loc.enterTargetArea,
+                      style: const TextStyle(fontSize: 13, color: Colors.grey),
                     ),
                     const SizedBox(height: 16),
                     ...units.map((unit) {
@@ -170,7 +171,7 @@ class _MeasurementResultBottomSheetState
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
+                child: Text(loc.cancel),
               ),
               ElevatedButton(
                 onPressed: () {
@@ -204,7 +205,7 @@ class _MeasurementResultBottomSheetState
                     }
                   }
                 },
-                child: const Text('Resize'),
+                child: Text(loc.resize),
               ),
             ],
           );
@@ -285,7 +286,7 @@ class _MeasurementResultBottomSheetState
                     Icon(Icons.tune, size: 18, color: primaryColor),
                     const SizedBox(width: 8),
                     Text(
-                      'Unit Configuration',
+                      loc.unitConfiguration,
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         color: primaryColor,
@@ -307,7 +308,7 @@ class _MeasurementResultBottomSheetState
             if (_showConfiguration) ...[
               const SizedBox(height: 8),
               Text(
-                'Drag to reorder. Uncheck to hide.',
+                loc.dragToReorder,
                 style: TextStyle(fontSize: 12, color: Colors.grey[600]),
               ),
               const SizedBox(height: 8),
@@ -381,7 +382,7 @@ class _MeasurementResultBottomSheetState
                         Icon(Icons.aspect_ratio, color: AppTheme.primaryColor),
                         const SizedBox(width: 8),
                         Text(
-                          'Target Area Adjustment',
+                          loc.targetAreaAdjustment,
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: AppTheme.primaryColor,
@@ -392,7 +393,7 @@ class _MeasurementResultBottomSheetState
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Adjust shape to a specific area (e.g., 1 Acre).',
+                      loc.adjustShapeDescription,
                       style: TextStyle(color: Colors.grey[700], fontSize: 13),
                     ),
                     const SizedBox(height: 12),
@@ -403,7 +404,7 @@ class _MeasurementResultBottomSheetState
                         style: OutlinedButton.styleFrom(
                           backgroundColor: Colors.white,
                         ),
-                        child: const Text('Expand/Shrink to Target Area'),
+                        child: Text(loc.expandShrinkToTarget),
                       ),
                     ),
                   ],

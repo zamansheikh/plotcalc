@@ -96,6 +96,34 @@ class AppLocalizations {
   String get lessThan1Shotok =>
       isEnglish ? 'Less than 1 shotok' : 'শতকের চেয়ে কম';
 
+  // Additional Land Units
+  String get bighaMymensingh =>
+      isEnglish ? 'Bigha (Mymensingh)' : 'বিঘা (ময়মনসিংহ)';
+  String get kathaMymensingh =>
+      isEnglish ? 'Katha (Mymensingh)' : 'কাঠা (ময়মনসিংহ)';
+  String get bighaStandard =>
+      isEnglish ? 'Bigha (Standard)' : 'বিঘা (স্ট্যান্ডার্ড)';
+  String get kathaStandard =>
+      isEnglish ? 'Katha (Standard)' : 'কাঠা (স্ট্যান্ডার্ড)';
+  String get chotak => isEnglish ? 'Chotak' : 'ছটাক';
+  String get gonda => isEnglish ? 'Gonda' : 'গণ্ডা';
+  String get kora => isEnglish ? 'Kora' : 'কড়া';
+  String get kranti => isEnglish ? 'Kranti' : 'ক্রান্তি';
+  String get til => isEnglish ? 'Til' : 'তিল';
+
+  // Land Calculator Page
+  String get landCalculator =>
+      isEnglish ? 'Land Calculator' : 'ভূমি ক্যালকুলেটর';
+  String get resetUnits => isEnglish ? 'Reset Units' : 'ইউনিট রিসেট করুন';
+  String get totalArea => isEnglish ? 'Total Area' : 'মোট এলাকা';
+  String get enterValue => isEnglish ? 'Enter value...' : 'মান লিখুন...';
+  String get convertBetweenUnits => isEnglish
+      ? 'Convert between different area units'
+      : 'বিভিন্ন এলাকা ইউনিটের মধ্যে রূপান্তর করুন';
+  String get convertInstantly => isEnglish
+      ? 'Convert area units instantly'
+      : 'তাত্ক্ষণিকভাবে এলাকা ইউনিট রূপান্তর করুন';
+
   // Drawing Page
   String get editSideMeasurements =>
       isEnglish ? 'Edit Side Measurements' : 'পাশের পরিমাপ সম্পাদনা করুন';
@@ -133,31 +161,35 @@ class AppLocalizations {
   String get language => isEnglish ? 'Language' : 'ভাষা';
   String get english => isEnglish ? 'English' : 'ইংরেজি';
   String get bengali => isEnglish ? 'Bengali' : 'বাংলা';
-  
+
   // Measurement Unit
   String get measurementUnit => isEnglish ? 'Measurement Unit' : 'পরিমাপ ইউনিট';
   String get metersTitle => isEnglish ? 'Meters (m)' : 'মিটার (মি)';
   String get feetTitle => isEnglish ? 'Feet (ft)' : 'ফুট (ফি)';
-  String get useMetersDescription => 
-      isEnglish ? 'Use meters for all measurements' : 'সমস্ত পরিমাপের জন্য মিটার ব্যবহার করুন';
-  String get useFeetDescription => 
-      isEnglish ? 'Use feet for all measurements' : 'সমস্ত পরিমাপের জন্য ফুট ব্যবহার করুন';
-  String get languageChangedTo => 
+  String get useMetersDescription => isEnglish
+      ? 'Use meters for all measurements'
+      : 'সমস্ত পরিমাপের জন্য মিটার ব্যবহার করুন';
+  String get useFeetDescription => isEnglish
+      ? 'Use feet for all measurements'
+      : 'সমস্ত পরিমাপের জন্য ফুট ব্যবহার করুন';
+  String get languageChangedTo =>
       isEnglish ? 'Language changed to' : 'ভাষা পরিবর্তিত হয়েছে';
-  String get measurementUnitChanged => 
-      isEnglish ? 'Measurement unit changed to' : 'পরিমাপ ইউনিট পরিবর্তিত হয়েছে';
-  
+  String get measurementUnitChanged => isEnglish
+      ? 'Measurement unit changed to'
+      : 'পরিমাপ ইউনিট পরিবর্তিত হয়েছে';
+
   // Additional Dialog & Button Texts
   String get viewShape => isEnglish ? 'View Shape' : 'আকৃতি দেখুন';
-  String get diagonalMeasurementsTitle => 
+  String get diagonalMeasurementsTitle =>
       isEnglish ? 'Diagonal Measurements' : 'কর্ণ পরিমাপ';
-  String get diagonalMeasurementsRequired => 
+  String get diagonalMeasurementsRequired =>
       isEnglish ? 'Required' : 'প্রয়োজনীয়';
-  
+
   // Calculator & Converter
   String get calculator => isEnglish ? 'Calculator' : 'ক্যালকুলেটর';
   String get unitConverter => isEnglish ? 'Unit Converter' : 'ইউনিট কনভার্টার';
-  String get enterAreaValue => isEnglish ? 'Enter area value' : 'এলাকার মান লিখুন';
+  String get enterAreaValue =>
+      isEnglish ? 'Enter area value' : 'এলাকার মান লিখুন';
   String get convertFrom => isEnglish ? 'Convert From' : 'থেকে রূপান্তর করুন';
   String get convertTo => isEnglish ? 'Convert To' : 'এতে রূপান্তর করুন';
   String get result => isEnglish ? 'Result' : 'ফলাফল';
@@ -165,6 +197,47 @@ class AppLocalizations {
   String get squareFeet => isEnglish ? 'Square Feet (ft²)' : 'বর্গফুট (ফি²)';
   String get hectares => isEnglish ? 'Hectares (ha)' : 'হেক্টর (হে)';
   String get acres => isEnglish ? 'Acres (ac)' : 'একর (ac)';
+
+  // Resize Feature
+  String get resizeArea => isEnglish ? 'Resize Area' : 'এলাকা পরিবর্তন করুন';
+  String get enterTargetArea => isEnglish
+      ? 'Enter target area (combine multiple units if needed):'
+      : 'লক্ষ্য এলাকা লিখুন (প্রয়োজনে একাধিক ইউনিট একত্রিত করুন):';
+  String get resize => isEnglish ? 'Resize' : 'পরিবর্তন করুন';
+  String get targetAreaAdjustment =>
+      isEnglish ? 'Target Area Adjustment' : 'লক্ষ্য এলাকা সমন্বয়';
+  String get adjustShapeDescription => isEnglish
+      ? 'Adjust shape to a specific area (e.g., 1 Acre).'
+      : 'একটি নির্দিষ্ট এলাকায় আকৃতি সমন্বয় করুন (যেমন, ১ একর)।';
+  String get expandShrinkToTarget => isEnglish
+      ? 'Expand/Shrink to Target Area'
+      : 'লক্ষ্য এলাকায় প্রসারিত/সংকুচিত করুন';
+  String get resizeMode => isEnglish ? 'Resize Mode' : 'পরিবর্তন মোড';
+  String get resizeInstruction => isEnglish
+      ? 'Select points to move. Unselected points will stay fixed.'
+      : 'সরানোর জন্য পয়েন্ট নির্বাচন করুন। অনির্বাচিত পয়েন্ট স্থির থাকবে।';
+  String get apply => isEnglish ? 'Apply' : 'প্রয়োগ করুন';
+  String get circleResized => isEnglish
+      ? 'Circle resized successfully.'
+      : 'বৃত্ত সফলভাবে পরিবর্তন করা হয়েছে।';
+
+  // Unit Configuration
+  String get unitConfiguration =>
+      isEnglish ? 'Unit Configuration' : 'ইউনিট কনফিগারেশন';
+  String get dragToReorder => isEnglish
+      ? 'Drag to reorder. Uncheck to hide.'
+      : 'পুনরায় সাজাতে টেনে আনুন। লুকাতে আনচেক করুন।';
+
+  // Instructions
+  String get tapToAdd3Points => isEnglish
+      ? 'Tap to add 3 points for'
+      : 'এর জন্য ৩টি পয়েন্ট যোগ করতে ট্যাপ করুন';
+  String get tapCompleteToClose => isEnglish
+      ? 'Tap "Complete" to close the polygon, or keep adding points'
+      : '"সম্পূর্ণ করুন" ট্যাপ করে বহুভুজ বন্ধ করুন, অথবা পয়েন্ট যোগ করা চালিয়ে যান';
+  String get tapToAddPointsMin3 => isEnglish
+      ? 'Tap to add points (minimum 3)'
+      : 'পয়েন্ট যোগ করতে ট্যাপ করুন (কমপক্ষে ৩টি)';
 }
 
 class _AppLocalizationsDelegate
