@@ -638,6 +638,13 @@ class _DrawingPageState extends State<DrawingPage> {
         ...heightValues,
       };
 
+      // Populate side measurements for visualization
+      _sideMeasurements.clear();
+      _sideMeasurements[0] = widthInMeters;
+      _sideMeasurements[1] = heightInMeters;
+      _sideMeasurements[2] = widthInMeters;
+      _sideMeasurements[3] = heightInMeters;
+
       // Create 4 points for rectangle visualization
       if (_points.isEmpty) {
         setState(() {
@@ -1967,6 +1974,38 @@ class ShapePainter extends CustomPainter {
       canvas.drawCircle(center, fixedRadiusPixels, fillPaint);
       canvas.drawCircle(center, fixedRadiusPixels, paint);
       canvas.drawCircle(center, 6, pointPaint);
+
+      // Draw radius line and label
+      final radiusEnd = Offset(center.dx + fixedRadiusPixels, center.dy);
+      canvas.drawLine(center, radiusEnd, paint);
+
+      // Draw label
+      final midpoint = Offset(
+        (center.dx + radiusEnd.dx) / 2,
+        (center.dy + radiusEnd.dy) / 2,
+      );
+      final labelText = '${radius!.toStringAsFixed(1)}m';
+
+      final textPainter = TextPainter(
+        text: TextSpan(
+          text: labelText,
+          style: const TextStyle(
+            color: Colors.black,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            backgroundColor: Colors.white,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      );
+      textPainter.layout();
+      textPainter.paint(
+        canvas,
+        Offset(
+          midpoint.dx - textPainter.width / 2,
+          midpoint.dy - textPainter.height / 2,
+        ),
+      );
     } else if (shapeType == ShapeType.rectangle && points.length == 4) {
       // Draw rectangle using the 4 corner points
       final path = Path();
@@ -1982,6 +2021,19 @@ class ShapePainter extends CustomPainter {
       // Draw corner points
       for (int i = 0; i < points.length; i++) {
         _drawPoint(canvas, points[i], i, pointPaint);
+      }
+
+      // Draw side labels
+      for (var i = 0; i < points.length; i++) {
+        _drawSideLabel(
+          canvas,
+          Offset(points[i].x, points[i].y),
+          Offset(
+            points[(i + 1) % points.length].x,
+            points[(i + 1) % points.length].y,
+          ),
+          i,
+        );
       }
     } else if (points.length >= 2) {
       // Draw polygon/lines
