@@ -69,7 +69,8 @@ class LandUnitConverter {
   // ---- Mymensingh Constants (sq.ft) -------------------------------------
   // 1 Shatak = 435.60 sq.ft (Standard)
   static const double _sqftPerKathaMymensingh = 435.60 * 6.5; // 2831.4 sq.ft
-  static const double _sqftPerBighaMymensingh = _sqftPerKathaMymensingh * 20; // 56628.0 sq.ft
+  static const double _sqftPerBighaMymensingh =
+      _sqftPerKathaMymensingh * 20; // 56628.0 sq.ft
 
   // ------------------------------------------------------------------------
   static LandUnit fromSquareMeters(double sqm) {
@@ -146,6 +147,10 @@ class LandUnitConverter {
     final shataks = (sqft / _sqftPerShatak).floor();
     sqft -= shataks * _sqftPerShatak;
 
+    // 4. Chotak (Standard)
+    final chotaks = (sqft / _sqftPerChotak).floor();
+    sqft -= chotaks * _sqftPerChotak;
+
     // Remainder in sq.m
     final sqmRemainder = (sqft * _sqftToSqm);
     final roundedSqm = (sqmRemainder * 100).round() / 100.0;
@@ -155,7 +160,7 @@ class LandUnitConverter {
       bighas: bighas,
       kathas: kathas,
       shataks: shataks,
-      chotaks: 0, // Chotak isn't typically used in this specific system
+      chotaks: chotaks,
       squareMeters: roundedSqm,
     );
   }

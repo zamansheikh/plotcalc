@@ -46,7 +46,7 @@ class MyApp extends StatelessWidget {
             supportedLocales: [Locale('en'), Locale('bn')],
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
-            themeMode: ThemeMode.system,
+            themeMode: ThemeMode.light,
             routerConfig: AppRouter.router,
           );
         },

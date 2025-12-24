@@ -19,16 +19,16 @@ dependencies:
   equatable: ^2.0.7
   
   # Dependency Injection
-  get_it: ^8.3.0
-  injectable: ^2.5.2
+  get_it: ^9.2.0
+  injectable: ^2.7.1+4
   
   # Routing
-  go_router: ^17.0.0
+  go_router: ^17.0.1
   
   # Local Storage
   sqflite: ^2.4.2
   path: ^1.9.1
-  shared_preferences: ^2.5.3
+  shared_preferences: ^2.5.4
   
   # Functional Programming
   dartz: ^0.10.1
@@ -38,7 +38,7 @@ dependencies:
   json_annotation: ^4.9.0
   
   # UI/UX
-  flutter_svg: ^2.2.2
+  flutter_svg: ^2.2.3
   lottie: ^3.3.2
   
   # Utils
@@ -51,8 +51,8 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   
   # Code Generation
-  build_runner: ^2.10.1
-  injectable_generator: ^2.9.0
+  build_runner: ^2.10.4
+  injectable_generator: ^2.12.0
 
 # The following section is specific to Flutter packages.
 flutter:

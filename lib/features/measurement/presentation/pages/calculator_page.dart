@@ -25,9 +25,9 @@ class _CalculatorPageState extends State<CalculatorPage> {
     final input = double.tryParse(_areaController.text);
 
     if (input == null || input <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(loc.enterAreaValue)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(loc.enterAreaValue)));
       return;
     }
 
@@ -50,13 +50,13 @@ class _CalculatorPageState extends State<CalculatorPage> {
           areaInSqMeters = input * 4046.86;
           break;
         case 'bigha':
-          areaInSqMeters = input * 1337.8;
+          areaInSqMeters = input * 1348.95;
           break;
         case 'katha':
-          areaInSqMeters = input * 334.45;
+          areaInSqMeters = input * 67.026;
           break;
         case 'shatak':
-          areaInSqMeters = input * 100;
+          areaInSqMeters = input * 40.4686;
           break;
       }
 
@@ -66,9 +66,9 @@ class _CalculatorPageState extends State<CalculatorPage> {
         'squareFeet': areaInSqMeters / 0.092903,
         'hectares': areaInSqMeters / 10000,
         'acres': areaInSqMeters / 4046.86,
-        'bigha': areaInSqMeters / 1337.8,
-        'katha': areaInSqMeters / 334.45,
-        'shatak': areaInSqMeters / 100,
+        'bigha': areaInSqMeters / 1348.95,
+        'katha': areaInSqMeters / 67.026,
+        'shatak': areaInSqMeters / 40.4686,
       };
     });
   }
@@ -123,7 +123,9 @@ class _CalculatorPageState extends State<CalculatorPage> {
                     Text(
                       'Convert between different area units',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: isDarkTheme ? Colors.grey.shade200 : Colors.grey.shade700,
+                        color: isDarkTheme
+                            ? Colors.grey.shade200
+                            : Colors.grey.shade700,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -136,9 +138,9 @@ class _CalculatorPageState extends State<CalculatorPage> {
             // Input Section
             Text(
               loc.enterAreaValue,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
 
@@ -158,17 +160,23 @@ class _CalculatorPageState extends State<CalculatorPage> {
             // Unit Selection
             Text(
               loc.convertFrom,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
 
             DropdownButtonFormField<String>(
               value: _selectedUnit,
               items: [
-                DropdownMenuItem(value: 'squareMeters', child: Text(loc.squareMeters)),
-                DropdownMenuItem(value: 'squareFeet', child: Text(loc.squareFeet)),
+                DropdownMenuItem(
+                  value: 'squareMeters',
+                  child: Text(loc.squareMeters),
+                ),
+                DropdownMenuItem(
+                  value: 'squareFeet',
+                  child: Text(loc.squareFeet),
+                ),
                 DropdownMenuItem(value: 'hectares', child: Text(loc.hectares)),
                 DropdownMenuItem(value: 'acres', child: Text(loc.acres)),
                 DropdownMenuItem(value: 'bigha', child: Text(loc.bigha)),
@@ -179,8 +187,13 @@ class _CalculatorPageState extends State<CalculatorPage> {
                 setState(() => _selectedUnit = value!);
               },
               decoration: InputDecoration(
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
               ),
             ),
             const SizedBox(height: 24),
@@ -202,9 +215,9 @@ class _CalculatorPageState extends State<CalculatorPage> {
             if (_results.isNotEmpty) ...[
               Text(
                 loc.result,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
 
@@ -228,35 +241,15 @@ class _CalculatorPageState extends State<CalculatorPage> {
                       1,
                     ),
                     Divider(height: 1, color: Colors.grey.shade300),
-                    _buildResultTile(
-                      'Hectares (ha)',
-                      _results['hectares']!,
-                      2,
-                    ),
+                    _buildResultTile('Hectares (ha)', _results['hectares']!, 2),
                     Divider(height: 1, color: Colors.grey.shade300),
-                    _buildResultTile(
-                      'Acres (ac)',
-                      _results['acres']!,
-                      3,
-                    ),
+                    _buildResultTile('Acres (ac)', _results['acres']!, 3),
                     Divider(height: 1, color: Colors.grey.shade300),
-                    _buildResultTile(
-                      'Bigha',
-                      _results['bigha']!,
-                      4,
-                    ),
+                    _buildResultTile('Bigha', _results['bigha']!, 4),
                     Divider(height: 1, color: Colors.grey.shade300),
-                    _buildResultTile(
-                      'Katha',
-                      _results['katha']!,
-                      5,
-                    ),
+                    _buildResultTile('Katha', _results['katha']!, 5),
                     Divider(height: 1, color: Colors.grey.shade300),
-                    _buildResultTile(
-                      'Shatak',
-                      _results['shatak']!,
-                      6,
-                    ),
+                    _buildResultTile('Shatak', _results['shatak']!, 6),
                   ],
                 ),
               ),

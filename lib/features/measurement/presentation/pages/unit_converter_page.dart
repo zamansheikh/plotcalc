@@ -26,30 +26,21 @@ class _UnitConverterPageState extends State<UnitConverterPage> {
       'symbol': 'ft²',
       'factor': 0.092903,
     },
-    'hectares': {
-      'label': 'Hectares (ha)',
-      'symbol': 'ha',
-      'factor': 10000.0,
+    'hectares': {'label': 'Hectares (ha)', 'symbol': 'ha', 'factor': 10000.0},
+    'acres': {'label': 'Acres (ac)', 'symbol': 'ac', 'factor': 4046.86},
+    'bigha': {'label': 'Bigha', 'symbol': 'Bigha', 'factor': 1348.95},
+    'katha': {'label': 'Katha', 'symbol': 'Katha', 'factor': 67.026},
+    'shatak': {'label': 'Shatak', 'symbol': 'Shatak', 'factor': 40.4686},
+    'chotak': {'label': 'Chotak', 'symbol': 'Chotak', 'factor': 4.189},
+    'bighaMymensingh': {
+      'label': 'Bigha (Mymensingh)',
+      'symbol': 'Bigha (Mym)',
+      'factor': 5260.91,
     },
-    'acres': {
-      'label': 'Acres (ac)',
-      'symbol': 'ac',
-      'factor': 4046.86,
-    },
-    'bigha': {
-      'label': 'Bigha',
-      'symbol': 'Bigha',
-      'factor': 1337.8,
-    },
-    'katha': {
-      'label': 'Katha',
-      'symbol': 'Katha',
-      'factor': 334.45,
-    },
-    'shatak': {
-      'label': 'Shatak',
-      'symbol': 'Shatak',
-      'factor': 100.0,
+    'kathaMymensingh': {
+      'label': 'Katha (Mymensingh)',
+      'symbol': 'Katha (Mym)',
+      'factor': 263.046,
     },
   };
 
@@ -64,9 +55,9 @@ class _UnitConverterPageState extends State<UnitConverterPage> {
     final loc = AppLocalizations.of(context);
 
     if (input == null || input < 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(loc.enterAreaValue)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(loc.enterAreaValue)));
       return;
     }
 
@@ -128,7 +119,9 @@ class _UnitConverterPageState extends State<UnitConverterPage> {
                     Text(
                       'Convert area units instantly',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: isDarkTheme ? Colors.grey.shade200 : Colors.grey.shade700,
+                        color: isDarkTheme
+                            ? Colors.grey.shade200
+                            : Colors.grey.shade700,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -141,9 +134,9 @@ class _UnitConverterPageState extends State<UnitConverterPage> {
             // Input Value
             Text(
               loc.enterAreaValue,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             TextField(
@@ -153,7 +146,9 @@ class _UnitConverterPageState extends State<UnitConverterPage> {
               decoration: InputDecoration(
                 hintText: '0.00',
                 prefixIcon: const Icon(Icons.input),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
             ),
             const SizedBox(height: 24),
@@ -161,9 +156,9 @@ class _UnitConverterPageState extends State<UnitConverterPage> {
             // From Unit
             Text(
               loc.convertFrom,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
@@ -179,8 +174,13 @@ class _UnitConverterPageState extends State<UnitConverterPage> {
                 _convert();
               },
               decoration: InputDecoration(
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -206,9 +206,9 @@ class _UnitConverterPageState extends State<UnitConverterPage> {
             // To Unit
             Text(
               loc.convertTo,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
@@ -224,8 +224,13 @@ class _UnitConverterPageState extends State<UnitConverterPage> {
                 _convert();
               },
               decoration: InputDecoration(
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
               ),
             ),
             const SizedBox(height: 32),
@@ -254,27 +259,31 @@ class _UnitConverterPageState extends State<UnitConverterPage> {
                     children: [
                       Text(
                         loc.result,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: isDarkTheme
-                              ? Colors.grey.shade300
-                              : Colors.grey.shade600,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              color: isDarkTheme
+                                  ? Colors.grey.shade300
+                                  : Colors.grey.shade600,
+                            ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         _formatResult(_result!),
-                        style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: isDarkTheme
-                              ? Colors.lightGreen.shade300
-                              : AppTheme.primaryColor,
-                        ),
+                        style: Theme.of(context).textTheme.displaySmall
+                            ?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: isDarkTheme
+                                  ? Colors.lightGreen.shade300
+                                  : AppTheme.primaryColor,
+                            ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         units[_toUnit]!['label'],
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: isDarkTheme ? Colors.grey.shade400 : Colors.grey,
+                          color: isDarkTheme
+                              ? Colors.grey.shade400
+                              : Colors.grey,
                         ),
                       ),
                     ],
@@ -286,7 +295,9 @@ class _UnitConverterPageState extends State<UnitConverterPage> {
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: isDarkTheme ? Colors.grey.shade600 : Colors.grey.shade300,
+                    color: isDarkTheme
+                        ? Colors.grey.shade600
+                        : Colors.grey.shade300,
                   ),
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -294,7 +305,9 @@ class _UnitConverterPageState extends State<UnitConverterPage> {
                   'Enter a value to see the result',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: isDarkTheme ? Colors.grey.shade400 : Colors.grey.shade500,
+                    color: isDarkTheme
+                        ? Colors.grey.shade400
+                        : Colors.grey.shade500,
                   ),
                 ),
               ),
@@ -315,9 +328,9 @@ class _UnitConverterPageState extends State<UnitConverterPage> {
       children: [
         Text(
           'Quick Reference',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 12),
         Wrap(
