@@ -8,6 +8,7 @@ import '../../features/measurement/presentation/pages/unit_converter_page.dart';
 import '../../features/measurement/presentation/pages/land_calculator_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/measurement/domain/entities/measurement.dart';
+import '../constants/app_constants.dart';
 
 class AppRouter {
   static const String home = '/';
@@ -33,10 +34,26 @@ class AppRouter {
         path: drawing,
         name: 'drawing',
         pageBuilder: (context, state) {
-          final measurement = state.extra as Measurement?;
+          Measurement? measurement;
+          double? resizeTargetArea;
+          MeasurementUnit? resizeTargetUnit;
+
+          if (state.extra is Measurement) {
+            measurement = state.extra as Measurement;
+          } else if (state.extra is Map<String, dynamic>) {
+            final map = state.extra as Map<String, dynamic>;
+            measurement = map['measurement'] as Measurement?;
+            resizeTargetArea = map['resizeTargetArea'] as double?;
+            resizeTargetUnit = map['resizeTargetUnit'] as MeasurementUnit?;
+          }
+
           return MaterialPage(
             key: state.pageKey,
-            child: DrawingPage(measurement: measurement),
+            child: DrawingPage(
+              measurement: measurement,
+              resizeTargetArea: resizeTargetArea,
+              resizeTargetUnit: resizeTargetUnit,
+            ),
           );
         },
       ),

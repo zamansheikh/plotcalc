@@ -6,7 +6,7 @@ import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/land_measurement_converter.dart';
 import '../../../../core/utils/land_area_breakdown.dart';
-import '../widgets/land_area_breakdown_widget.dart';
+import '../widgets/measurement_result_bottom_sheet.dart';
 import '../../domain/entities/measurement.dart';
 import '../bloc/measurement_bloc.dart';
 
@@ -377,138 +377,26 @@ class _HistoryPageState extends State<HistoryPage> {
     Measurement measurement,
     AppLocalizations loc,
   ) {
-    final totalSqFt = measurement.getAreaIn(MeasurementUnit.squareFeet);
-    final units = LandAreaCalculator.getDefaultUnits();
-    final breakdownResult = LandAreaCalculator.calculate(totalSqFt, units);
-
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.6,
-        minChildSize: 0.4,
-        maxChildSize: 0.9,
-        expand: false,
-        builder: (context, scrollController) => SingleChildScrollView(
-          controller: scrollController,
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    _getShapeIcon(measurement.shapeType),
-                    color: AppTheme.primaryColor,
-                    size: 28,
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    measurement.shapeType.displayName,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '${loc.created}: ${_formatDate(measurement.createdAt)}',
-                style: TextStyle(color: Colors.grey[600]),
-              ),
-              const SizedBox(height: 20),
-
-              // Detailed Breakdown
-              LandAreaBreakdownWidget(result: breakdownResult),
-
-              const SizedBox(height: 24),
-
-              // Standard Units
-              Text(
-                'Standard Units',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[700],
-                ),
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  children: MeasurementUnit.values.map((unit) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            unit.symbol,
-                            style: const TextStyle(fontSize: 15),
-                          ),
-                          Text(
-                            measurement.getAreaIn(unit).toStringAsFixed(4),
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Actions
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        _viewShape(context, measurement);
-                      },
-                      icon: const Icon(Icons.visibility),
-                      label: Text(loc.viewShape),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primaryColor,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      child: Text(loc.close),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-            ],
-          ),
-        ),
+      builder: (context) => MeasurementResultBottomSheet(
+        measurement: measurement,
+        onViewShape: () => _viewShape(context, measurement),
+        onResizeRequest: (targetArea, unit) {
+          // Navigate to drawing page with resize request
+          context.push(
+            '/drawing',
+            extra: {
+              'measurement': measurement,
+              'resizeTargetArea': targetArea,
+              'resizeTargetUnit': unit,
+            },
+          );
+        },
       ),
     );
   }

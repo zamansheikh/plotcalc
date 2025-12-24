@@ -8,14 +8,22 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/land_measurement_converter.dart';
 import '../../../../core/utils/land_area_breakdown.dart';
 import '../widgets/land_area_breakdown_widget.dart';
+import '../widgets/measurement_result_bottom_sheet.dart';
 import '../../../settings/presentation/bloc/measurement_unit_bloc.dart';
 import '../../domain/entities/measurement.dart';
 import '../bloc/measurement_bloc.dart';
 
 class DrawingPage extends StatefulWidget {
   final Measurement? measurement; // Optional measurement to restore
+  final double? resizeTargetArea;
+  final MeasurementUnit? resizeTargetUnit;
 
-  const DrawingPage({super.key, this.measurement});
+  const DrawingPage({
+    super.key,
+    this.measurement,
+    this.resizeTargetArea,
+    this.resizeTargetUnit,
+  });
 
   @override
   State<DrawingPage> createState() => _DrawingPageState();
@@ -32,6 +40,10 @@ class _DrawingPageState extends State<DrawingPage> {
   final TextEditingController _widthController = TextEditingController();
   final TextEditingController _heightController = TextEditingController();
   final TextEditingController _radiusController = TextEditingController();
+  
+  // Zoom/Pan control
+  final TransformationController _transformationController = TransformationController();
+  Size _viewportSize = Size.zero;
 
   @override
   void initState() {
@@ -39,6 +51,17 @@ class _DrawingPageState extends State<DrawingPage> {
     // Load measurement data if provided
     if (widget.measurement != null) {
       _loadMeasurement(widget.measurement!);
+
+      // Apply resize if requested
+      if (widget.resizeTargetArea != null && widget.resizeTargetUnit != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _applyResize(widget.resizeTargetArea!, widget.resizeTargetUnit!);
+        });
+      } else {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _zoomToFit();
+        });
+      }
     }
   }
 
@@ -76,11 +99,156 @@ class _DrawingPageState extends State<DrawingPage> {
     });
   }
 
+  void _applyResize(double targetArea, MeasurementUnit unit) {
+    if (_points.isEmpty &&
+        _selectedShape != ShapeType.circle &&
+        _selectedShape != ShapeType.rectangle)
+      return;
+
+    // Convert target area to square meters (base unit)
+    double targetAreaSqM = targetArea;
+    switch (unit) {
+      case MeasurementUnit.squareFeet:
+        targetAreaSqM = targetArea / AppConstants.sqMeterToSqFeet;
+        break;
+      case MeasurementUnit.acres:
+        targetAreaSqM = targetArea / AppConstants.sqMeterToAcre;
+        break;
+      case MeasurementUnit.hectares:
+        targetAreaSqM = targetArea / AppConstants.sqMeterToHectare;
+        break;
+      case MeasurementUnit.squareMeters:
+        break;
+    }
+
+    // Calculate current area in square meters
+    double currentAreaSqM = 0;
+    if (widget.measurement != null) {
+      currentAreaSqM = widget.measurement!.area;
+    } else {
+      return;
+    }
+
+    if (currentAreaSqM <= 0) return;
+
+    final scaleFactor = math.sqrt(targetAreaSqM / currentAreaSqM);
+
+    setState(() {
+      if (_selectedShape == ShapeType.rectangle) {
+        final width = double.tryParse(_widthController.text) ?? 0;
+        final height = double.tryParse(_heightController.text) ?? 0;
+        _widthController.text = (width * scaleFactor).toStringAsFixed(2);
+        _heightController.text = (height * scaleFactor).toStringAsFixed(2);
+
+        // Also update points for rectangle if they exist
+        _scalePoints(scaleFactor);
+      } else if (_selectedShape == ShapeType.circle) {
+        final radius = double.tryParse(_radiusController.text) ?? 0;
+        _radiusController.text = (radius * scaleFactor).toStringAsFixed(2);
+      } else {
+        // Polygon or Triangle
+        _scalePoints(scaleFactor);
+
+        // Scale side measurements
+        final newSideMeasurements = <int, double>{};
+        _sideMeasurements.forEach((key, value) {
+          newSideMeasurements[key] = value * scaleFactor;
+        });
+        _sideMeasurements.clear();
+        _sideMeasurements.addAll(newSideMeasurements);
+
+        // Scale diagonal measurements
+        final newDiagonalMeasurements = <String, double>{};
+        _diagonalMeasurements.forEach((key, value) {
+          newDiagonalMeasurements[key] = value * scaleFactor;
+        });
+        _diagonalMeasurements.clear();
+        _diagonalMeasurements.addAll(newDiagonalMeasurements);
+      }
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Area resized to $targetArea ${unit.toString().split('.').last}',
+        ),
+      ),
+    );
+
+    // Zoom to fit the new shape
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _zoomToFit();
+    });
+  }
+
+  void _zoomToFit() {
+    if (_points.isEmpty || _viewportSize == Size.zero) return;
+
+    // 1. Calculate bounding box of points
+    double minX = double.infinity;
+    double minY = double.infinity;
+    double maxX = double.negativeInfinity;
+    double maxY = double.negativeInfinity;
+
+    for (var p in _points) {
+      if (p.x < minX) minX = p.x;
+      if (p.y < minY) minY = p.y;
+      if (p.x > maxX) maxX = p.x;
+      if (p.y > maxY) maxY = p.y;
+    }
+
+    // Add some padding
+    const padding = 50.0;
+    final width = maxX - minX + padding * 2;
+    final height = maxY - minY + padding * 2;
+    final centerX = minX + (maxX - minX) / 2;
+    final centerY = minY + (maxY - minY) / 2;
+
+    // 2. Calculate scale to fit
+    final scaleX = _viewportSize.width / width;
+    final scaleY = _viewportSize.height / height;
+    final scale = math.min(scaleX, scaleY).clamp(0.1, 5.0);
+
+    // 3. Calculate translation to center
+    final tx = (_viewportSize.width / 2) - scale * centerX;
+    final ty = (_viewportSize.height / 2) - scale * centerY;
+
+    final matrix = Matrix4.identity()
+      ..translate(tx, ty)
+      ..scale(scale);
+
+    _transformationController.value = matrix;
+  }
+
+  void _scalePoints(double scaleFactor) {
+    if (_points.isEmpty) return;
+
+    // Calculate centroid
+    double sumX = 0;
+    double sumY = 0;
+    for (var p in _points) {
+      sumX += p.x;
+      sumY += p.y;
+    }
+    final centroidX = sumX / _points.length;
+    final centroidY = sumY / _points.length;
+
+    final newPoints = <Point>[];
+    for (var p in _points) {
+      final newX = centroidX + (p.x - centroidX) * scaleFactor;
+      final newY = centroidY + (p.y - centroidY) * scaleFactor;
+      newPoints.add(Point(newX, newY));
+    }
+    _points.clear();
+    _points.addAll(newPoints);
+  }
+
   @override
   void dispose() {
     _widthController.dispose();
     _heightController.dispose();
     _radiusController.dispose();
+    _transformationController.dispose();
     super.dispose();
   }
 
@@ -1004,28 +1172,58 @@ class _DrawingPageState extends State<DrawingPage> {
 
               // Canvas Area
               Expanded(
-                child: GestureDetector(
-                  onTapDown: (details) {
-                    if (_selectedShape == ShapeType.polygon ||
-                        _selectedShape == ShapeType.triangle) {
-                      _addPoint(details.localPosition);
-                    }
-                  },
-                  child: Container(
-                    color: Colors.grey[200],
-                    child: CustomPaint(
-                      painter: ShapePainter(
-                        _points,
-                        _selectedShape,
-                        _radiusController.text.isEmpty
-                            ? null
-                            : double.tryParse(_radiusController.text),
-                        _sideMeasurements,
-                        _diagonalMeasurements,
-                      ),
-                      child: Container(),
+                child: Stack(
+                  children: [
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        _viewportSize = Size(
+                          constraints.maxWidth,
+                          constraints.maxHeight,
+                        );
+                        return InteractiveViewer(
+                          transformationController: _transformationController,
+                          minScale: 0.1,
+                          maxScale: 5.0,
+                          boundaryMargin: const EdgeInsets.all(double.infinity),
+                          child: GestureDetector(
+                            onTapDown: (details) {
+                              if (_selectedShape == ShapeType.polygon ||
+                                  _selectedShape == ShapeType.triangle) {
+                                _addPoint(details.localPosition);
+                              }
+                            },
+                            child: Container(
+                              color: Colors.grey[200],
+                              child: CustomPaint(
+                                painter: ShapePainter(
+                                  _points,
+                                  _selectedShape,
+                                  _radiusController.text.isEmpty
+                                      ? null
+                                      : double.tryParse(_radiusController.text),
+                                  _sideMeasurements,
+                                  _diagonalMeasurements,
+                                ),
+                                child: Container(),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  ),
+                    Positioned(
+                      right: 16,
+                      bottom: 16,
+                      child: FloatingActionButton(
+                        mini: true,
+                        heroTag: 'zoom_fit',
+                        onPressed: _zoomToFit,
+                        backgroundColor: Colors.white,
+                        foregroundColor: AppTheme.primaryColor,
+                        child: const Icon(Icons.center_focus_strong),
+                      ),
+                    ),
+                  ],
                 ),
               ),
 
@@ -1213,201 +1411,29 @@ class _DrawingPageState extends State<DrawingPage> {
 
   void _showResultBottomSheet(Measurement measurement) {
     final loc = AppLocalizations.of(context);
-    final totalSqFt = measurement.getAreaIn(MeasurementUnit.squareFeet);
-    final units = LandAreaCalculator.getDefaultUnits();
-    final breakdownResult = LandAreaCalculator.calculate(totalSqFt, units);
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.6,
-        minChildSize: 0.4,
-        maxChildSize: 0.9,
-        expand: false,
-        builder: (context, scrollController) => SingleChildScrollView(
-          controller: scrollController,
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                children: [
-                  const Icon(
-                    Icons.check_circle,
-                    color: AppTheme.successColor,
-                    size: 28,
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    loc.area,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-
-              // Detailed Breakdown
-              LandAreaBreakdownWidget(result: breakdownResult),
-
-              const SizedBox(height: 24),
-
-              // Standard Units
-              Text(
-                'Standard Units',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[700],
-                ),
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  children: MeasurementUnit.values.map((unit) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            unit.symbol,
-                            style: const TextStyle(fontSize: 15),
-                          ),
-                          Text(
-                            measurement.getAreaIn(unit).toStringAsFixed(4),
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Future Feature: Target Area Adjustment
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: AppTheme.primaryColor.withOpacity(0.3),
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                  color: AppTheme.primaryColor.withOpacity(0.05),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.aspect_ratio, color: AppTheme.primaryColor),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Target Area Adjustment',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.primaryColor,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Want to adjust this shape to exactly 1.00 Acre?',
-                      style: TextStyle(color: Colors.grey[700]),
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton(
-                        onPressed: () {
-                          // TODO: Implement Target Area Adjustment
-                          // 1. Ask for target area (e.g., 1.0 Acre)
-                          // 2. Ask which sides to expand/move
-                          // 3. Calculate new vertices
-                          // 4. Visualize changes
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Feature coming soon!'),
-                            ),
-                          );
-                        },
-                        child: const Text('Expand/Shrink to Target Area'),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Actions
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      child: Text(loc.cancel),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        context.read<MeasurementBloc>().add(
-                          SaveMeasurementEvent(measurement),
-                        );
-                        Navigator.pop(context);
-                        context.pop(); // Go back to home
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(loc.measurementSaved),
-                            backgroundColor: AppTheme.successColor,
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.save),
-                      label: Text(loc.save),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primaryColor,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-            ],
-          ),
-        ),
+      backgroundColor: Colors.transparent,
+      builder: (context) => MeasurementResultBottomSheet(
+        measurement: measurement,
+        onResizeRequest: (targetArea, unit) {
+          // Sheet is already closed by the widget
+          _applyResize(targetArea, unit);
+        },
+        onSave: () {
+          context.read<MeasurementBloc>().add(
+            SaveMeasurementEvent(measurement),
+          );
+          context.pop(); // Go back to home
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(loc.measurementSaved),
+              backgroundColor: AppTheme.successColor,
+            ),
+          );
+        },
       ),
     );
   }
