@@ -403,7 +403,21 @@ class _DrawingPageState extends State<DrawingPage> {
     }
 
     // Add some padding
-    const padding = 50.0;
+    double padding = 50.0;
+
+    if (_selectedShape == ShapeType.circle) {
+      // For circle, we need to account for the fixed visual radius
+      // defined in ShapePainter (80.0) plus the label
+      const double circleVisualRadius = 80.0;
+      minX -= circleVisualRadius;
+      maxX += circleVisualRadius;
+      minY -= circleVisualRadius;
+      maxY += circleVisualRadius;
+
+      // Add extra padding for the label which extends to the right
+      maxX += 50.0;
+    }
+
     final width = maxX - minX + padding * 2;
     final height = maxY - minY + padding * 2;
     final centerX = minX + (maxX - minX) / 2;
@@ -1227,6 +1241,24 @@ class _DrawingPageState extends State<DrawingPage> {
                             _points.add(const Point(300, 350));
                             _points.add(const Point(100, 350));
                           }
+
+                          // Update side measurements immediately for visualization
+                          final inputUnit = context
+                              .read<MeasurementUnitBloc>()
+                              .state
+                              .unit;
+                          final w = double.tryParse(_widthController.text) ?? 0;
+                          final h =
+                              double.tryParse(_heightController.text) ?? 0;
+
+                          if (w > 0 && h > 0) {
+                            final wMeters = inputUnit.toMeters(w);
+                            final hMeters = inputUnit.toMeters(h);
+                            _sideMeasurements[0] = wMeters;
+                            _sideMeasurements[1] = hMeters;
+                            _sideMeasurements[2] = wMeters;
+                            _sideMeasurements[3] = hMeters;
+                          }
                         }
                       });
                       Navigator.pop(context);
@@ -1966,9 +1998,9 @@ class ShapePainter extends CustomPainter {
 
     // Draw shape based on type
     if (shapeType == ShapeType.circle && radius != null && points.isNotEmpty) {
-      // Draw circle with fixed size, centered on canvas
+      // Draw circle with fixed size, centered on the point
       // The radius value is only used for area calculation, not for visual scaling
-      final center = Offset(size.width / 2, size.height / 2);
+      final center = Offset(points[0].x, points[0].y);
       const double fixedRadiusPixels = 80; // Fixed visual size
 
       canvas.drawCircle(center, fixedRadiusPixels, fillPaint);
