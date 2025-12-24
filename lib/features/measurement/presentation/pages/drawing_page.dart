@@ -290,6 +290,9 @@ class _DrawingPageState extends State<DrawingPage> {
 
   void _confirmResize() {
     if (_previewPoints != null && _previewPoints!.isNotEmpty) {
+      // Get current input unit for converting back
+      final inputUnit = context.read<MeasurementUnitBloc>().state.unit;
+
       setState(() {
         _points.clear();
         _points.addAll(_previewPoints!);
@@ -300,6 +303,43 @@ class _DrawingPageState extends State<DrawingPage> {
         // Clear measurements as they are no longer valid
         _sideMeasurements.clear();
         _diagonalMeasurements.clear();
+
+        // Recalculate side measurements based on the new area
+        if (_resizeTargetArea != null) {
+          final newAreaPixels = _calculatePolygonArea(_points);
+          if (newAreaPixels > 0) {
+            final metersPerPixel = math.sqrt(
+              _resizeTargetArea! / newAreaPixels,
+            );
+
+            // Calculate sides
+            for (int i = 0; i < _points.length; i++) {
+              final p1 = _points[i];
+              final p2 = _points[(i + 1) % _points.length];
+              final distPixels = math.sqrt(
+                math.pow(p2.x - p1.x, 2) + math.pow(p2.y - p1.y, 2),
+              );
+              final distMeters = distPixels * metersPerPixel;
+              _sideMeasurements[i] = inputUnit.fromMeters(distMeters);
+            }
+
+            // Calculate diagonals if needed (for polygons with > 3 sides)
+            if (_points.length > 3) {
+              // Calculate diagonals from vertex 0 to N-2
+              for (int i = 2; i < _points.length - 1; i++) {
+                final p1 = _points[0];
+                final p2 = _points[i];
+                final distPixels = math.sqrt(
+                  math.pow(p2.x - p1.x, 2) + math.pow(p2.y - p1.y, 2),
+                );
+                final distMeters = distPixels * metersPerPixel;
+                _diagonalMeasurements['0-$i'] = inputUnit.fromMeters(
+                  distMeters,
+                );
+              }
+            }
+          }
+        }
       });
 
       // Trigger recalculation
@@ -791,8 +831,6 @@ class _DrawingPageState extends State<DrawingPage> {
     // We transform both solutions to screen space (using current P0, P1 alignment)
     // and see which one is closer to the user's drawn point P[pointIndex].
 
-    final p0 = Offset(_points[0].x, _points[0].y);
-    final p1 = Offset(_points[1].x, _points[1].y);
     // Note: In _fixShapeGeometry we calculated scale based on measured side0.
     // Here we just need a relative comparison, so using current screen P0-P1 is fine
     // assuming V0=(0,0) and V1=(side0,0) maps to P0, P1.
