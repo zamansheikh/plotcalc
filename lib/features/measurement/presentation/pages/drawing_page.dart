@@ -415,6 +415,9 @@ class _DrawingPageState extends State<DrawingPage> {
 
               if (isDistorted) {
                 _selectedShape = ShapeType.polygon;
+                _isShapeComplete =
+                    true; // Mark as complete so Calculate button is enabled
+
                 // Clear rectangle controllers to avoid confusion?
                 // No, just let them be.
                 ScaffoldMessenger.of(context).showSnackBar(
