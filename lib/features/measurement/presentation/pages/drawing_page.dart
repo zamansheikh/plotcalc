@@ -40,9 +40,10 @@ class _DrawingPageState extends State<DrawingPage> {
   final TextEditingController _widthController = TextEditingController();
   final TextEditingController _heightController = TextEditingController();
   final TextEditingController _radiusController = TextEditingController();
-  
+
   // Zoom/Pan control
-  final TransformationController _transformationController = TransformationController();
+  final TransformationController _transformationController =
+      TransformationController();
   Size _viewportSize = Size.zero;
 
   @override
