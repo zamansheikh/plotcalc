@@ -5,6 +5,7 @@ import '../../features/measurement/presentation/pages/drawing_page.dart';
 import '../../features/measurement/presentation/pages/history_page.dart';
 import '../../features/measurement/presentation/pages/calculator_page.dart';
 import '../../features/measurement/presentation/pages/unit_converter_page.dart';
+import '../../features/measurement/presentation/pages/land_calculator_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/measurement/domain/entities/measurement.dart';
 
@@ -16,6 +17,7 @@ class AppRouter {
   static const String measurement = '/measurement';
   static const String results = '/results';
   static const String history = '/history';
+  static const String landCalculator = '/land-calculator';
   static const String settings = '/settings';
 
   static GoRouter router = GoRouter(
@@ -49,6 +51,12 @@ class AppRouter {
         name: 'converter',
         pageBuilder: (context, state) =>
             MaterialPage(key: state.pageKey, child: const UnitConverterPage()),
+      ),
+      GoRoute(
+        path: landCalculator,
+        name: 'landCalculator',
+        pageBuilder: (context, state) =>
+            MaterialPage(key: state.pageKey, child: const LandCalculatorPage()),
       ),
       GoRoute(
         path: measurement,
