@@ -62,10 +62,10 @@ class MeasurementBloc extends Bloc<MeasurementEvent, MeasurementState> {
       SaveMeasurementParams(measurement: event.measurement),
     );
 
-    result.fold(
-      (failure) => emit(MeasurementError(failure.message)),
-      (_) => emit(const MeasurementSaved('Measurement saved successfully')),
-    );
+    result.fold((failure) => emit(MeasurementError(failure.message)), (_) {
+      emit(const MeasurementSaved('Measurement saved successfully'));
+      add(const LoadAllMeasurementsEvent());
+    });
   }
 
   Future<void> _onLoadAllMeasurements(
@@ -74,12 +74,16 @@ class MeasurementBloc extends Bloc<MeasurementEvent, MeasurementState> {
   ) async {
     emit(const MeasurementLoading());
 
-    final result = await getAllMeasurements(NoParams());
+    try {
+      final result = await getAllMeasurements(NoParams());
 
-    result.fold(
-      (failure) => emit(MeasurementError(failure.message)),
-      (measurements) => emit(MeasurementsLoaded(measurements)),
-    );
+      result.fold(
+        (failure) => emit(MeasurementError(failure.message)),
+        (measurements) => emit(MeasurementsLoaded(measurements)),
+      );
+    } catch (e) {
+      emit(MeasurementError('Unexpected error: $e'));
+    }
   }
 
   Future<void> _onDeleteMeasurement(

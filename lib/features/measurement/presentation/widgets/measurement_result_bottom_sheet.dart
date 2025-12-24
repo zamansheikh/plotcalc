@@ -189,13 +189,17 @@ class _MeasurementResultBottomSheetState
                   }
 
                   if (hasInput && totalSqFt > 0) {
+                    final onResizeRequest = widget.onResizeRequest;
+                    final currentArea = widget.measurement.area;
+
                     Navigator.pop(context); // Close dialog
                     Navigator.pop(context); // Close bottom sheet
-                    if (widget.onResizeRequest != null) {
-                      widget.onResizeRequest!(
+
+                    if (onResizeRequest != null) {
+                      onResizeRequest(
                         totalSqFt,
                         MeasurementUnit.squareFeet,
-                        widget.measurement.area,
+                        currentArea,
                       );
                     }
                   }

@@ -18,6 +18,8 @@ class HistoryPage extends StatefulWidget {
 }
 
 class _HistoryPageState extends State<HistoryPage> {
+  List<Measurement> _cachedMeasurements = [];
+
   @override
   void initState() {
     super.initState();
@@ -49,7 +51,31 @@ class _HistoryPageState extends State<HistoryPage> {
       ),
       body: BlocBuilder<MeasurementBloc, MeasurementState>(
         builder: (context, state) {
+          // Update cache when measurements are loaded
+          if (state is MeasurementsLoaded) {
+            _cachedMeasurements = state.measurements;
+          }
+
           if (state is MeasurementLoading) {
+            // Show cached list with a loading indicator overlay if we have data
+            if (_cachedMeasurements.isNotEmpty) {
+              return Stack(
+                children: [
+                  ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: _cachedMeasurements.length,
+                    itemBuilder: (context, index) {
+                      final measurement = _cachedMeasurements[index];
+                      return _buildMeasurementCard(context, measurement, loc);
+                    },
+                  ),
+                  Container(
+                    color: Colors.black12,
+                    child: const Center(child: CircularProgressIndicator()),
+                  ),
+                ],
+              );
+            }
             return const Center(child: CircularProgressIndicator());
           } else if (state is MeasurementsLoaded) {
             if (state.measurements.isEmpty) {
@@ -117,7 +143,29 @@ class _HistoryPageState extends State<HistoryPage> {
             );
           }
 
-          return const SizedBox.shrink();
+          // For any other state (Saved, Calculated, Initial, Deleted), trigger reload and show cache
+          // This prevents the screen from going blank when returning from DrawingPage
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              context.read<MeasurementBloc>().add(
+                const LoadAllMeasurementsEvent(),
+              );
+            }
+          });
+
+          // Show cached list while loading
+          if (_cachedMeasurements.isNotEmpty) {
+            return ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: _cachedMeasurements.length,
+              itemBuilder: (context, index) {
+                final measurement = _cachedMeasurements[index];
+                return _buildMeasurementCard(context, measurement, loc);
+              },
+            );
+          }
+
+          return const Center(child: CircularProgressIndicator());
         },
       ),
     );
@@ -377,18 +425,22 @@ class _HistoryPageState extends State<HistoryPage> {
     Measurement measurement,
     AppLocalizations loc,
   ) {
+    // Capture the parent context to ensure we use a stable context for navigation
+    final parentContext = context;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => MeasurementResultBottomSheet(
+      builder: (sheetContext) => MeasurementResultBottomSheet(
         measurement: measurement,
-        onViewShape: () => _viewShape(context, measurement),
-        onResizeRequest: (targetArea, unit, currentArea) {
+        onViewShape: () => _viewShape(parentContext, measurement),
+        onResizeRequest: (targetArea, unit, currentArea) async {
           // Navigate to drawing page with resize request
-          context.push(
+          // Use parentContext because sheetContext is disposed when sheet is closed
+          await parentContext.push(
             '/drawing',
             extra: {
               'measurement': measurement,
@@ -396,14 +448,31 @@ class _HistoryPageState extends State<HistoryPage> {
               'resizeTargetUnit': unit,
             },
           );
+
+          // Refresh list when returning
+          if (parentContext.mounted) {
+            // Use addPostFrameCallback to ensure navigation is complete
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (parentContext.mounted) {
+                parentContext.read<MeasurementBloc>().add(
+                  const LoadAllMeasurementsEvent(),
+                );
+              }
+            });
+          }
         },
       ),
     );
   }
 
-  void _viewShape(BuildContext context, Measurement measurement) {
+  void _viewShape(BuildContext context, Measurement measurement) async {
     // Navigate to drawing page with the measurement data
-    context.push('/drawing', extra: measurement);
+    await context.push('/drawing', extra: measurement);
+
+    // Refresh list when returning
+    if (context.mounted) {
+      context.read<MeasurementBloc>().add(const LoadAllMeasurementsEvent());
+    }
   }
 
   Widget _buildDetailRow(String label, String value) {
