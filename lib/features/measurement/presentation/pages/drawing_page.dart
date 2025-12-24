@@ -161,6 +161,32 @@ class _DrawingPageState extends State<DrawingPage> {
         break;
     }
 
+    // Special handling for Circle: Immediate resize
+    if (_selectedShape == ShapeType.circle) {
+      final inputUnit = context.read<MeasurementUnitBloc>().state.unit;
+      // Area = pi * r^2 => r = sqrt(Area / pi)
+      final newRadiusMeters = math.sqrt(targetAreaSqM / math.pi);
+      final newRadiusInputUnit = inputUnit.fromMeters(newRadiusMeters);
+
+      setState(() {
+        _radiusController.text = newRadiusInputUnit.toStringAsFixed(2);
+      });
+
+      _calculateArea();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Circle resized successfully.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _zoomToFit();
+      });
+      return;
+    }
+
     setState(() {
       _isResizeMode = true;
       _resizeTargetArea = targetAreaSqM;
@@ -363,6 +389,61 @@ class _DrawingPageState extends State<DrawingPage> {
                 );
               }
             }
+
+            // Update controllers for Rectangle and Circle so _calculateArea uses new values
+            if (_selectedShape == ShapeType.rectangle) {
+              // Check if the shape is still a rectangle (all points selected/scaled uniformly)
+              // If user selected a subset of points, it's likely distorted -> Convert to Polygon
+              // We can check _selectedResizeIndices from the closure context, but we cleared it above.
+              // Wait, we cleared it above. We need to check BEFORE clearing or store a flag.
+              // Actually, we can't check _selectedResizeIndices here because we cleared it.
+              // But we can check if the sides are equal (approx).
+
+              final w1 = _sideMeasurements[0] ?? 0;
+              final h1 = _sideMeasurements[1] ?? 0;
+              final w2 = _sideMeasurements[2] ?? 0;
+              final h2 = _sideMeasurements[3] ?? 0;
+
+              const tolerance =
+                  0.01; // 1% tolerance? Or absolute? Let's use relative.
+              bool isDistorted = false;
+
+              if ((w1 - w2).abs() > w1 * tolerance ||
+                  (h1 - h2).abs() > h1 * tolerance) {
+                isDistorted = true;
+              }
+
+              if (isDistorted) {
+                _selectedShape = ShapeType.polygon;
+                // Clear rectangle controllers to avoid confusion?
+                // No, just let them be.
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      'Shape converted to Polygon due to distortion.',
+                    ),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              } else {
+                // Still a rectangle, update controllers
+                // Use average of opposite sides for better accuracy
+                final newWidth = (w1 + w2) / 2;
+                final newHeight = (h1 + h2) / 2;
+
+                _widthController.text = newWidth.toStringAsFixed(2);
+                _heightController.text = newHeight.toStringAsFixed(2);
+
+                // Update all segment controllers with the new average
+                for (var c in _widthControllers) {
+                  c.text = newWidth.toStringAsFixed(2);
+                }
+                for (var c in _heightControllers) {
+                  c.text = newHeight.toStringAsFixed(2);
+                }
+              }
+            }
+            // Circle is handled in _applyResize now
           }
         }
       });
