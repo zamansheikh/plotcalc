@@ -32,6 +32,7 @@ class _LandCalculatorPageState extends State<LandCalculatorPage> {
 
   List<String> _breakdown = [];
   double _remainderSqFt = 0;
+  String? _lastUnitDecimal;
 
   @override
   void initState() {
@@ -74,6 +75,7 @@ class _LandCalculatorPageState extends State<LandCalculatorPage> {
       setState(() {
         _breakdown = [];
         _remainderSqFt = 0;
+        _lastUnitDecimal = null;
       });
       return;
     }
@@ -112,6 +114,8 @@ class _LandCalculatorPageState extends State<LandCalculatorPage> {
 
     List<String> results = [];
     double currentArea = totalSqFt;
+    LandUnitDef? lastUsedUnit;
+    int lastUsedUnitCount = 0;
 
     // Calculate based on the current order of units
     for (var unit in _units) {
@@ -122,13 +126,35 @@ class _LandCalculatorPageState extends State<LandCalculatorPage> {
         if (count > 0) {
           results.add('$count ${unit.name}');
           currentArea -= count * unit.sqftFactor;
+          lastUsedUnit = unit;
+          lastUsedUnitCount = count;
         }
+      }
+    }
+
+    // Calculate decimal version for the last unit
+    String? decimalStr;
+    if (lastUsedUnit != null && currentArea > 0.01) {
+      double decimalPart = currentArea / lastUsedUnit.sqftFactor;
+      double totalDecimal = lastUsedUnitCount + decimalPart;
+      decimalStr = '${totalDecimal.toStringAsFixed(2)} ${lastUsedUnit.name}';
+    } else if (results.isEmpty && currentArea > 0.01) {
+      // If no units were large enough, try to show in the smallest enabled unit
+      // or just show sq ft.
+      // Let's find the smallest enabled unit
+      try {
+        final smallestUnit = _units.lastWhere((u) => u.isEnabled);
+        double val = totalSqFt / smallestUnit.sqftFactor;
+        decimalStr = '${val.toStringAsFixed(2)} ${smallestUnit.name}';
+      } catch (e) {
+        // No units enabled
       }
     }
 
     setState(() {
       _breakdown = results;
       _remainderSqFt = currentArea;
+      _lastUnitDecimal = decimalStr;
     });
   }
 
@@ -196,104 +222,98 @@ class _LandCalculatorPageState extends State<LandCalculatorPage> {
                             ),
                           ),
                           const SizedBox(height: 12),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              Expanded(
-                                flex: 4,
-                                child: TextField(
-                                  controller: _inputController,
-                                  keyboardType:
-                                      const TextInputType.numberWithOptions(
-                                        decimal: true,
-                                      ),
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  decoration: InputDecoration(
-                                    hintText: '0.0',
-                                    filled: true,
-                                    fillColor: isDarkTheme
-                                        ? Colors.grey.shade700
-                                        : Colors.grey.shade50,
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                      borderSide: BorderSide.none,
+                              TextField(
+                                controller: _inputController,
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                      decimal: true,
                                     ),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 16,
-                                    ),
-                                  ),
-                                  onChanged: (_) => _calculate(),
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                flex: 5,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: isDarkTheme
-                                        ? Colors.grey.shade700
-                                        : Colors.grey.shade50,
+                                decoration: InputDecoration(
+                                  hintText: '0.0',
+                                  filled: true,
+                                  fillColor: isDarkTheme
+                                      ? Colors.grey.shade700
+                                      : Colors.grey.shade50,
+                                  border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide.none,
                                   ),
-                                  child: DropdownButtonHideUnderline(
-                                    child: DropdownButton<String>(
-                                      value: _inputUnit,
-                                      isExpanded: true,
-                                      icon: const Icon(
-                                        Icons.keyboard_arrow_down_rounded,
-                                      ),
-                                      items: const [
-                                        DropdownMenuItem(
-                                          value: 'squareFeet',
-                                          child: Text('Square Feet'),
-                                        ),
-                                        DropdownMenuItem(
-                                          value: 'squareMeters',
-                                          child: Text('Square Meters'),
-                                        ),
-                                        DropdownMenuItem(
-                                          value: 'acres',
-                                          child: Text('Acres'),
-                                        ),
-                                        DropdownMenuItem(
-                                          value: 'bigha',
-                                          child: Text('Bigha (Std)'),
-                                        ),
-                                        DropdownMenuItem(
-                                          value: 'katha',
-                                          child: Text('Katha (Std)'),
-                                        ),
-                                        DropdownMenuItem(
-                                          value: 'shatak',
-                                          child: Text('Shatak'),
-                                        ),
-                                        DropdownMenuItem(
-                                          value: 'bighaMymensingh',
-                                          child: Text('Bigha (Mym)'),
-                                        ),
-                                        DropdownMenuItem(
-                                          value: 'kathaMymensingh',
-                                          child: Text('Katha (Mym)'),
-                                        ),
-                                        DropdownMenuItem(
-                                          value: 'chotak',
-                                          child: Text('Chotak'),
-                                        ),
-                                      ],
-                                      onChanged: (value) {
-                                        setState(() {
-                                          _inputUnit = value!;
-                                          _calculate();
-                                        });
-                                      },
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 16,
+                                  ),
+                                ),
+                                onChanged: (_) => _calculate(),
+                              ),
+                              const SizedBox(height: 12),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isDarkTheme
+                                      ? Colors.grey.shade700
+                                      : Colors.grey.shade50,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: DropdownButtonHideUnderline(
+                                  child: DropdownButton<String>(
+                                    value: _inputUnit,
+                                    isExpanded: true,
+                                    icon: const Icon(
+                                      Icons.keyboard_arrow_down_rounded,
                                     ),
+                                    items: const [
+                                      DropdownMenuItem(
+                                        value: 'squareFeet',
+                                        child: Text('Square Feet'),
+                                      ),
+                                      DropdownMenuItem(
+                                        value: 'squareMeters',
+                                        child: Text('Square Meters'),
+                                      ),
+                                      DropdownMenuItem(
+                                        value: 'acres',
+                                        child: Text('Acres'),
+                                      ),
+                                      DropdownMenuItem(
+                                        value: 'bigha',
+                                        child: Text('Bigha (Std)'),
+                                      ),
+                                      DropdownMenuItem(
+                                        value: 'katha',
+                                        child: Text('Katha (Std)'),
+                                      ),
+                                      DropdownMenuItem(
+                                        value: 'shatak',
+                                        child: Text('Shatak'),
+                                      ),
+                                      DropdownMenuItem(
+                                        value: 'bighaMymensingh',
+                                        child: Text('Bigha (Mym)'),
+                                      ),
+                                      DropdownMenuItem(
+                                        value: 'kathaMymensingh',
+                                        child: Text('Katha (Mym)'),
+                                      ),
+                                      DropdownMenuItem(
+                                        value: 'chotak',
+                                        child: Text('Chotak'),
+                                      ),
+                                    ],
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _inputUnit = value!;
+                                        _calculate();
+                                      });
+                                    },
                                   ),
                                 ),
                               ),
@@ -395,6 +415,30 @@ class _LandCalculatorPageState extends State<LandCalculatorPage> {
                                       ? Colors.grey.shade300
                                       : Colors.grey.shade700,
                                 ),
+                              ),
+                            ),
+                          ],
+                          if (_lastUnitDecimal != null) ...[
+                            const SizedBox(height: 12),
+                            Text(
+                              'OR',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: isDarkTheme
+                                    ? Colors.green.shade200
+                                    : Colors.green.shade700,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '≈ $_lastUnitDecimal',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: isDarkTheme
+                                    ? Colors.white
+                                    : Colors.green.shade900,
                               ),
                             ),
                           ],
