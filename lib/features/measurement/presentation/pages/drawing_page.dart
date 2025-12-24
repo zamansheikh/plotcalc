@@ -11,7 +11,7 @@ import '../bloc/measurement_bloc.dart';
 
 class DrawingPage extends StatefulWidget {
   final Measurement? measurement; // Optional measurement to restore
-  
+
   const DrawingPage({super.key, this.measurement});
 
   @override
@@ -45,7 +45,7 @@ class _DrawingPageState extends State<DrawingPage> {
       _points.clear();
       _points.addAll(measurement.points);
       _isShapeComplete = measurement.points.length >= 3;
-      
+
       // Load dimensions for rectangles and circles
       if (measurement.dimensions != null) {
         if (measurement.dimensions!.containsKey('width')) {
@@ -58,13 +58,13 @@ class _DrawingPageState extends State<DrawingPage> {
           _radiusController.text = measurement.dimensions!['radius'].toString();
         }
       }
-      
+
       // Load side measurements for polygons
       if (measurement.sideMeasurements != null) {
         _sideMeasurements.clear();
         _sideMeasurements.addAll(measurement.sideMeasurements!);
       }
-      
+
       // Load diagonal measurements for polygons
       if (measurement.diagonalMeasurements != null) {
         _diagonalMeasurements.clear();
@@ -132,7 +132,7 @@ class _DrawingPageState extends State<DrawingPage> {
     final measurementUnitState = context.read<MeasurementUnitBloc>().state;
     final unitSymbol = measurementUnitState.unit.symbol;
     final inputUnit = measurementUnitState.unit;
-    
+
     final controller = TextEditingController();
     final result = await showDialog<double>(
       context: context,
@@ -218,7 +218,7 @@ class _DrawingPageState extends State<DrawingPage> {
     final loc = AppLocalizations.of(context);
     final measurementUnitState = context.read<MeasurementUnitBloc>().state;
     final inputUnit = measurementUnitState.unit;
-    
+
     Map<String, double>? dimensions;
 
     // For specific shapes, we need dimensions
@@ -239,7 +239,7 @@ class _DrawingPageState extends State<DrawingPage> {
       // Convert to meters before calculation
       final widthInMeters = inputUnit.toMeters(width);
       final heightInMeters = inputUnit.toMeters(height);
-      
+
       dimensions = {'width': widthInMeters, 'height': heightInMeters};
       // Create 4 points for rectangle visualization
       if (_points.isEmpty) {
@@ -267,7 +267,7 @@ class _DrawingPageState extends State<DrawingPage> {
 
       // Convert to meters before calculation
       final radiusInMeters = inputUnit.toMeters(radius);
-      
+
       dimensions = {'radius': radiusInMeters};
       // Create center point if empty
       if (_points.isEmpty) {
@@ -332,7 +332,7 @@ class _DrawingPageState extends State<DrawingPage> {
     final diagonalMeasurementsInMeters = _diagonalMeasurements.map(
       (key, value) => MapEntry(key, inputUnit.toMeters(value)),
     );
-    
+
     print(
       'DEBUG: _calculateArea - sideMeasurements being sent: $sideMeasurementsInMeters',
     );
@@ -401,73 +401,76 @@ class _DrawingPageState extends State<DrawingPage> {
     final loc = AppLocalizations.of(context);
     showDialog(
       context: context,
-      builder: (context) => BlocBuilder<MeasurementUnitBloc, MeasurementUnitState>(
-        builder: (context, state) {
-          final unitSymbol = state.unit.symbol;
-          
-          return AlertDialog(
-            title: Text('${loc.enterMeasurement} ${_selectedShape.displayName}'),
-            content: _selectedShape == ShapeType.rectangle
-                ? Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      TextField(
-                        controller: _widthController,
+      builder: (context) =>
+          BlocBuilder<MeasurementUnitBloc, MeasurementUnitState>(
+            builder: (context, state) {
+              final unitSymbol = state.unit.symbol;
+
+              return AlertDialog(
+                title: Text(
+                  '${loc.enterMeasurement} ${_selectedShape.displayName}',
+                ),
+                content: _selectedShape == ShapeType.rectangle
+                    ? Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          TextField(
+                            controller: _widthController,
+                            decoration: InputDecoration(
+                              labelText: '${loc.width} ($unitSymbol)',
+                              border: const OutlineInputBorder(),
+                            ),
+                            keyboardType: TextInputType.number,
+                          ),
+                          const SizedBox(height: 16),
+                          TextField(
+                            controller: _heightController,
+                            decoration: InputDecoration(
+                              labelText: '${loc.height} ($unitSymbol)',
+                              border: const OutlineInputBorder(),
+                            ),
+                            keyboardType: TextInputType.number,
+                          ),
+                        ],
+                      )
+                    : TextField(
+                        controller: _radiusController,
                         decoration: InputDecoration(
-                          labelText: '${loc.width} ($unitSymbol)',
+                          labelText: '${loc.radius} ($unitSymbol)',
                           border: const OutlineInputBorder(),
                         ),
                         keyboardType: TextInputType.number,
                       ),
-                      const SizedBox(height: 16),
-                      TextField(
-                        controller: _heightController,
-                        decoration: InputDecoration(
-                          labelText: '${loc.height} ($unitSymbol)',
-                          border: const OutlineInputBorder(),
-                        ),
-                        keyboardType: TextInputType.number,
-                      ),
-                    ],
-                  )
-                : TextField(
-                    controller: _radiusController,
-                    decoration: InputDecoration(
-                      labelText: '${loc.radius} ($unitSymbol)',
-                      border: const OutlineInputBorder(),
-                    ),
-                    keyboardType: TextInputType.number,
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(loc.cancel),
                   ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(loc.cancel),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  // Trigger redraw when dimensions are entered
-                  setState(() {
-                    if (_selectedShape == ShapeType.circle) {
-                      if (_points.isEmpty) {
-                        _points.add(const Point(200, 200));
-                      }
-                    } else if (_selectedShape == ShapeType.rectangle) {
-                      if (_points.isEmpty) {
-                        _points.add(const Point(100, 150));
-                        _points.add(const Point(300, 150));
-                        _points.add(const Point(300, 350));
-                        _points.add(const Point(100, 350));
-                      }
-                    }
-                  });
-                  Navigator.pop(context);
-                },
-                child: Text(loc.ok),
-              ),
-            ],
-          );
-        },
-      ),
+                  ElevatedButton(
+                    onPressed: () {
+                      // Trigger redraw when dimensions are entered
+                      setState(() {
+                        if (_selectedShape == ShapeType.circle) {
+                          if (_points.isEmpty) {
+                            _points.add(const Point(200, 200));
+                          }
+                        } else if (_selectedShape == ShapeType.rectangle) {
+                          if (_points.isEmpty) {
+                            _points.add(const Point(100, 150));
+                            _points.add(const Point(300, 150));
+                            _points.add(const Point(300, 350));
+                            _points.add(const Point(100, 350));
+                          }
+                        }
+                      });
+                      Navigator.pop(context);
+                    },
+                    child: Text(loc.ok),
+                  ),
+                ],
+              );
+            },
+          ),
     );
   }
 
@@ -659,7 +662,9 @@ class _DrawingPageState extends State<DrawingPage> {
                   ),
                   controller: TextEditingController(
                     text: _diagonalMeasurements[diagonalKey] != null
-                        ? inputUnit.fromMeters(_diagonalMeasurements[diagonalKey]!).toStringAsFixed(2)
+                        ? inputUnit
+                              .fromMeters(_diagonalMeasurements[diagonalKey]!)
+                              .toStringAsFixed(2)
                         : '',
                   ),
                   onChanged: (value) {
@@ -1010,6 +1015,45 @@ class _DrawingPageState extends State<DrawingPage> {
                   ),
                 ),
               ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Bigha (Mym):'),
+                    Text(
+                      (measurement.area / 5260.91).toStringAsFixed(2),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Katha (Mym):'),
+                    Text(
+                      (measurement.area / 263.046).toStringAsFixed(2),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Chotak:'),
+                    Text(
+                      (measurement.area / 4.189).toStringAsFixed(2),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
               const SizedBox(height: 16),
               Container(
                 padding: const EdgeInsets.all(12),
@@ -1031,7 +1075,9 @@ class _DrawingPageState extends State<DrawingPage> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      LandUnitConverter.fromSquareMeters(measurement.area).toString(),
+                      LandUnitConverter.fromSquareMeters(
+                        measurement.area,
+                      ).toString(),
                       style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
@@ -1048,7 +1094,9 @@ class _DrawingPageState extends State<DrawingPage> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      LandUnitConverter.fromSquareMetersMymensingh(measurement.area).toString(),
+                      LandUnitConverter.fromSquareMetersMymensingh(
+                        measurement.area,
+                      ).toString(),
                       style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
@@ -1140,7 +1188,7 @@ class ShapePainter extends CustomPainter {
       // The radius value is only used for area calculation, not for visual scaling
       final center = Offset(size.width / 2, size.height / 2);
       const double fixedRadiusPixels = 80; // Fixed visual size
-      
+
       canvas.drawCircle(center, fixedRadiusPixels, fillPaint);
       canvas.drawCircle(center, fixedRadiusPixels, paint);
       canvas.drawCircle(center, 6, pointPaint);

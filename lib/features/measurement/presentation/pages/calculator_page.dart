@@ -58,6 +58,15 @@ class _CalculatorPageState extends State<CalculatorPage> {
         case 'shatak':
           areaInSqMeters = input * 40.4686;
           break;
+        case 'bighaMymensingh':
+          areaInSqMeters = input * 5260.91;
+          break;
+        case 'kathaMymensingh':
+          areaInSqMeters = input * 263.046;
+          break;
+        case 'chotak':
+          areaInSqMeters = input * 4.189;
+          break;
       }
 
       // Convert to all units
@@ -69,6 +78,9 @@ class _CalculatorPageState extends State<CalculatorPage> {
         'bigha': areaInSqMeters / 1348.95,
         'katha': areaInSqMeters / 67.026,
         'shatak': areaInSqMeters / 40.4686,
+        'bighaMymensingh': areaInSqMeters / 5260.91,
+        'kathaMymensingh': areaInSqMeters / 263.046,
+        'chotak': areaInSqMeters / 4.189,
       };
     });
   }
@@ -182,6 +194,15 @@ class _CalculatorPageState extends State<CalculatorPage> {
                 DropdownMenuItem(value: 'bigha', child: Text(loc.bigha)),
                 DropdownMenuItem(value: 'katha', child: Text(loc.katha)),
                 DropdownMenuItem(value: 'shatak', child: Text(loc.shatak)),
+                DropdownMenuItem(
+                  value: 'bighaMymensingh',
+                  child: Text('Bigha (Mymensingh)'),
+                ),
+                DropdownMenuItem(
+                  value: 'kathaMymensingh',
+                  child: Text('Katha (Mymensingh)'),
+                ),
+                DropdownMenuItem(value: 'chotak', child: Text('Chotak')),
               ],
               onChanged: (value) {
                 setState(() => _selectedUnit = value!);
@@ -250,6 +271,20 @@ class _CalculatorPageState extends State<CalculatorPage> {
                     _buildResultTile('Katha', _results['katha']!, 5),
                     Divider(height: 1, color: Colors.grey.shade300),
                     _buildResultTile('Shatak', _results['shatak']!, 6),
+                    Divider(height: 1, color: Colors.grey.shade300),
+                    _buildResultTile(
+                      'Bigha (Mymensingh)',
+                      _results['bighaMymensingh']!,
+                      7,
+                    ),
+                    Divider(height: 1, color: Colors.grey.shade300),
+                    _buildResultTile(
+                      'Katha (Mymensingh)',
+                      _results['kathaMymensingh']!,
+                      8,
+                    ),
+                    Divider(height: 1, color: Colors.grey.shade300),
+                    _buildResultTile('Chotak', _results['chotak']!, 9),
                   ],
                 ),
               ),

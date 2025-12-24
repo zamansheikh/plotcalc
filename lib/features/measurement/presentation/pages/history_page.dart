@@ -147,8 +147,14 @@ class _HistoryPageState extends State<HistoryPage> {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: isDarkTheme
-                            ? [AppTheme.primaryColor.withOpacity(0.7), AppTheme.primaryColor.withOpacity(0.5)]
-                            : [AppTheme.primaryColor, AppTheme.primaryColor.withOpacity(0.7)],
+                            ? [
+                                AppTheme.primaryColor.withOpacity(0.7),
+                                AppTheme.primaryColor.withOpacity(0.5),
+                              ]
+                            : [
+                                AppTheme.primaryColor,
+                                AppTheme.primaryColor.withOpacity(0.7),
+                              ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -183,13 +189,21 @@ class _HistoryPageState extends State<HistoryPage> {
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            Icon(Icons.access_time, size: 14, color: isDarkTheme ? Colors.grey[400] : Colors.grey[600]),
+                            Icon(
+                              Icons.access_time,
+                              size: 14,
+                              color: isDarkTheme
+                                  ? Colors.grey[400]
+                                  : Colors.grey[600],
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               _formatDate(measurement.createdAt),
                               style: TextStyle(
                                 fontSize: 12,
-                                color: isDarkTheme ? Colors.grey[400] : Colors.grey[600],
+                                color: isDarkTheme
+                                    ? Colors.grey[400]
+                                    : Colors.grey[600],
                               ),
                             ),
                           ],
@@ -203,9 +217,16 @@ class _HistoryPageState extends State<HistoryPage> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: isDarkTheme ? Colors.green.shade900.withOpacity(0.35) : Colors.green.shade50,
+                  color: isDarkTheme
+                      ? Colors.green.shade900.withOpacity(0.35)
+                      : Colors.green.shade50,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: isDarkTheme ? Colors.green.shade800 : Colors.green.shade200, width: 1),
+                  border: Border.all(
+                    color: isDarkTheme
+                        ? Colors.green.shade800
+                        : Colors.green.shade200,
+                    width: 1,
+                  ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -217,7 +238,9 @@ class _HistoryPageState extends State<HistoryPage> {
                           'Total Area',
                           style: TextStyle(
                             fontSize: 12,
-                            color: isDarkTheme ? Colors.grey[300] : Colors.grey[700],
+                            color: isDarkTheme
+                                ? Colors.grey[300]
+                                : Colors.grey[700],
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -227,7 +250,9 @@ class _HistoryPageState extends State<HistoryPage> {
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: isDarkTheme ? Colors.lightGreen.shade300 : AppTheme.primaryColor,
+                            color: isDarkTheme
+                                ? Colors.lightGreen.shade300
+                                : AppTheme.primaryColor,
                           ),
                         ),
                       ],
@@ -238,7 +263,9 @@ class _HistoryPageState extends State<HistoryPage> {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: isDarkTheme ? AppTheme.primaryColor.withOpacity(0.18) : AppTheme.primaryColor.withOpacity(0.1),
+                        color: isDarkTheme
+                            ? AppTheme.primaryColor.withOpacity(0.18)
+                            : AppTheme.primaryColor.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
@@ -246,7 +273,9 @@ class _HistoryPageState extends State<HistoryPage> {
                           Icon(
                             Icons.place,
                             size: 16,
-                            color: isDarkTheme ? Colors.lightGreen.shade300 : AppTheme.primaryColor,
+                            color: isDarkTheme
+                                ? Colors.lightGreen.shade300
+                                : AppTheme.primaryColor,
                           ),
                           const SizedBox(width: 4),
                           Text(
@@ -254,7 +283,9 @@ class _HistoryPageState extends State<HistoryPage> {
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
-                              color: isDarkTheme ? Colors.lightGreen.shade300 : AppTheme.primaryColor,
+                              color: isDarkTheme
+                                  ? Colors.lightGreen.shade300
+                                  : AppTheme.primaryColor,
                             ),
                           ),
                         ],
@@ -380,6 +411,45 @@ class _HistoryPageState extends State<HistoryPage> {
                   ),
                 ),
               ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Bigha (Mym):'),
+                    Text(
+                      (measurement.area / 5260.91).toStringAsFixed(4),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Katha (Mym):'),
+                    Text(
+                      (measurement.area / 263.046).toStringAsFixed(4),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Chotak:'),
+                    Text(
+                      (measurement.area / 4.189).toStringAsFixed(4),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
               const SizedBox(height: 16),
               const Divider(),
               Container(
@@ -402,7 +472,9 @@ class _HistoryPageState extends State<HistoryPage> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      LandUnitConverter.fromSquareMeters(measurement.area).toString(),
+                      LandUnitConverter.fromSquareMeters(
+                        measurement.area,
+                      ).toString(),
                       style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
@@ -419,7 +491,9 @@ class _HistoryPageState extends State<HistoryPage> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      LandUnitConverter.fromSquareMetersMymensingh(measurement.area).toString(),
+                      LandUnitConverter.fromSquareMetersMymensingh(
+                        measurement.area,
+                      ).toString(),
                       style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
