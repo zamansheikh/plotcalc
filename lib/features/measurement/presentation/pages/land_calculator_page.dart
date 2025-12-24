@@ -19,6 +19,7 @@ class _LandCalculatorPageState extends State<LandCalculatorPage> {
   late List<LandUnitDef> _units;
 
   List<String> _breakdown = [];
+  Map<String, int> _unitValues = {};
   double _remainderSqFt = 0;
   String? _lastUnitDecimal;
 
@@ -46,6 +47,7 @@ class _LandCalculatorPageState extends State<LandCalculatorPage> {
     if (input == null || input < 0) {
       setState(() {
         _breakdown = [];
+        _unitValues = {};
         _remainderSqFt = 0;
         _lastUnitDecimal = null;
       });
@@ -88,6 +90,7 @@ class _LandCalculatorPageState extends State<LandCalculatorPage> {
 
     setState(() {
       _breakdown = result.breakdown;
+      _unitValues = result.unitValues;
       _remainderSqFt = result.remainderSqFt;
       _lastUnitDecimal = result.lastUnitDecimal;
     });
@@ -267,6 +270,7 @@ class _LandCalculatorPageState extends State<LandCalculatorPage> {
                       child: LandAreaBreakdownWidget(
                         result: LandAreaResult(
                           breakdown: _breakdown,
+                          unitValues: _unitValues,
                           remainderSqFt: _remainderSqFt,
                           lastUnitDecimal: _lastUnitDecimal,
                         ),

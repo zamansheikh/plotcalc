@@ -172,17 +172,17 @@ class LandUnitConverter {
 //   final resultFt = LandUnitConverter.fromSquareFeet(59734.43);
 
 //   // [FIXED] আপনার কোড এই আউটপুটটি তৈরি করবে:
-//   print("59734.43 sq.ft = $resultFt");
+//   debugPrint("59734.43 sq.ft = $resultFt");
 //   // আউটপুট: 1 একর 1 বিঘা 2 কাঠা 4 ছটাক 2.89 বর্গমিটার
 
 //   // From square-meters
 //   final resultM = LandUnitConverter.fromSquareMeters(5550.0);
-//   print("5550.0 sq.m = $resultM");
+//   debugPrint("5550.0 sq.m = $resultM");
 //   // আউটপুট: 1 একর 1 বিঘা 2 কাঠা 4 ছটাক 0.93 বর্গমিটার
 
 //   // --- Mymensingh Example ---
 //   // 60,000 sq.ft = 1 Bigha (56628) + 1 Katha (2831.4) + 1 Shatak (435.6) + 105 sq.ft remainder
 //   final resultMym = LandUnitConverter.fromSquareFeetMymensingh(60000.0);
-//   print("60000.0 sq.ft (Mymensingh) = $resultMym");
+//   debugPrint("60000.0 sq.ft (Mymensingh) = $resultMym");
 //   // আউটপুট: 1 বিঘা 1 কাঠা 1 শতাংশ 9.75 বর্গমিটার
 // }

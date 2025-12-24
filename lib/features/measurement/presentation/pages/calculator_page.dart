@@ -107,8 +107,8 @@ class _CalculatorPageState extends State<CalculatorPage> {
             // Header
             Card(
               color: isDarkTheme
-                  ? AppTheme.primaryColor.withOpacity(0.28)
-                  : AppTheme.primaryColor.withOpacity(0.13),
+                  ? AppTheme.primaryColor.withValues(alpha: 0.28)
+                  : AppTheme.primaryColor.withValues(alpha: 0.13),
               elevation: 0,
               child: Padding(
                 padding: const EdgeInsets.all(16.0),

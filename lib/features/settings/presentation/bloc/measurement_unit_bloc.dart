@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -71,7 +72,7 @@ class MeasurementUnitBloc
       emit(MeasurementUnitState(unit));
     } catch (e) {
       // If SharedPreferences fails, use default
-      print('Error loading measurement unit preference: $e');
+      debugPrint('Error loading measurement unit preference: $e');
       emit(const MeasurementUnitState(InputUnit.meters));
     }
   }
@@ -86,7 +87,7 @@ class MeasurementUnitBloc
       emit(MeasurementUnitState(event.unit));
     } catch (e) {
       // If SharedPreferences fails, still update the state
-      print('Error saving measurement unit preference: $e');
+      debugPrint('Error saving measurement unit preference: $e');
       emit(MeasurementUnitState(event.unit));
     }
   }

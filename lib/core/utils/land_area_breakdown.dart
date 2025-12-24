@@ -14,11 +14,13 @@ class LandUnitDef {
 
 class LandAreaResult {
   final List<String> breakdown;
+  final Map<String, int> unitValues; // Map of unit ID to integer count
   final double remainderSqFt;
   final String? lastUnitDecimal;
 
   LandAreaResult({
     required this.breakdown,
+    required this.unitValues,
     required this.remainderSqFt,
     this.lastUnitDecimal,
   });
@@ -47,6 +49,7 @@ class LandAreaCalculator {
 
   static LandAreaResult calculate(double totalSqFt, List<LandUnitDef> units) {
     List<String> results = [];
+    Map<String, int> unitValues = {};
     double currentArea = totalSqFt;
     LandUnitDef? lastUsedUnit;
     int lastUsedUnitCount = 0;
@@ -56,6 +59,7 @@ class LandAreaCalculator {
         int count = (currentArea / unit.sqftFactor).floor();
         if (count > 0) {
           results.add('$count ${unit.name}');
+          unitValues[unit.id] = count;
           currentArea -= count * unit.sqftFactor;
           lastUsedUnit = unit;
           lastUsedUnitCount = count;
@@ -80,6 +84,7 @@ class LandAreaCalculator {
 
     return LandAreaResult(
       breakdown: results,
+      unitValues: unitValues,
       remainderSqFt: currentArea,
       lastUnitDecimal: decimalStr,
     );

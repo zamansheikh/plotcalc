@@ -6,8 +6,6 @@ import 'package:plotcalc/core/localization/app_localizations.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/land_measurement_converter.dart';
-import '../../../../core/utils/land_area_breakdown.dart';
-import '../widgets/land_area_breakdown_widget.dart';
 import '../widgets/measurement_result_bottom_sheet.dart';
 import '../../../settings/presentation/bloc/measurement_unit_bloc.dart';
 import '../../domain/entities/measurement.dart';
@@ -46,6 +44,13 @@ class _DrawingPageState extends State<DrawingPage> {
       TransformationController();
   Size _viewportSize = Size.zero;
 
+  // Resize Mode State
+  bool _isResizeMode = false;
+  double? _resizeTargetArea;
+  double? _currentAreaMeters; // Store current area in meters for scaling
+  final Set<int> _selectedResizeIndices = {};
+  List<Point>? _previewPoints;
+
   @override
   void initState() {
     super.initState();
@@ -56,7 +61,11 @@ class _DrawingPageState extends State<DrawingPage> {
       // Apply resize if requested
       if (widget.resizeTargetArea != null && widget.resizeTargetUnit != null) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          _applyResize(widget.resizeTargetArea!, widget.resizeTargetUnit!);
+          _applyResize(
+            widget.resizeTargetArea!,
+            widget.resizeTargetUnit!,
+            widget.measurement!.area,
+          );
         });
       } else {
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -100,13 +109,18 @@ class _DrawingPageState extends State<DrawingPage> {
     });
   }
 
-  void _applyResize(double targetArea, MeasurementUnit unit) {
+  void _applyResize(
+    double targetArea,
+    MeasurementUnit unit,
+    double currentArea,
+  ) {
     if (_points.isEmpty &&
         _selectedShape != ShapeType.circle &&
-        _selectedShape != ShapeType.rectangle)
+        _selectedShape != ShapeType.rectangle) {
       return;
+    }
 
-    // Convert target area to square meters (base unit)
+    // Convert target area to square meters
     double targetAreaSqM = targetArea;
     switch (unit) {
       case MeasurementUnit.squareFeet:
@@ -122,63 +136,188 @@ class _DrawingPageState extends State<DrawingPage> {
         break;
     }
 
-    // Calculate current area in square meters
-    double currentAreaSqM = 0;
-    if (widget.measurement != null) {
-      currentAreaSqM = widget.measurement!.area;
-    } else {
+    setState(() {
+      _isResizeMode = true;
+      _resizeTargetArea = targetAreaSqM;
+      _currentAreaMeters = currentArea;
+      _selectedResizeIndices.clear();
+      // Default: Select all points
+      for (int i = 0; i < _points.length; i++) {
+        _selectedResizeIndices.add(i);
+      }
+      _updateResizePreview();
+    });
+
+    // Zoom to fit
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _zoomToFit();
+    });
+  }
+
+  void _handleResizeTap(Offset localPosition) {
+    // Find tapped point
+    const double touchRadius = 30.0; // Increased touch area
+    int? tappedIndex;
+
+    for (int i = 0; i < _points.length; i++) {
+      final point = _points[i];
+      final distance = (Offset(point.x, point.y) - localPosition).distance;
+      if (distance <= touchRadius) {
+        tappedIndex = i;
+        break;
+      }
+    }
+
+    if (tappedIndex != null) {
+      final index = tappedIndex; // Capture for closure
+      setState(() {
+        if (_selectedResizeIndices.contains(index)) {
+          _selectedResizeIndices.remove(index);
+        } else {
+          _selectedResizeIndices.add(index);
+        }
+        _updateResizePreview();
+      });
+    }
+  }
+
+  void _updateResizePreview() {
+    if (_points.isEmpty ||
+        _selectedResizeIndices.isEmpty ||
+        _resizeTargetArea == null ||
+        _currentAreaMeters == null ||
+        _currentAreaMeters! <= 0) {
+      _previewPoints = [];
       return;
     }
 
-    if (currentAreaSqM <= 0) return;
+    // Calculate current pixel area
+    final currentPixelArea = _calculatePolygonArea(_points);
+    if (currentPixelArea <= 0) return;
 
-    final scaleFactor = math.sqrt(targetAreaSqM / currentAreaSqM);
+    // Calculate target pixel area based on ratio of real-world areas
+    // TargetPixelArea / CurrentPixelArea = TargetAreaMeters / CurrentAreaMeters
+    final targetPixelArea =
+        currentPixelArea * (_resizeTargetArea! / _currentAreaMeters!);
 
-    setState(() {
-      if (_selectedShape == ShapeType.rectangle) {
-        final width = double.tryParse(_widthController.text) ?? 0;
-        final height = double.tryParse(_heightController.text) ?? 0;
-        _widthController.text = (width * scaleFactor).toStringAsFixed(2);
-        _heightController.text = (height * scaleFactor).toStringAsFixed(2);
+    // Calculate centroid of the shape
+    double sumX = 0;
+    double sumY = 0;
+    for (var point in _points) {
+      sumX += point.x;
+      sumY += point.y;
+    }
+    final centroidX = sumX / _points.length;
+    final centroidY = sumY / _points.length;
 
-        // Also update points for rectangle if they exist
-        _scalePoints(scaleFactor);
-      } else if (_selectedShape == ShapeType.circle) {
-        final radius = double.tryParse(_radiusController.text) ?? 0;
-        _radiusController.text = (radius * scaleFactor).toStringAsFixed(2);
-      } else {
-        // Polygon or Triangle
-        _scalePoints(scaleFactor);
-
-        // Scale side measurements
-        final newSideMeasurements = <int, double>{};
-        _sideMeasurements.forEach((key, value) {
-          newSideMeasurements[key] = value * scaleFactor;
-        });
-        _sideMeasurements.clear();
-        _sideMeasurements.addAll(newSideMeasurements);
-
-        // Scale diagonal measurements
-        final newDiagonalMeasurements = <String, double>{};
-        _diagonalMeasurements.forEach((key, value) {
-          newDiagonalMeasurements[key] = value * scaleFactor;
-        });
-        _diagonalMeasurements.clear();
-        _diagonalMeasurements.addAll(newDiagonalMeasurements);
+    // If all points are selected, we can use simple scaling
+    if (_selectedResizeIndices.length == _points.length) {
+      final scaleFactor = math.sqrt(targetPixelArea / currentPixelArea);
+      final newPoints = <Point>[];
+      for (var point in _points) {
+        final dx = point.x - centroidX;
+        final dy = point.y - centroidY;
+        newPoints.add(
+          Point(centroidX + (dx * scaleFactor), centroidY + (dy * scaleFactor)),
+        );
       }
-    });
+      _previewPoints = newPoints;
+    } else {
+      // Mixed selection: use binary search
+      _previewPoints = _findCorrectScaleForMixedPoints(
+        centroidX,
+        centroidY,
+        targetPixelArea,
+      );
+    }
+  }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Area resized to $targetArea ${unit.toString().split('.').last}',
+  List<Point> _findCorrectScaleForMixedPoints(
+    double cx,
+    double cy,
+    double targetPixelArea,
+  ) {
+    // Binary search for scale factor
+    double low = 0.1;
+    double high = 10.0;
+    List<Point> bestPoints = [];
+    double minDiff = double.infinity;
+
+    for (int i = 0; i < 20; i++) {
+      // 20 iterations is enough precision
+      final mid = (low + high) / 2;
+      final testPoints = <Point>[];
+
+      for (int j = 0; j < _points.length; j++) {
+        if (_selectedResizeIndices.contains(j)) {
+          final point = _points[j];
+          final dx = point.x - cx;
+          final dy = point.y - cy;
+          testPoints.add(Point(cx + (dx * mid), cy + (dy * mid)));
+        } else {
+          testPoints.add(_points[j]);
+        }
+      }
+
+      final area = _calculatePolygonArea(testPoints);
+      final diff = (area - targetPixelArea).abs();
+
+      if (diff < minDiff) {
+        minDiff = diff;
+        bestPoints = testPoints;
+      }
+
+      if (area < targetPixelArea) {
+        low = mid;
+      } else {
+        high = mid;
+      }
+    }
+
+    return bestPoints;
+  }
+
+  double _calculatePolygonArea(List<Point> points) {
+    if (points.length < 3) return 0;
+    double area = 0;
+    for (int i = 0; i < points.length; i++) {
+      int j = (i + 1) % points.length;
+      area += points[i].x * points[j].y;
+      area -= points[j].x * points[i].y;
+    }
+    return (area / 2).abs();
+  }
+
+  void _confirmResize() {
+    if (_previewPoints != null && _previewPoints!.isNotEmpty) {
+      setState(() {
+        _points.clear();
+        _points.addAll(_previewPoints!);
+        _isResizeMode = false;
+        _previewPoints = null;
+        _selectedResizeIndices.clear();
+
+        // Clear measurements as they are no longer valid
+        _sideMeasurements.clear();
+        _diagonalMeasurements.clear();
+      });
+
+      // Trigger recalculation
+      _calculateArea();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Shape resized successfully.'),
+          backgroundColor: Colors.green,
         ),
-      ),
-    );
+      );
+    }
+  }
 
-    // Zoom to fit the new shape
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _zoomToFit();
+  void _cancelResize() {
+    setState(() {
+      _isResizeMode = false;
+      _previewPoints = null;
     });
   }
 
@@ -219,29 +358,6 @@ class _DrawingPageState extends State<DrawingPage> {
       ..scale(scale);
 
     _transformationController.value = matrix;
-  }
-
-  void _scalePoints(double scaleFactor) {
-    if (_points.isEmpty) return;
-
-    // Calculate centroid
-    double sumX = 0;
-    double sumY = 0;
-    for (var p in _points) {
-      sumX += p.x;
-      sumY += p.y;
-    }
-    final centroidX = sumX / _points.length;
-    final centroidY = sumY / _points.length;
-
-    final newPoints = <Point>[];
-    for (var p in _points) {
-      final newX = centroidX + (p.x - centroidX) * scaleFactor;
-      final newY = centroidY + (p.y - centroidY) * scaleFactor;
-      newPoints.add(Point(newX, newY));
-    }
-    _points.clear();
-    _points.addAll(newPoints);
   }
 
   @override
@@ -299,7 +415,9 @@ class _DrawingPageState extends State<DrawingPage> {
   }
 
   Future<void> _askForSideMeasurement(int sideIndex) async {
-    print('DEBUG: _askForSideMeasurement called with sideIndex: $sideIndex');
+    debugPrint(
+      'DEBUG: _askForSideMeasurement called with sideIndex: $sideIndex',
+    );
     final loc = AppLocalizations.of(context);
     final measurementUnitState = context.read<MeasurementUnitBloc>().state;
     final unitSymbol = measurementUnitState.unit.symbol;
@@ -354,7 +472,7 @@ class _DrawingPageState extends State<DrawingPage> {
       final valueInMeters = inputUnit.toMeters(result);
       setState(() {
         _sideMeasurements[sideIndex] = valueInMeters;
-        print(
+        debugPrint(
           'DEBUG: Stored measurement - sideMeasurements: $_sideMeasurements',
         );
       });
@@ -511,10 +629,10 @@ class _DrawingPageState extends State<DrawingPage> {
       _fixShapeGeometry(sideMeasurementsInMeters, diagonalMeasurementsInMeters);
     }
 
-    print(
+    debugPrint(
       'DEBUG: _calculateArea - sideMeasurements being sent: $sideMeasurementsInMeters',
     );
-    print(
+    debugPrint(
       'DEBUG: _calculateArea - diagonalMeasurements being sent: $diagonalMeasurementsInMeters',
     );
     context.read<MeasurementBloc>().add(
@@ -628,7 +746,7 @@ class _DrawingPageState extends State<DrawingPage> {
         }
       });
     } catch (e) {
-      print('Error fixing shape: $e');
+      debugPrint('Error fixing shape: $e');
     }
   }
 
@@ -675,7 +793,6 @@ class _DrawingPageState extends State<DrawingPage> {
 
     final p0 = Offset(_points[0].x, _points[0].y);
     final p1 = Offset(_points[1].x, _points[1].y);
-    final side0 = (p1 - p0).distance; // Use current screen distance for scale
     // Note: In _fixShapeGeometry we calculated scale based on measured side0.
     // Here we just need a relative comparison, so using current screen P0-P1 is fine
     // assuming V0=(0,0) and V1=(side0,0) maps to P0, P1.
@@ -706,16 +823,6 @@ class _DrawingPageState extends State<DrawingPage> {
     final pOriginal = Offset(_points[pointIndex].x, _points[pointIndex].y);
     final pPrev = Offset(_points[pointIndex - 1].x, _points[pointIndex - 1].y);
     final pZero = Offset(_points[0].x, _points[0].y);
-
-    // Cross product of original
-    final cpOriginal =
-        (pPrev.dx - pZero.dx) * (pOriginal.dy - pZero.dy) -
-        (pPrev.dy - pZero.dy) * (pOriginal.dx - pZero.dx);
-
-    // Cross product of solution 1
-    final cp1 =
-        (vPrev.dx - v0.dx) * (sol1.dy - v0.dy) -
-        (vPrev.dy - v0.dy) * (sol1.dx - v0.dx);
 
     // Cross product of solution 2
     // final cp2 = (vPrev.dx - v0.dx) * (sol2.dy - v0.dy) - (vPrev.dy - v0.dy) * (sol2.dx - v0.dx);
@@ -1154,22 +1261,75 @@ class _DrawingPageState extends State<DrawingPage> {
           return Column(
             children: [
               // Instruction Banner
-              Container(
-                padding: const EdgeInsets.all(12),
-                color: AppTheme.primaryColor.withValues(alpha: 0.1),
-                child: Row(
-                  children: [
-                    const Icon(Icons.info_outline, size: 20),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        _getInstructionText(loc),
-                        style: const TextStyle(fontSize: 14),
+              if (!_isResizeMode)
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.info_outline, size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _getInstructionText(loc),
+                          style: const TextStyle(fontSize: 14),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
+
+              if (_isResizeMode)
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  color: Colors.orange.shade100,
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.aspect_ratio, color: Colors.orange),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Resize Mode',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.deepOrange,
+                                  ),
+                                ),
+                                Text(
+                                  'Select points to move. Unselected points will stay fixed.',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.orange.shade900,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            onPressed: _cancelResize,
+                            child: const Text('Cancel'),
+                          ),
+                          const SizedBox(width: 8),
+                          ElevatedButton(
+                            onPressed: _confirmResize,
+                            child: const Text('Apply'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
 
               // Canvas Area
               Expanded(
@@ -1188,7 +1348,9 @@ class _DrawingPageState extends State<DrawingPage> {
                           boundaryMargin: const EdgeInsets.all(double.infinity),
                           child: GestureDetector(
                             onTapDown: (details) {
-                              if (_selectedShape == ShapeType.polygon ||
+                              if (_isResizeMode) {
+                                _handleResizeTap(details.localPosition);
+                              } else if (_selectedShape == ShapeType.polygon ||
                                   _selectedShape == ShapeType.triangle) {
                                 _addPoint(details.localPosition);
                               }
@@ -1204,6 +1366,9 @@ class _DrawingPageState extends State<DrawingPage> {
                                       : double.tryParse(_radiusController.text),
                                   _sideMeasurements,
                                   _diagonalMeasurements,
+                                  previewPoints: _previewPoints ?? [],
+                                  selectedIndices: _selectedResizeIndices,
+                                  isResizeMode: _isResizeMode,
                                 ),
                                 child: Container(),
                               ),
@@ -1284,87 +1449,124 @@ class _DrawingPageState extends State<DrawingPage> {
                     const SizedBox(height: 16),
 
                     // Action Buttons - Organized Layout
-                    Column(
-                      spacing: 12,
-                      children: [
-                        // Primary Action Row
-                        Row(
-                          children: [
-                            // Undo Button
-                            Expanded(
-                              child: OutlinedButton(
-                                onPressed: _points.isNotEmpty
-                                    ? _undoLastPoint
-                                    : null,
-                                child: const Icon(Icons.undo),
+                    if (_isResizeMode)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () {
+                                setState(() {
+                                  _isResizeMode = false;
+                                  _previewPoints = [];
+                                  _selectedResizeIndices.clear();
+                                });
+                              },
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: Colors.red,
                               ),
+                              child: const Text('Cancel'),
                             ),
-                            const SizedBox(width: 8),
-                            // Calculate Area Button (Primary)
-                            Expanded(
-                              flex: 2,
-                              child: ElevatedButton(
-                                onPressed:
-                                    state is MeasurementLoading ||
-                                        (_selectedShape == ShapeType.polygon &&
-                                            !_isShapeComplete)
-                                    ? null
-                                    : _calculateArea,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppTheme.primaryColor,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 12,
-                                  ),
-                                ),
-                                child: state is MeasurementLoading
-                                    ? const SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: Colors.white,
-                                        ),
-                                      )
-                                    : Text(loc.calculate),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            // Clear Button
-                            Expanded(
-                              child: OutlinedButton(
-                                onPressed: _points.isNotEmpty
-                                    ? _clearAll
-                                    : null,
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: Colors.red,
-                                ),
-                                child: const Icon(Icons.clear),
-                              ),
-                            ),
-                          ],
-                        ),
-                        // Secondary Action Row - Complete Button (if needed)
-                        if (_selectedShape == ShapeType.polygon &&
-                            _points.length >= 3 &&
-                            !_isShapeComplete)
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton.icon(
-                              onPressed: _completePolygon,
-                              icon: const Icon(Icons.check_circle),
-                              label: Text(loc.completePolygon),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            flex: 2,
+                            child: ElevatedButton(
+                              onPressed: _confirmResize,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: AppTheme.accentColor,
+                                backgroundColor: Colors.orange,
                                 foregroundColor: Colors.white,
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 12,
                                 ),
                               ),
+                              child: const Text('Apply Resize'),
                             ),
                           ),
-                      ],
-                    ),
+                        ],
+                      )
+                    else
+                      Column(
+                        spacing: 12,
+                        children: [
+                          // Primary Action Row
+                          Row(
+                            children: [
+                              // Undo Button
+                              Expanded(
+                                child: OutlinedButton(
+                                  onPressed: _points.isNotEmpty
+                                      ? _undoLastPoint
+                                      : null,
+                                  child: const Icon(Icons.undo),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              // Calculate Area Button (Primary)
+                              Expanded(
+                                flex: 2,
+                                child: ElevatedButton(
+                                  onPressed:
+                                      state is MeasurementLoading ||
+                                          (_selectedShape ==
+                                                  ShapeType.polygon &&
+                                              !_isShapeComplete)
+                                      ? null
+                                      : _calculateArea,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppTheme.primaryColor,
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 12,
+                                    ),
+                                  ),
+                                  child: state is MeasurementLoading
+                                      ? const SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: Colors.white,
+                                          ),
+                                        )
+                                      : Text(loc.calculate),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              // Clear Button
+                              Expanded(
+                                child: OutlinedButton(
+                                  onPressed: _points.isNotEmpty
+                                      ? _clearAll
+                                      : null,
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: Colors.red,
+                                  ),
+                                  child: const Icon(Icons.clear),
+                                ),
+                              ),
+                            ],
+                          ),
+                          // Secondary Action Row - Complete Button (if needed)
+                          if (_selectedShape == ShapeType.polygon &&
+                              _points.length >= 3 &&
+                              !_isShapeComplete)
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton.icon(
+                                onPressed: _completePolygon,
+                                icon: const Icon(Icons.check_circle),
+                                label: Text(loc.completePolygon),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppTheme.accentColor,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
                   ],
                 ),
               ),
@@ -1416,12 +1618,14 @@ class _DrawingPageState extends State<DrawingPage> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (context) => MeasurementResultBottomSheet(
         measurement: measurement,
-        onResizeRequest: (targetArea, unit) {
+        onResizeRequest: (targetArea, unit, currentArea) {
           // Sheet is already closed by the widget
-          _applyResize(targetArea, unit);
+          _applyResize(targetArea, unit, currentArea);
         },
         onSave: () {
           context.read<MeasurementBloc>().add(
@@ -1446,14 +1650,20 @@ class ShapePainter extends CustomPainter {
   final double? radius;
   final Map<int, double> sideMeasurements;
   final Map<String, double> diagonalMeasurements;
+  final List<Point> previewPoints;
+  final Set<int> selectedIndices;
+  final bool isResizeMode;
 
   ShapePainter(
     this.points,
     this.shapeType,
     this.radius,
     this.sideMeasurements,
-    this.diagonalMeasurements,
-  );
+    this.diagonalMeasurements, {
+    this.previewPoints = const [],
+    this.selectedIndices = const {},
+    this.isResizeMode = false,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -1471,6 +1681,37 @@ class ShapePainter extends CustomPainter {
     final pointPaint = Paint()
       ..color = AppTheme.accentColor
       ..style = PaintingStyle.fill;
+
+    // Draw preview shape if available (dashed line)
+    if (previewPoints.isNotEmpty) {
+      final previewPaint = Paint()
+        ..color = Colors.orange
+        ..strokeWidth = 2
+        ..style = PaintingStyle.stroke;
+
+      final previewPath = Path();
+      previewPath.moveTo(previewPoints.first.x, previewPoints.first.y);
+      for (var i = 1; i < previewPoints.length; i++) {
+        previewPath.lineTo(previewPoints[i].x, previewPoints[i].y);
+      }
+      previewPath.close();
+
+      // Draw dashed effect manually since Flutter doesn't have built-in dashed path
+      // Simple implementation: draw the path with transparency to indicate preview
+      canvas.drawPath(
+        previewPath,
+        previewPaint..color = Colors.orange.withValues(alpha: 0.5),
+      );
+
+      // Draw preview points
+      for (var point in previewPoints) {
+        canvas.drawCircle(
+          Offset(point.x, point.y),
+          4,
+          Paint()..color = Colors.orange.withValues(alpha: 0.5),
+        );
+      }
+    }
 
     // Draw shape based on type
     if (shapeType == ShapeType.circle && radius != null && points.isNotEmpty) {
@@ -1495,16 +1736,8 @@ class ShapePainter extends CustomPainter {
       canvas.drawPath(path, paint);
 
       // Draw corner points
-      for (var point in points) {
-        canvas.drawCircle(Offset(point.x, point.y), 6, pointPaint);
-        canvas.drawCircle(
-          Offset(point.x, point.y),
-          6,
-          Paint()
-            ..color = Colors.white
-            ..strokeWidth = 2
-            ..style = PaintingStyle.stroke,
-        );
+      for (int i = 0; i < points.length; i++) {
+        _drawPoint(canvas, points[i], i, pointPaint);
       }
     } else if (points.length >= 2) {
       // Draw polygon/lines
@@ -1523,17 +1756,8 @@ class ShapePainter extends CustomPainter {
       canvas.drawPath(path, paint);
 
       // Draw all points
-      for (var point in points) {
-        canvas.drawCircle(Offset(point.x, point.y), 6, pointPaint);
-        // Draw point border
-        canvas.drawCircle(
-          Offset(point.x, point.y),
-          6,
-          Paint()
-            ..color = Colors.white
-            ..strokeWidth = 2
-            ..style = PaintingStyle.stroke,
-        );
+      for (int i = 0; i < points.length; i++) {
+        _drawPoint(canvas, points[i], i, pointPaint);
       }
 
       // Draw point numbers (labels: 0, 1, 2, 3...)
@@ -1567,16 +1791,44 @@ class ShapePainter extends CustomPainter {
       }
     } else if (points.length == 1) {
       // Draw single point
-      canvas.drawCircle(Offset(points.first.x, points.first.y), 8, pointPaint);
-      canvas.drawCircle(
-        Offset(points.first.x, points.first.y),
-        8,
-        Paint()
-          ..color = Colors.white
-          ..strokeWidth = 2
-          ..style = PaintingStyle.stroke,
-      );
+      _drawPoint(canvas, points.first, 0, pointPaint);
     }
+  }
+
+  void _drawPoint(Canvas canvas, Point point, int index, Paint defaultPaint) {
+    final offset = Offset(point.x, point.y);
+
+    Paint paintToUse = defaultPaint;
+    double radius = 6;
+
+    if (isResizeMode) {
+      if (selectedIndices.contains(index)) {
+        // Selected point in resize mode
+        paintToUse = Paint()..color = Colors.deepOrange;
+        radius = 8;
+
+        // Draw selection halo
+        canvas.drawCircle(
+          offset,
+          12,
+          Paint()..color = Colors.deepOrange.withValues(alpha: 0.3),
+        );
+      } else {
+        // Unselected point in resize mode
+        paintToUse = Paint()..color = Colors.grey;
+      }
+    }
+
+    canvas.drawCircle(offset, radius, paintToUse);
+    // Draw point border
+    canvas.drawCircle(
+      offset,
+      radius,
+      Paint()
+        ..color = Colors.white
+        ..strokeWidth = 2
+        ..style = PaintingStyle.stroke,
+    );
   }
 
   void _drawSideLabel(Canvas canvas, Offset start, Offset end, int sideIndex) {

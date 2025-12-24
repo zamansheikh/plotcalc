@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:dartz/dartz.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:injectable/injectable.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/error/exceptions.dart';
@@ -87,7 +88,9 @@ class MeasurementRepositoryImpl implements MeasurementRepository {
         points: points,
         dimensions: dimensions,
         sideMeasurements: sideMeasurements.isNotEmpty ? sideMeasurements : null,
-        diagonalMeasurements: diagonalMeasurements.isNotEmpty ? diagonalMeasurements : null,
+        diagonalMeasurements: diagonalMeasurements.isNotEmpty
+            ? diagonalMeasurements
+            : null,
         area: area,
         createdAt: DateTime.now(),
       );
@@ -122,10 +125,10 @@ class MeasurementRepositoryImpl implements MeasurementRepository {
     List<Point> points,
     Map<int, double> sideMeasurements,
   ) {
-    print('DEBUG: _calculateTriangleArea');
-    print('  sideMeasurements: $sideMeasurements');
-    print('  sideMeasurements.length: ${sideMeasurements.length}');
-    print('  points.length: ${points.length}');
+    debugPrint('DEBUG: _calculateTriangleArea');
+    debugPrint('  sideMeasurements: $sideMeasurements');
+    debugPrint('  sideMeasurements.length: ${sideMeasurements.length}');
+    debugPrint('  points.length: ${points.length}');
 
     // If we have all 3 side measurements, use Heron's formula with actual measurements
     if (sideMeasurements.length >= 3) {
@@ -134,12 +137,12 @@ class MeasurementRepositoryImpl implements MeasurementRepository {
       final sideB = sideMeasurements[1] ?? 0;
       final sideC = sideMeasurements[2] ?? 0;
 
-      print('  sideA: $sideA, sideB: $sideB, sideC: $sideC');
+      debugPrint('  sideA: $sideA, sideB: $sideB, sideC: $sideC');
 
       if (sideA > 0 && sideB > 0 && sideC > 0) {
         // Use Heron's formula directly with measured sides
         final result = _heronArea(sideA, sideB, sideC);
-        print('  Using direct Heron with measured sides: $result');
+        debugPrint('  Using direct Heron with measured sides: $result');
         return result;
       }
     }
@@ -149,11 +152,11 @@ class MeasurementRepositoryImpl implements MeasurementRepository {
     final b = _distance(points[1], points[2]);
     final c = _distance(points[2], points[0]);
 
-    print('  Using fallback - pixel distances: a=$a, b=$b, c=$c');
+    debugPrint('  Using fallback - pixel distances: a=$a, b=$b, c=$c');
 
     // Calculate pixel-based area
     final pixelArea = _heronArea(a, b, c);
-    print('  pixelArea: $pixelArea');
+    debugPrint('  pixelArea: $pixelArea');
 
     // If we have at least one side measurement, use it to scale
     if (sideMeasurements.isNotEmpty && sideMeasurements.values.isNotEmpty) {
@@ -161,19 +164,19 @@ class MeasurementRepositoryImpl implements MeasurementRepository {
       final sideMeasurement = sideMeasurements.values.first;
       final pixelSide = a; // First side in pixels
 
-      print(
+      debugPrint(
         '  Scaling with sideMeasurement: $sideMeasurement, pixelSide: $pixelSide',
       );
 
       if (pixelSide > 0) {
         final scaleFactor = sideMeasurement / pixelSide;
         final result = pixelArea * (scaleFactor * scaleFactor);
-        print('  scaleFactor: $scaleFactor, scaledArea: $result');
+        debugPrint('  scaleFactor: $scaleFactor, scaledArea: $result');
         return result;
       }
     }
 
-    print('  No measurements, returning pixelArea: $pixelArea');
+    debugPrint('  No measurements, returning pixelArea: $pixelArea');
     return pixelArea;
   }
 
@@ -209,7 +212,7 @@ class MeasurementRepositoryImpl implements MeasurementRepository {
 
     if (diagonalMeasurements.length >= requiredDiagonals &&
         sideMeasurements.length == points.length) {
-      print(
+      debugPrint(
         'Using TRIANGULATION METHOD with ${points.length} sides + ${diagonalMeasurements.length} diagonals',
       );
       return _calculatePolygonAreaWithDiagonals(
@@ -237,7 +240,7 @@ class MeasurementRepositoryImpl implements MeasurementRepository {
         // Use average scale factor for best accuracy
         final avgScaleFactor =
             scaleFactors.reduce((a, b) => a + b) / scaleFactors.length;
-        print(
+        debugPrint(
           'Using average scale factor: $avgScaleFactor from ${scaleFactors.length} sides',
         );
         return pixelArea * (avgScaleFactor * avgScaleFactor);
@@ -251,13 +254,13 @@ class MeasurementRepositoryImpl implements MeasurementRepository {
 
       if (side0Distance > 0) {
         final scaleFactor = measuredSideMeters / side0Distance;
-        print('Using single side scale factor: $scaleFactor');
+        debugPrint('Using single side scale factor: $scaleFactor');
         // Area scales by square of linear scale factor
         return pixelArea * (scaleFactor * scaleFactor);
       }
     }
 
-    print('WARNING: No measurements provided. Returning pixel area.');
+    debugPrint('WARNING: No measurements provided. Returning pixel area.');
     return pixelArea;
   }
 
@@ -268,7 +271,7 @@ class MeasurementRepositoryImpl implements MeasurementRepository {
     Map<int, double> sideMeasurements,
     Map<String, double> diagonalMeasurements,
   ) {
-    print(
+    debugPrint(
       'Triangulation Method: Breaking polygon into triangles using diagonals',
     );
 
@@ -318,18 +321,18 @@ class MeasurementRepositoryImpl implements MeasurementRepository {
         side3 = diagonalMeasurements[side3Key] ?? 0;
       }
 
-      print('  Triangle $i: sides = ${side1}m, ${side2}m, ${side3}m');
+      debugPrint('  Triangle $i: sides = ${side1}m, ${side2}m, ${side3}m');
 
       if (side1 > 0 && side2 > 0 && side3 > 0) {
         final triangleArea = _heronArea(side1, side2, side3);
-        print('    Area: $triangleArea m²');
+        debugPrint('    Area: $triangleArea m²');
         totalArea += triangleArea;
       } else {
-        print('    WARNING: Missing measurements for this triangle');
+        debugPrint('    WARNING: Missing measurements for this triangle');
       }
     }
 
-    print('Total area using triangulation: $totalArea m²');
+    debugPrint('Total area using triangulation: $totalArea m²');
     return totalArea;
   }
 

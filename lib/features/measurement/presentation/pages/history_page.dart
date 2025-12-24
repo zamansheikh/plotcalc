@@ -150,12 +150,12 @@ class _HistoryPageState extends State<HistoryPage> {
                       gradient: LinearGradient(
                         colors: isDarkTheme
                             ? [
-                                AppTheme.primaryColor.withOpacity(0.7),
-                                AppTheme.primaryColor.withOpacity(0.5),
+                                AppTheme.primaryColor.withValues(alpha: 0.7),
+                                AppTheme.primaryColor.withValues(alpha: 0.5),
                               ]
                             : [
                                 AppTheme.primaryColor,
-                                AppTheme.primaryColor.withOpacity(0.7),
+                                AppTheme.primaryColor.withValues(alpha: 0.7),
                               ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -163,7 +163,7 @@ class _HistoryPageState extends State<HistoryPage> {
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: AppTheme.primaryColor.withOpacity(0.18),
+                          color: AppTheme.primaryColor.withValues(alpha: 0.18),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -220,7 +220,7 @@ class _HistoryPageState extends State<HistoryPage> {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: isDarkTheme
-                      ? Colors.green.shade900.withOpacity(0.35)
+                      ? Colors.green.shade900.withValues(alpha: 0.35)
                       : Colors.green.shade50,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
@@ -266,8 +266,8 @@ class _HistoryPageState extends State<HistoryPage> {
                       ),
                       decoration: BoxDecoration(
                         color: isDarkTheme
-                            ? AppTheme.primaryColor.withOpacity(0.18)
-                            : AppTheme.primaryColor.withOpacity(0.1),
+                            ? AppTheme.primaryColor.withValues(alpha: 0.18)
+                            : AppTheme.primaryColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
@@ -386,7 +386,7 @@ class _HistoryPageState extends State<HistoryPage> {
       builder: (context) => MeasurementResultBottomSheet(
         measurement: measurement,
         onViewShape: () => _viewShape(context, measurement),
-        onResizeRequest: (targetArea, unit) {
+        onResizeRequest: (targetArea, unit, currentArea) {
           // Navigate to drawing page with resize request
           context.push(
             '/drawing',

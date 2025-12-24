@@ -91,8 +91,8 @@ class _UnitConverterPageState extends State<UnitConverterPage> {
             // Header Card
             Card(
               color: isDarkTheme
-                  ? AppTheme.primaryColor.withOpacity(0.28)
-                  : AppTheme.primaryColor.withOpacity(0.13),
+                  ? AppTheme.primaryColor.withValues(alpha: 0.28)
+                  : AppTheme.primaryColor.withValues(alpha: 0.13),
               elevation: 0,
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -245,12 +245,12 @@ class _UnitConverterPageState extends State<UnitConverterPage> {
                     gradient: LinearGradient(
                       colors: isDarkTheme
                           ? [
-                              AppTheme.primaryColor.withOpacity(0.2),
-                              AppTheme.primaryColor.withOpacity(0.1),
+                              AppTheme.primaryColor.withValues(alpha: 0.2),
+                              AppTheme.primaryColor.withValues(alpha: 0.1),
                             ]
                           : [
-                              AppTheme.primaryColor.withOpacity(0.1),
-                              AppTheme.primaryColor.withOpacity(0.05),
+                              AppTheme.primaryColor.withValues(alpha: 0.1),
+                              AppTheme.primaryColor.withValues(alpha: 0.05),
                             ],
                     ),
                     borderRadius: BorderRadius.circular(12),
@@ -351,9 +351,9 @@ class _UnitConverterPageState extends State<UnitConverterPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: AppTheme.primaryColor.withOpacity(0.1),
+        color: AppTheme.primaryColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.primaryColor.withOpacity(0.3)),
+        border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.3)),
       ),
       child: Text(
         label,

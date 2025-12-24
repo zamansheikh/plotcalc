@@ -30,15 +30,15 @@ class _SettingsPageState extends State<SettingsPage> {
         children: [
           // Language Section Header
           Container(
-            color: isDarkTheme 
-                ? Theme.of(context).primaryColor.withOpacity(0.2)
-                : Theme.of(context).primaryColor.withOpacity(0.1),
+            color: isDarkTheme
+                ? Theme.of(context).primaryColor.withValues(alpha: 0.2)
+                : Theme.of(context).primaryColor.withValues(alpha: 0.1),
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             child: Text(
               localizations.language,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: isDarkTheme 
+                color: isDarkTheme
                     ? Colors.lightBlue.shade300
                     : Theme.of(context).primaryColor,
               ),
@@ -46,20 +46,20 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           _LanguageOption(language: localizations.english, languageCode: 'en'),
           _LanguageOption(language: localizations.bengali, languageCode: 'bn'),
-          
+
           const Divider(height: 32),
-          
+
           // Measurement Unit Section Header
           Container(
-            color: isDarkTheme 
-                ? Theme.of(context).primaryColor.withOpacity(0.2)
-                : Theme.of(context).primaryColor.withOpacity(0.1),
+            color: isDarkTheme
+                ? Theme.of(context).primaryColor.withValues(alpha: 0.2)
+                : Theme.of(context).primaryColor.withValues(alpha: 0.1),
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             child: Text(
               localizations.measurementUnit,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: isDarkTheme 
+                color: isDarkTheme
                     ? Colors.lightBlue.shade300
                     : Theme.of(context).primaryColor,
               ),
@@ -75,7 +75,7 @@ class _SettingsPageState extends State<SettingsPage> {
             title: localizations.feetTitle,
             description: localizations.useFeetDescription,
           ),
-          
+
           const SizedBox(height: 24),
         ],
       ),
@@ -92,7 +92,7 @@ class _LanguageOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context);
-    
+
     return BlocBuilder<LanguageBloc, LanguageState>(
       builder: (context, state) {
         final isSelected = state.locale.languageCode == languageCode;
@@ -143,7 +143,7 @@ class _MeasurementUnitOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context);
-    
+
     return BlocBuilder<MeasurementUnitBloc, MeasurementUnitState>(
       builder: (context, state) {
         final isSelected = state.unit == unit;

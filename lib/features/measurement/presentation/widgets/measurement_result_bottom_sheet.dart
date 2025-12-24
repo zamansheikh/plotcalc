@@ -14,7 +14,8 @@ class MeasurementResultBottomSheet extends StatefulWidget {
   final Measurement measurement;
   final VoidCallback? onViewShape;
   final VoidCallback? onSave;
-  final Function(double targetArea, MeasurementUnit unit)? onResizeRequest;
+  final Function(double targetArea, MeasurementUnit unit, double currentArea)?
+  onResizeRequest;
 
   const MeasurementResultBottomSheet({
     super.key,
@@ -99,8 +100,13 @@ class _MeasurementResultBottomSheetState
   void _showResizeDialog() {
     final units = LandAreaCalculator.getDefaultUnits();
     final controllers = <String, TextEditingController>{};
+
+    // Pre-fill with current breakdown values
     for (var unit in units) {
-      controllers[unit.id] = TextEditingController();
+      final count = _breakdownResult.unitValues[unit.id] ?? 0;
+      controllers[unit.id] = TextEditingController(
+        text: count > 0 ? count.toString() : '',
+      );
     }
 
     showDialog(
@@ -189,6 +195,7 @@ class _MeasurementResultBottomSheetState
                       widget.onResizeRequest!(
                         totalSqFt,
                         MeasurementUnit.squareFeet,
+                        widget.measurement.area,
                       );
                     }
                   }
@@ -357,10 +364,10 @@ class _MeasurementResultBottomSheetState
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: AppTheme.primaryColor.withOpacity(0.3),
+                    color: AppTheme.primaryColor.withValues(alpha: 0.3),
                   ),
                   borderRadius: BorderRadius.circular(12),
-                  color: AppTheme.primaryColor.withOpacity(0.05),
+                  color: AppTheme.primaryColor.withValues(alpha: 0.05),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
