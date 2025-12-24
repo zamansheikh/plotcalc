@@ -39,6 +39,12 @@ class _DrawingPageState extends State<DrawingPage> {
   final TextEditingController _heightController = TextEditingController();
   final TextEditingController _radiusController = TextEditingController();
 
+  // Rectangle Average Method State
+  int _widthSegmentCount = 1;
+  int _heightSegmentCount = 1;
+  final List<TextEditingController> _widthControllers = [];
+  final List<TextEditingController> _heightControllers = [];
+
   // Zoom/Pan control
   final TransformationController _transformationController =
       TransformationController();
@@ -92,6 +98,25 @@ class _DrawingPageState extends State<DrawingPage> {
         }
         if (measurement.dimensions!.containsKey('radius')) {
           _radiusController.text = measurement.dimensions!['radius'].toString();
+        }
+
+        // Load average method data if available
+        if (measurement.dimensions!.containsKey('width_count')) {
+          _widthSegmentCount = measurement.dimensions!['width_count']!.toInt();
+          _widthControllers.clear();
+          for (int i = 0; i < _widthSegmentCount; i++) {
+            final val = measurement.dimensions!['width_$i'] ?? 0.0;
+            _widthControllers.add(TextEditingController(text: val.toString()));
+          }
+        }
+        if (measurement.dimensions!.containsKey('height_count')) {
+          _heightSegmentCount = measurement.dimensions!['height_count']!
+              .toInt();
+          _heightControllers.clear();
+          for (int i = 0; i < _heightSegmentCount; i++) {
+            final val = measurement.dimensions!['height_$i'] ?? 0.0;
+            _heightControllers.add(TextEditingController(text: val.toString()));
+          }
         }
       }
 
@@ -405,6 +430,12 @@ class _DrawingPageState extends State<DrawingPage> {
     _widthController.dispose();
     _heightController.dispose();
     _radiusController.dispose();
+    for (var c in _widthControllers) {
+      c.dispose();
+    }
+    for (var c in _heightControllers) {
+      c.dispose();
+    }
     _transformationController.dispose();
     super.dispose();
   }
@@ -553,10 +584,35 @@ class _DrawingPageState extends State<DrawingPage> {
 
     // For specific shapes, we need dimensions
     if (_selectedShape == ShapeType.rectangle) {
-      final width = double.tryParse(_widthController.text);
-      final height = double.tryParse(_heightController.text);
+      // Calculate average width
+      double totalWidth = 0;
+      int validWidths = 0;
+      final widthValues = <String, double>{};
 
-      if (width == null || height == null) {
+      for (int i = 0; i < _widthControllers.length; i++) {
+        final val = double.tryParse(_widthControllers[i].text);
+        if (val != null) {
+          totalWidth += val;
+          validWidths++;
+          widthValues['width_$i'] = val;
+        }
+      }
+
+      // Calculate average height
+      double totalHeight = 0;
+      int validHeights = 0;
+      final heightValues = <String, double>{};
+
+      for (int i = 0; i < _heightControllers.length; i++) {
+        final val = double.tryParse(_heightControllers[i].text);
+        if (val != null) {
+          totalHeight += val;
+          validHeights++;
+          heightValues['height_$i'] = val;
+        }
+      }
+
+      if (validWidths == 0 || validHeights == 0) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(loc.enterValidWidthHeight),
@@ -566,19 +622,30 @@ class _DrawingPageState extends State<DrawingPage> {
         return;
       }
 
-      // Convert to meters before calculation
-      final widthInMeters = inputUnit.toMeters(width);
-      final heightInMeters = inputUnit.toMeters(height);
+      final avgWidth = totalWidth / validWidths;
+      final avgHeight = totalHeight / validHeights;
 
-      dimensions = {'width': widthInMeters, 'height': heightInMeters};
+      // Convert to meters before calculation
+      final widthInMeters = inputUnit.toMeters(avgWidth);
+      final heightInMeters = inputUnit.toMeters(avgHeight);
+
+      dimensions = {
+        'width': widthInMeters,
+        'height': heightInMeters,
+        'width_count': _widthSegmentCount.toDouble(),
+        'height_count': _heightSegmentCount.toDouble(),
+        ...widthValues,
+        ...heightValues,
+      };
+
       // Create 4 points for rectangle visualization
       if (_points.isEmpty) {
         setState(() {
           _points.addAll([
             const Point(50, 50),
-            Point(50 + width * 10, 50),
-            Point(50 + width * 10, 50 + height * 10),
-            Point(50, 50 + height * 10),
+            Point(50 + avgWidth * 10, 50),
+            Point(50 + avgWidth * 10, 50 + avgHeight * 10),
+            Point(50, 50 + avgHeight * 10),
           ]);
         });
       }
@@ -954,48 +1021,156 @@ class _DrawingPageState extends State<DrawingPage> {
 
   void _showDimensionInput() {
     final loc = AppLocalizations.of(context);
+
+    // Initialize controllers if empty
+    if (_widthControllers.isEmpty) {
+      _widthControllers.add(TextEditingController(text: _widthController.text));
+    }
+    if (_heightControllers.isEmpty) {
+      _heightControllers.add(
+        TextEditingController(text: _heightController.text),
+      );
+    }
+
     showDialog(
       context: context,
-      builder: (context) =>
-          BlocBuilder<MeasurementUnitBloc, MeasurementUnitState>(
-            builder: (context, state) {
-              final unitSymbol = state.unit.symbol;
+      builder: (context) => BlocBuilder<MeasurementUnitBloc, MeasurementUnitState>(
+        builder: (context, state) {
+          final unitSymbol = state.unit.symbol;
 
+          return StatefulBuilder(
+            builder: (context, setStateDialog) {
               return AlertDialog(
                 title: Text(
                   '${loc.enterMeasurement} ${_selectedShape.displayName}',
                 ),
-                content: _selectedShape == ShapeType.rectangle
-                    ? Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          TextField(
-                            controller: _widthController,
-                            decoration: InputDecoration(
-                              labelText: '${loc.width} ($unitSymbol)',
-                              border: const OutlineInputBorder(),
+                content: SingleChildScrollView(
+                  child: _selectedShape == ShapeType.rectangle
+                      ? Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Width Section
+                            Text(
+                              '${loc.width} Measurements',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                            keyboardType: TextInputType.number,
-                          ),
-                          const SizedBox(height: 16),
-                          TextField(
-                            controller: _heightController,
-                            decoration: InputDecoration(
-                              labelText: '${loc.height} ($unitSymbol)',
-                              border: const OutlineInputBorder(),
+                            Row(
+                              children: [
+                                const Text('Count:'),
+                                Expanded(
+                                  child: Slider(
+                                    value: _widthSegmentCount.toDouble(),
+                                    min: 1,
+                                    max: 5,
+                                    divisions: 4,
+                                    label: _widthSegmentCount.toString(),
+                                    onChanged: (value) {
+                                      setStateDialog(() {
+                                        _widthSegmentCount = value.toInt();
+                                        // Adjust controllers
+                                        while (_widthControllers.length <
+                                            _widthSegmentCount) {
+                                          _widthControllers.add(
+                                            TextEditingController(),
+                                          );
+                                        }
+                                        while (_widthControllers.length >
+                                            _widthSegmentCount) {
+                                          _widthControllers.last.dispose();
+                                          _widthControllers.removeLast();
+                                        }
+                                      });
+                                    },
+                                  ),
+                                ),
+                                Text('$_widthSegmentCount'),
+                              ],
                             ),
-                            keyboardType: TextInputType.number,
+                            ...List.generate(_widthSegmentCount, (index) {
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 8.0),
+                                child: TextField(
+                                  controller: _widthControllers[index],
+                                  decoration: InputDecoration(
+                                    labelText:
+                                        '${loc.width} ${index + 1} ($unitSymbol)',
+                                    border: const OutlineInputBorder(),
+                                    isDense: true,
+                                  ),
+                                  keyboardType: TextInputType.number,
+                                ),
+                              );
+                            }),
+                            const SizedBox(height: 16),
+
+                            // Height Section
+                            Text(
+                              '${loc.height} Measurements',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                const Text('Count:'),
+                                Expanded(
+                                  child: Slider(
+                                    value: _heightSegmentCount.toDouble(),
+                                    min: 1,
+                                    max: 5,
+                                    divisions: 4,
+                                    label: _heightSegmentCount.toString(),
+                                    onChanged: (value) {
+                                      setStateDialog(() {
+                                        _heightSegmentCount = value.toInt();
+                                        // Adjust controllers
+                                        while (_heightControllers.length <
+                                            _heightSegmentCount) {
+                                          _heightControllers.add(
+                                            TextEditingController(),
+                                          );
+                                        }
+                                        while (_heightControllers.length >
+                                            _heightSegmentCount) {
+                                          _heightControllers.last.dispose();
+                                          _heightControllers.removeLast();
+                                        }
+                                      });
+                                    },
+                                  ),
+                                ),
+                                Text('$_heightSegmentCount'),
+                              ],
+                            ),
+                            ...List.generate(_heightSegmentCount, (index) {
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 8.0),
+                                child: TextField(
+                                  controller: _heightControllers[index],
+                                  decoration: InputDecoration(
+                                    labelText:
+                                        '${loc.height} ${index + 1} ($unitSymbol)',
+                                    border: const OutlineInputBorder(),
+                                    isDense: true,
+                                  ),
+                                  keyboardType: TextInputType.number,
+                                ),
+                              );
+                            }),
+                          ],
+                        )
+                      : TextField(
+                          controller: _radiusController,
+                          decoration: InputDecoration(
+                            labelText: '${loc.radius} ($unitSymbol)',
+                            border: const OutlineInputBorder(),
                           ),
-                        ],
-                      )
-                    : TextField(
-                        controller: _radiusController,
-                        decoration: InputDecoration(
-                          labelText: '${loc.radius} ($unitSymbol)',
-                          border: const OutlineInputBorder(),
+                          keyboardType: TextInputType.number,
                         ),
-                        keyboardType: TextInputType.number,
-                      ),
+                ),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.pop(context),
@@ -1010,6 +1185,35 @@ class _DrawingPageState extends State<DrawingPage> {
                             _points.add(const Point(200, 200));
                           }
                         } else if (_selectedShape == ShapeType.rectangle) {
+                          // Update main controllers with average for backward compatibility/display
+                          double totalWidth = 0;
+                          int validWidths = 0;
+                          for (var c in _widthControllers) {
+                            final val = double.tryParse(c.text);
+                            if (val != null) {
+                              totalWidth += val;
+                              validWidths++;
+                            }
+                          }
+                          if (validWidths > 0) {
+                            _widthController.text = (totalWidth / validWidths)
+                                .toString();
+                          }
+
+                          double totalHeight = 0;
+                          int validHeights = 0;
+                          for (var c in _heightControllers) {
+                            final val = double.tryParse(c.text);
+                            if (val != null) {
+                              totalHeight += val;
+                              validHeights++;
+                            }
+                          }
+                          if (validHeights > 0) {
+                            _heightController.text =
+                                (totalHeight / validHeights).toString();
+                          }
+
                           if (_points.isEmpty) {
                             _points.add(const Point(100, 150));
                             _points.add(const Point(300, 150));
@@ -1025,7 +1229,9 @@ class _DrawingPageState extends State<DrawingPage> {
                 ],
               );
             },
-          ),
+          );
+        },
+      ),
     );
   }
 
