@@ -82,6 +82,8 @@ class _DrawingPageState extends State<DrawingPage> {
   }
 
   void _loadMeasurement(Measurement measurement) {
+    final inputUnit = context.read<MeasurementUnitBloc>().state.unit;
+
     setState(() {
       _selectedShape = measurement.shapeType;
       _points.clear();
@@ -91,13 +93,19 @@ class _DrawingPageState extends State<DrawingPage> {
       // Load dimensions for rectangles and circles
       if (measurement.dimensions != null) {
         if (measurement.dimensions!.containsKey('width')) {
-          _widthController.text = measurement.dimensions!['width'].toString();
+          _widthController.text = inputUnit
+              .fromMeters(measurement.dimensions!['width']!)
+              .toStringAsFixed(2);
         }
         if (measurement.dimensions!.containsKey('height')) {
-          _heightController.text = measurement.dimensions!['height'].toString();
+          _heightController.text = inputUnit
+              .fromMeters(measurement.dimensions!['height']!)
+              .toStringAsFixed(2);
         }
         if (measurement.dimensions!.containsKey('radius')) {
-          _radiusController.text = measurement.dimensions!['radius'].toString();
+          _radiusController.text = inputUnit
+              .fromMeters(measurement.dimensions!['radius']!)
+              .toStringAsFixed(2);
         }
 
         // Load average method data if available
@@ -106,7 +114,11 @@ class _DrawingPageState extends State<DrawingPage> {
           _widthControllers.clear();
           for (int i = 0; i < _widthSegmentCount; i++) {
             final val = measurement.dimensions!['width_$i'] ?? 0.0;
-            _widthControllers.add(TextEditingController(text: val.toString()));
+            _widthControllers.add(
+              TextEditingController(
+                text: inputUnit.fromMeters(val).toStringAsFixed(2),
+              ),
+            );
           }
         }
         if (measurement.dimensions!.containsKey('height_count')) {
@@ -115,7 +127,11 @@ class _DrawingPageState extends State<DrawingPage> {
           _heightControllers.clear();
           for (int i = 0; i < _heightSegmentCount; i++) {
             final val = measurement.dimensions!['height_$i'] ?? 0.0;
-            _heightControllers.add(TextEditingController(text: val.toString()));
+            _heightControllers.add(
+              TextEditingController(
+                text: inputUnit.fromMeters(val).toStringAsFixed(2),
+              ),
+            );
           }
         }
       }
@@ -372,7 +388,7 @@ class _DrawingPageState extends State<DrawingPage> {
                 math.pow(p2.x - p1.x, 2) + math.pow(p2.y - p1.y, 2),
               );
               final distMeters = distPixels * metersPerPixel;
-              _sideMeasurements[i] = inputUnit.fromMeters(distMeters);
+              _sideMeasurements[i] = distMeters;
             }
 
             // Calculate diagonals if needed (for polygons with > 3 sides)
@@ -385,9 +401,7 @@ class _DrawingPageState extends State<DrawingPage> {
                   math.pow(p2.x - p1.x, 2) + math.pow(p2.y - p1.y, 2),
                 );
                 final distMeters = distPixels * metersPerPixel;
-                _diagonalMeasurements['0-$i'] = inputUnit.fromMeters(
-                  distMeters,
-                );
+                _diagonalMeasurements['0-$i'] = distMeters;
               }
             }
 
@@ -693,7 +707,7 @@ class _DrawingPageState extends State<DrawingPage> {
         if (val != null) {
           totalWidth += val;
           validWidths++;
-          widthValues['width_$i'] = val;
+          widthValues['width_$i'] = inputUnit.toMeters(val);
         }
       }
 
@@ -707,7 +721,7 @@ class _DrawingPageState extends State<DrawingPage> {
         if (val != null) {
           totalHeight += val;
           validHeights++;
-          heightValues['height_$i'] = val;
+          heightValues['height_$i'] = inputUnit.toMeters(val);
         }
       }
 
@@ -1374,6 +1388,8 @@ class _DrawingPageState extends State<DrawingPage> {
 
   void _showSideMeasurements() {
     final loc = AppLocalizations.of(context);
+    final measurementUnitState = context.read<MeasurementUnitBloc>().state;
+    final inputUnit = measurementUnitState.unit;
     // Calculate total number of sides
     final totalSides = _points.length >= 3
         ? _points.length
@@ -1405,7 +1421,7 @@ class _DrawingPageState extends State<DrawingPage> {
                           decoration: InputDecoration(
                             border: const OutlineInputBorder(),
                             hintText: '0.0',
-                            suffixText: 'm',
+                            suffixText: inputUnit.symbol,
                             filled: true,
                             fillColor: Colors.grey[100],
                           ),
@@ -1413,13 +1429,19 @@ class _DrawingPageState extends State<DrawingPage> {
                             decimal: true,
                           ),
                           controller: TextEditingController(
-                            text: _sideMeasurements[i]?.toString() ?? '',
+                            text: _sideMeasurements[i] != null
+                                ? inputUnit
+                                      .fromMeters(_sideMeasurements[i]!)
+                                      .toStringAsFixed(2)
+                                : '',
                           ),
                           onChanged: (value) {
                             final measurement = double.tryParse(value);
                             if (measurement != null && measurement > 0) {
                               setState(() {
-                                _sideMeasurements[i] = measurement;
+                                _sideMeasurements[i] = inputUnit.toMeters(
+                                  measurement,
+                                );
                               });
                             } else {
                               setState(() {
@@ -1609,6 +1631,12 @@ class _DrawingPageState extends State<DrawingPage> {
               onPressed: _showSideMeasurements,
               tooltip: loc.enterMeasurement,
             ),
+          if (_selectedShape == ShapeType.polygon && _points.length >= 4)
+            IconButton(
+              icon: const Icon(Icons.border_style),
+              onPressed: _showDiagonalInput,
+              tooltip: loc.diagonalMeasurementsTitle,
+            ),
         ],
       ),
       body: BlocConsumer<MeasurementBloc, MeasurementState>(
@@ -1737,6 +1765,10 @@ class _DrawingPageState extends State<DrawingPage> {
                                   previewPoints: _previewPoints ?? [],
                                   selectedIndices: _selectedResizeIndices,
                                   isResizeMode: _isResizeMode,
+                                  inputUnit: context
+                                      .watch<MeasurementUnitBloc>()
+                                      .state
+                                      .unit,
                                 ),
                                 child: Container(),
                               ),
@@ -2021,6 +2053,7 @@ class ShapePainter extends CustomPainter {
   final List<Point> previewPoints;
   final Set<int> selectedIndices;
   final bool isResizeMode;
+  final InputUnit inputUnit;
 
   ShapePainter(
     this.points,
@@ -2031,6 +2064,7 @@ class ShapePainter extends CustomPainter {
     this.previewPoints = const [],
     this.selectedIndices = const {},
     this.isResizeMode = false,
+    required this.inputUnit,
   });
 
   @override
@@ -2101,7 +2135,7 @@ class ShapePainter extends CustomPainter {
         (center.dx + radiusEnd.dx) / 2,
         (center.dy + radiusEnd.dy) / 2,
       );
-      final labelText = '${radius!.toStringAsFixed(1)}m';
+      final labelText = '${radius!.toStringAsFixed(1)}${inputUnit.symbol}';
 
       final textPainter = TextPainter(
         text: TextSpan(
@@ -2255,7 +2289,7 @@ class ShapePainter extends CustomPainter {
 
     // Prepare text first to measure it
     final labelText = hasMeasurement
-        ? '${sideMeasurements[sideIndex]!.toStringAsFixed(1)}m'
+        ? '${inputUnit.fromMeters(sideMeasurements[sideIndex]!).toStringAsFixed(1)}${inputUnit.symbol}'
         : '${sideIndex + 1}';
 
     // Determine font size based on text length
@@ -2360,7 +2394,8 @@ class ShapePainter extends CustomPainter {
           );
 
           final measurement = diagonalMeasurements[diagonalKey]!;
-          final labelText = '${measurement.toStringAsFixed(1)}m';
+          final labelText =
+              '${inputUnit.fromMeters(measurement).toStringAsFixed(1)}${inputUnit.symbol}';
 
           final textPainter = TextPainter(
             text: TextSpan(
