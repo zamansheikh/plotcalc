@@ -842,12 +842,10 @@ class _DrawingPageState extends State<DrawingPage> {
     }
 
     // Calculate area
-    // Convert side measurements and diagonal measurements to meters
-    final sideMeasurementsInMeters = _sideMeasurements.map(
-      (key, value) => MapEntry(key, inputUnit.toMeters(value)),
-    );
-    final diagonalMeasurementsInMeters = _diagonalMeasurements.map(
-      (key, value) => MapEntry(key, inputUnit.toMeters(value)),
+    // Side measurements and diagonal measurements are already stored in meters
+    final sideMeasurementsInMeters = Map<int, double>.from(_sideMeasurements);
+    final diagonalMeasurementsInMeters = Map<String, double>.from(
+      _diagonalMeasurements,
     );
 
     // Auto-fix shape geometry for Polygons and Triangles
