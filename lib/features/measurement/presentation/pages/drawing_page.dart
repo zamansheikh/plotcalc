@@ -227,6 +227,7 @@ class _DrawingPageState extends State<DrawingPage> {
     const double touchRadius = 30.0; // Increased touch area
     int? tappedIndex;
 
+    // 1. Check points first
     for (int i = 0; i < _points.length; i++) {
       final point = _points[i];
       final distance = (Offset(point.x, point.y) - localPosition).distance;
@@ -246,7 +247,60 @@ class _DrawingPageState extends State<DrawingPage> {
         }
         _updateResizePreview();
       });
+      return;
     }
+
+    // 2. If no point tapped, check lines (sides)
+    // This allows selecting/deselecting a whole side (2 points)
+    int? tappedSideIndex;
+    for (int i = 0; i < _points.length; i++) {
+      final p1 = _points[i];
+      final p2 = _points[(i + 1) % _points.length];
+
+      // Calculate distance from tap to line segment p1-p2
+      final dist = _distToSegment(
+        Point(localPosition.dx, localPosition.dy),
+        p1,
+        p2,
+      );
+
+      if (dist <= touchRadius) {
+        tappedSideIndex = i;
+        break;
+      }
+    }
+
+    if (tappedSideIndex != null) {
+      final idx1 = tappedSideIndex;
+      final idx2 = (tappedSideIndex + 1) % _points.length;
+
+      setState(() {
+        // Toggle logic: If both are selected, deselect both. Otherwise select both.
+        final isBothSelected =
+            _selectedResizeIndices.contains(idx1) &&
+            _selectedResizeIndices.contains(idx2);
+
+        if (isBothSelected) {
+          _selectedResizeIndices.remove(idx1);
+          _selectedResizeIndices.remove(idx2);
+        } else {
+          _selectedResizeIndices.add(idx1);
+          _selectedResizeIndices.add(idx2);
+        }
+        _updateResizePreview();
+      });
+    }
+  }
+
+  double _distToSegment(Point p, Point v, Point w) {
+    final l2 = math.pow(v.x - w.x, 2) + math.pow(v.y - w.y, 2);
+    if (l2 == 0)
+      return math.sqrt(math.pow(p.x - v.x, 2) + math.pow(p.y - v.y, 2));
+    var t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
+    t = t.clamp(0.0, 1.0);
+    final px = v.x + t * (w.x - v.x);
+    final py = v.y + t * (w.y - v.y);
+    return math.sqrt(math.pow(p.x - px, 2) + math.pow(p.y - py, 2));
   }
 
   void _updateResizePreview() {
@@ -361,6 +415,10 @@ class _DrawingPageState extends State<DrawingPage> {
       // Get current input unit for converting back
       final inputUnit = context.read<MeasurementUnitBloc>().state.unit;
 
+      // Check if selection was partial (implies distortion)
+      final bool isPartialSelection =
+          _selectedResizeIndices.length != _points.length;
+
       setState(() {
         _points.clear();
         _points.addAll(_previewPoints!);
@@ -409,22 +467,22 @@ class _DrawingPageState extends State<DrawingPage> {
             if (_selectedShape == ShapeType.rectangle) {
               // Check if the shape is still a rectangle (all points selected/scaled uniformly)
               // If user selected a subset of points, it's likely distorted -> Convert to Polygon
-              // We can check _selectedResizeIndices from the closure context, but we cleared it above.
-              // Wait, we cleared it above. We need to check BEFORE clearing or store a flag.
-              // Actually, we can't check _selectedResizeIndices here because we cleared it.
-              // But we can check if the sides are equal (approx).
 
               final w1 = _sideMeasurements[0] ?? 0;
               final h1 = _sideMeasurements[1] ?? 0;
               final w2 = _sideMeasurements[2] ?? 0;
               final h2 = _sideMeasurements[3] ?? 0;
 
-              const tolerance =
-                  0.01; // 1% tolerance? Or absolute? Let's use relative.
+              const tolerance = 0.01; // 1% tolerance
               bool isDistorted = false;
 
               if ((w1 - w2).abs() > w1 * tolerance ||
                   (h1 - h2).abs() > h1 * tolerance) {
+                isDistorted = true;
+              }
+
+              // Force distortion if partial selection was used
+              if (isPartialSelection) {
                 isDistorted = true;
               }
 
@@ -433,12 +491,10 @@ class _DrawingPageState extends State<DrawingPage> {
                 _isShapeComplete =
                     true; // Mark as complete so Calculate button is enabled
 
-                // Clear rectangle controllers to avoid confusion?
-                // No, just let them be.
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text(
-                      'Shape converted to Polygon due to distortion.',
+                      'Shape converted to Polygon due to non-uniform resize.',
                     ),
                     duration: Duration(seconds: 2),
                   ),
@@ -449,15 +505,19 @@ class _DrawingPageState extends State<DrawingPage> {
                 final newWidth = (w1 + w2) / 2;
                 final newHeight = (h1 + h2) / 2;
 
-                _widthController.text = newWidth.toStringAsFixed(2);
-                _heightController.text = newHeight.toStringAsFixed(2);
+                _widthController.text = inputUnit
+                    .fromMeters(newWidth)
+                    .toStringAsFixed(2);
+                _heightController.text = inputUnit
+                    .fromMeters(newHeight)
+                    .toStringAsFixed(2);
 
                 // Update all segment controllers with the new average
                 for (var c in _widthControllers) {
-                  c.text = newWidth.toStringAsFixed(2);
+                  c.text = inputUnit.fromMeters(newWidth).toStringAsFixed(2);
                 }
                 for (var c in _heightControllers) {
-                  c.text = newHeight.toStringAsFixed(2);
+                  c.text = inputUnit.fromMeters(newHeight).toStringAsFixed(2);
                 }
               }
             }
