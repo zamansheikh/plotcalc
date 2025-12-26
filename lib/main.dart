@@ -25,10 +25,15 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider<MeasurementBloc>(create: (context) => getIt<MeasurementBloc>()),
-        BlocProvider<LanguageBloc>(create: (context) => LanguageBloc()),
+        BlocProvider<MeasurementBloc>(
+          create: (context) => getIt<MeasurementBloc>(),
+        ),
+        BlocProvider<LanguageBloc>(
+          create: (context) => LanguageBloc()..add(LoadLanguageEvent()),
+        ),
         BlocProvider<MeasurementUnitBloc>(
-          create: (context) => MeasurementUnitBloc(),
+          create: (context) =>
+              MeasurementUnitBloc()..add(const LoadMeasurementUnitEvent()),
         ),
       ],
       child: BlocBuilder<LanguageBloc, LanguageState>(

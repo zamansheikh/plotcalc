@@ -15,3 +15,5 @@ class ChangeLanguageEvent extends LanguageEvent {
   @override
   List<Object> get props => [locale];
 }
+
+class LoadLanguageEvent extends LanguageEvent {}
