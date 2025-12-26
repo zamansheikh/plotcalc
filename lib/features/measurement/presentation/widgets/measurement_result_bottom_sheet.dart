@@ -349,6 +349,28 @@ class _MeasurementResultBottomSheetState
                         onChanged: (bool? value) {
                           setState(() {
                             unit.isEnabled = value ?? false;
+
+                            // Auto-uncheck logic
+                            if (unit.isEnabled) {
+                              if (unit.id == 'bighaMymensingh') {
+                                // Uncheck Standard Bigha
+                                final standard = _units.firstWhere(
+                                  (u) => u.id == 'bigha',
+                                  orElse: () => unit,
+                                );
+                                if (standard != unit)
+                                  standard.isEnabled = false;
+                              } else if (unit.id == 'kathaMymensingh') {
+                                // Uncheck Standard Katha
+                                final standard = _units.firstWhere(
+                                  (u) => u.id == 'katha',
+                                  orElse: () => unit,
+                                );
+                                if (standard != unit)
+                                  standard.isEnabled = false;
+                              }
+                            }
+
                             _calculateBreakdown();
                           });
                         },
