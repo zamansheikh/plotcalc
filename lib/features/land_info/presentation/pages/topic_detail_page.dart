@@ -12,9 +12,31 @@ class TopicDetailPage extends StatelessWidget {
       appBar: AppBar(title: Text(topic.title)),
       body: ListView.builder(
         padding: const EdgeInsets.all(16.0),
-        itemCount: topic.content.length,
+        itemCount: topic.content.length + 1,
         itemBuilder: (context, index) {
-          final block = topic.content[index];
+          // First item is the visible title in the body (in addition to AppBar)
+          if (index == 0) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12.0, top: 6.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    topic.title,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 8.0),
+                  const Divider(height: 1, thickness: 1),
+                ],
+              ),
+            );
+          }
+
+          final block = topic.content[index - 1];
           return _buildContentBlock(context, block);
         },
       ),
