@@ -48,6 +48,8 @@ class ContentBlock {
   final String? url; // For image
   final String? source; // For image (asset/network)
   final String? caption; // For image
+  final List<String>? headers; // For table
+  final List<List<String>>? rows; // For table
 
   ContentBlock({
     required this.type,
@@ -57,6 +59,8 @@ class ContentBlock {
     this.url,
     this.source,
     this.caption,
+    this.headers,
+    this.rows,
   });
 
   factory ContentBlock.fromJson(Map<String, dynamic> json) {
@@ -68,6 +72,10 @@ class ContentBlock {
       url: json['url'] as String?,
       source: json['source'] as String?,
       caption: json['caption'] as String?,
+      headers: (json['headers'] as List?)?.map((e) => e as String).toList(),
+      rows: (json['rows'] as List?)
+          ?.map((e) => (e as List).map((i) => i as String).toList())
+          .toList(),
     );
   }
 }

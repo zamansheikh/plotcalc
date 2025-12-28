@@ -116,6 +116,37 @@ class TopicDetailPage extends StatelessWidget {
             );
           }).toList(),
         );
+      case 'table':
+        if (block.headers == null || block.rows == null) {
+          return const SizedBox.shrink();
+        }
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16.0),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: DataTable(
+              border: TableBorder.all(color: Colors.grey.shade300),
+              headingRowColor: MaterialStateProperty.all(Colors.grey.shade100),
+              columns: block.headers!
+                  .map(
+                    (header) => DataColumn(
+                      label: Text(
+                        header,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  )
+                  .toList(),
+              rows: block.rows!
+                  .map(
+                    (row) => DataRow(
+                      cells: row.map((cell) => DataCell(Text(cell))).toList(),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ),
+        );
       case 'image':
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 16.0),
