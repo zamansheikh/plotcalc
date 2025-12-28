@@ -44,6 +44,7 @@ dependencies:
   intl: ^0.20.2
   path_provider: ^2.1.5
   url_launcher: ^6.3.2
+  http: ^1.6.0
 
 dev_dependencies:
   flutter_test:
@@ -60,8 +61,7 @@ flutter:
 
   assets:
     - assets/icon/icon.png
-    - assets/data/
-    - assets/images/
+    - docs/land_info.json
     - assets/images/
 
   # example:
