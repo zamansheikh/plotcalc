@@ -216,7 +216,7 @@ class _UnitConverterPageState extends State<UnitConverterPage> {
             // Swap Button
             Center(
               child: FloatingActionButton(
-                mini: true,
+                // mini: true,
                 onPressed: () {
                   setState(() {
                     final temp = _fromUnit;
@@ -225,8 +225,12 @@ class _UnitConverterPageState extends State<UnitConverterPage> {
                   });
                   _convert();
                 },
-                backgroundColor: AppTheme.primaryColor,
-                child: const Icon(Icons.swap_vert),
+                backgroundColor: AppTheme.successColor,
+                child: const Icon(
+                  Icons.swap_vert,
+                  size: 42,
+                  color: Colors.white,
+                ),
               ),
             ),
             const SizedBox(height: 16),
