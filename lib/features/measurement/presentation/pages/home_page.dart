@@ -25,7 +25,7 @@ class HomePage extends StatelessWidget {
                 size: 100,
                 color: AppTheme.primaryColor,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 8),
               Text(
                 loc.appTitle,
                 textAlign: TextAlign.center,
@@ -40,7 +40,7 @@ class HomePage extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 16, color: Colors.grey),
               ),
-              const SizedBox(height: 60),
+              const SizedBox(height: 16),
 
               // Main Actions
               ElevatedButton.icon(
@@ -86,6 +86,18 @@ class HomePage extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 20),
                   backgroundColor: Colors.brown,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              ElevatedButton.icon(
+                onPressed: () => context.push('/land-info'),
+                icon: const Icon(Icons.info_outline, size: 28),
+                label: Text(loc.infoPortal),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  backgroundColor: Colors.blueGrey,
                   foregroundColor: Colors.white,
                 ),
               ),

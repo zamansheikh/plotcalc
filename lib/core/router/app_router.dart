@@ -7,6 +7,9 @@ import '../../features/measurement/presentation/pages/calculator_page.dart';
 import '../../features/measurement/presentation/pages/unit_converter_page.dart';
 import '../../features/measurement/presentation/pages/land_calculator_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
+import '../../features/land_info/presentation/pages/land_info_page.dart';
+import '../../features/land_info/presentation/pages/topic_detail_page.dart';
+import '../../features/land_info/data/models/land_info_model.dart';
 import '../../features/measurement/domain/entities/measurement.dart';
 import '../constants/app_constants.dart';
 
@@ -20,6 +23,8 @@ class AppRouter {
   static const String history = '/history';
   static const String landCalculator = '/land-calculator';
   static const String settings = '/settings';
+  static const String landInfo = '/land-info';
+  static const String topicDetail = '/land-info/detail';
 
   static GoRouter router = GoRouter(
     initialLocation: home,
@@ -29,6 +34,23 @@ class AppRouter {
         name: 'home',
         pageBuilder: (context, state) =>
             MaterialPage(key: state.pageKey, child: const HomePage()),
+      ),
+      GoRoute(
+        path: landInfo,
+        name: 'landInfo',
+        pageBuilder: (context, state) =>
+            MaterialPage(key: state.pageKey, child: const LandInfoPage()),
+      ),
+      GoRoute(
+        path: topicDetail,
+        name: 'topicDetail',
+        pageBuilder: (context, state) {
+          final topic = state.extra as LandTopic;
+          return MaterialPage(
+            key: state.pageKey,
+            child: TopicDetailPage(topic: topic),
+          );
+        },
       ),
       GoRoute(
         path: drawing,

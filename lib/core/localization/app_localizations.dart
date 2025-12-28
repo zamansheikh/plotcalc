@@ -48,6 +48,8 @@ class AppLocalizations {
   String get complete => isEnglish ? 'Complete' : 'সম্পূর্ণ করুন';
   String get undo => isEnglish ? 'Undo' : 'পূর্ববর্তী';
   String get clear => isEnglish ? 'Clear' : 'পরিষ্কার করুন';
+  String get infoPortal => isEnglish ? 'Information Portal' : 'তথ্য বাতায়ন';
+  String get landKhatiyan => isEnglish ? 'Land Khatiyan' : 'জমির খতিয়ান';
   String get ok => isEnglish ? 'OK' : 'ঠিক আছে';
   String get skip => isEnglish ? 'Skip' : 'এড়িয়ে যান';
   String get cancel => isEnglish ? 'Cancel' : 'বাতিল করুন';

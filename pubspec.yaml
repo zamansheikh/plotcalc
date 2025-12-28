@@ -60,7 +60,9 @@ flutter:
 
   assets:
     - assets/icon/icon.png
-  #   - images/a_dot_ham.jpeg
+    - assets/data/
+    - assets/images/
+    - assets/images/
 
   # example:
   # fonts:
