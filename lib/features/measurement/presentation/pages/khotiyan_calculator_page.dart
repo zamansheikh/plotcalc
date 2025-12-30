@@ -211,8 +211,8 @@ class _KhotiyanCalculatorPageState extends State<KhotiyanCalculatorPage> {
             // Header Card
             Card(
               color: isDarkTheme
-                  ? primaryColor.withOpacity(0.2)
-                  : primaryColor.withOpacity(0.1),
+                  ? primaryColor.withValues(alpha: 0.2)
+                  : primaryColor.withValues(alpha: 0.1),
               elevation: 0,
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -470,7 +470,7 @@ class _KhotiyanCalculatorPageState extends State<KhotiyanCalculatorPage> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                   side: BorderSide(
-                    color: primaryColor.withOpacity(0.5),
+                    color: primaryColor.withValues(alpha: 0.5),
                     width: 1,
                   ),
                 ),
@@ -491,7 +491,7 @@ class _KhotiyanCalculatorPageState extends State<KhotiyanCalculatorPage> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: primaryColor.withOpacity(0.1),
+                          color: primaryColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Row(
