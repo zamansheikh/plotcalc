@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../features/measurement/presentation/pages/home_page.dart';
 import '../../features/measurement/presentation/pages/drawing_page.dart';
 import '../../features/measurement/presentation/pages/history_page.dart';
-import '../../features/measurement/presentation/pages/calculator_page.dart';
 import '../../features/measurement/presentation/pages/unit_converter_page.dart';
 import '../../features/measurement/presentation/pages/land_calculator_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
@@ -78,12 +77,6 @@ class AppRouter {
             ),
           );
         },
-      ),
-      GoRoute(
-        path: calculator,
-        name: 'calculator',
-        pageBuilder: (context, state) =>
-            MaterialPage(key: state.pageKey, child: const CalculatorPage()),
       ),
       GoRoute(
         path: converter,
