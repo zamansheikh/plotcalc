@@ -182,7 +182,7 @@ class _UnitConverterPageState extends State<UnitConverterPage> {
             const SizedBox(height: 8),
 
             DropdownButtonFormField<String>(
-              value: _selectedUnit,
+              initialValue: _selectedUnit,
               items: [
                 DropdownMenuItem(
                   value: 'squareMeters',

@@ -4,8 +4,6 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/utils/land_measurement_converter.dart';
-import '../../../../core/utils/land_area_breakdown.dart';
 import '../widgets/measurement_result_bottom_sheet.dart';
 import '../../domain/entities/measurement.dart';
 import '../bloc/measurement_bloc.dart';
@@ -475,21 +473,6 @@ class _HistoryPageState extends State<HistoryPage> {
     }
   }
 
-  Widget _buildDetailRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: TextStyle(color: Colors.grey[600], fontSize: 14)),
-          Text(
-            value,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-          ),
-        ],
-      ),
-    );
-  }
 
   void _confirmDelete(BuildContext context, String id) {
     final loc = AppLocalizations.of(context);

@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/land_area_breakdown.dart';
-import '../../../../core/utils/land_measurement_converter.dart';
 import '../../domain/entities/measurement.dart';
-import '../bloc/measurement_bloc.dart';
 import 'land_area_breakdown_widget.dart';
 
 class MeasurementResultBottomSheet extends StatefulWidget {
@@ -38,7 +34,6 @@ class _MeasurementResultBottomSheetState
 
   // For Resize Feature
   final TextEditingController _targetAreaController = TextEditingController();
-  MeasurementUnit _targetAreaUnit = MeasurementUnit.acres;
 
   @override
   void initState() {
@@ -217,7 +212,6 @@ class _MeasurementResultBottomSheetState
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = AppTheme.primaryColor;
 
     return DraggableScrollableSheet(
