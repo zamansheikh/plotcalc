@@ -592,8 +592,8 @@ class _DrawingPageState extends State<DrawingPage> {
     final ty = (_viewportSize.height / 2) - scale * centerY;
 
     final matrix = Matrix4.identity()
-      ..translate(tx, ty)
-      ..scale(scale);
+      ..translateByDouble(tx, ty, 0.0, 1.0)
+      ..scaleByDouble(scale, scale, 1.0, 1.0);
 
     _transformationController.value = matrix;
   }
