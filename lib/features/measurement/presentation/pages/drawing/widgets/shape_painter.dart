@@ -14,6 +14,7 @@ class ShapePainter extends CustomPainter {
   final Set<int> selectedIndices;
   final bool isResizeMode;
   final InputUnit inputUnit;
+  final bool useCompoundUnits;
 
   ShapePainter(
     this.points,
@@ -25,6 +26,7 @@ class ShapePainter extends CustomPainter {
     this.selectedIndices = const {},
     this.isResizeMode = false,
     required this.inputUnit,
+    this.useCompoundUnits = false,
   });
 
   @override
@@ -95,7 +97,7 @@ class ShapePainter extends CustomPainter {
         (center.dx + radiusEnd.dx) / 2,
         (center.dy + radiusEnd.dy) / 2,
       );
-      final labelText = '${radius!.toStringAsFixed(1)}${inputUnit.symbol}';
+      final labelText = _formatLength(radius!);
 
       final textPainter = TextPainter(
         text: TextSpan(
@@ -249,7 +251,7 @@ class ShapePainter extends CustomPainter {
 
     // Prepare text first to measure it
     final labelText = hasMeasurement
-        ? '${inputUnit.fromMeters(sideMeasurements[sideIndex]!).toStringAsFixed(1)}${inputUnit.symbol}'
+        ? _formatLength(inputUnit.fromMeters(sideMeasurements[sideIndex]!))
         : '${sideIndex + 1}';
 
     // Determine font size based on text length
@@ -352,8 +354,7 @@ class ShapePainter extends CustomPainter {
           );
 
           final measurement = diagonalMeasurements[diagonalKey]!;
-          final labelText =
-              '${inputUnit.fromMeters(measurement).toStringAsFixed(1)}${inputUnit.symbol}';
+          final labelText = _formatLength(inputUnit.fromMeters(measurement));
 
           final textPainter = TextPainter(
             text: TextSpan(
@@ -397,5 +398,26 @@ class ShapePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(ShapePainter oldDelegate) => true;
+  bool shouldRepaint(ShapePainter oldDelegate) =>
+      oldDelegate.points != points ||
+      oldDelegate.sideMeasurements != sideMeasurements ||
+      oldDelegate.isResizeMode != isResizeMode ||
+      oldDelegate.useCompoundUnits != useCompoundUnits;
+
+  String _formatLength(double value) {
+    if (!useCompoundUnits) {
+      return '${value.toStringAsFixed(2)}${inputUnit.symbol}';
+    }
+
+    if (inputUnit == InputUnit.feet) {
+      final feet = value.floor();
+      final inches = ((value - feet) * 12).round();
+      return "$feet' $inches\"";
+    } else {
+      // Meters
+      final meters = value.floor();
+      final cm = ((value - meters) * 100).round();
+      return '${meters}m ${cm}cm';
+    }
+  }
 }

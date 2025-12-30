@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:plotcalc/core/localization/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
 
@@ -188,7 +187,7 @@ class _KhotiyanCalculatorPageState extends State<KhotiyanCalculatorPage> {
     final shareText =
         "${_calculatedShare.toStringAsFixed(6)} ( ${loc.hissya} )";
 
-    final Map<String, String> _unitLabels = {
+    final Map<String, String> unitLabels = {
       'squareMeters': loc.squareMeters,
       'squareFeet': loc.squareFeet,
       'hectares': loc.hectares,
@@ -262,7 +261,7 @@ class _KhotiyanCalculatorPageState extends State<KhotiyanCalculatorPage> {
                           vertical: 12,
                         ),
                       ),
-                      value: _selectedAna,
+                      initialValue: _selectedAna,
                       items: List.generate(17, (index) {
                         return DropdownMenuItem(
                           value: index,
@@ -288,7 +287,7 @@ class _KhotiyanCalculatorPageState extends State<KhotiyanCalculatorPage> {
                           vertical: 12,
                         ),
                       ),
-                      value: _selectedGonda,
+                      initialValue: _selectedGonda,
                       items: List.generate(20, (index) {
                         return DropdownMenuItem(
                           value: index,
@@ -314,7 +313,7 @@ class _KhotiyanCalculatorPageState extends State<KhotiyanCalculatorPage> {
                           vertical: 12,
                         ),
                       ),
-                      value: _selectedKora,
+                      initialValue: _selectedKora,
                       items: List.generate(4, (index) {
                         return DropdownMenuItem(
                           value: index,
@@ -340,7 +339,7 @@ class _KhotiyanCalculatorPageState extends State<KhotiyanCalculatorPage> {
                           vertical: 12,
                         ),
                       ),
-                      value: _selectedKranti,
+                      initialValue: _selectedKranti,
                       items: List.generate(3, (index) {
                         return DropdownMenuItem(
                           value: index,
@@ -366,7 +365,7 @@ class _KhotiyanCalculatorPageState extends State<KhotiyanCalculatorPage> {
                           vertical: 12,
                         ),
                       ),
-                      value: _selectedTil,
+                      initialValue: _selectedTil,
                       items: List.generate(20, (index) {
                         return DropdownMenuItem(
                           value: index,
@@ -434,9 +433,9 @@ class _KhotiyanCalculatorPageState extends State<KhotiyanCalculatorPage> {
                               ),
                               isDense: true,
                             ),
-                            value: _selectedLandUnit,
+                            initialValue: _selectedLandUnit,
                             isExpanded: true,
-                            items: _unitLabels.entries.map((entry) {
+                            items: unitLabels.entries.map((entry) {
                               return DropdownMenuItem(
                                 value: entry.key,
                                 child: Text(
@@ -540,11 +539,11 @@ class _KhotiyanCalculatorPageState extends State<KhotiyanCalculatorPage> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  _unitLabels[entry.key] ?? entry.key,
+                                  unitLabels[entry.key] ?? entry.key,
                                   style: const TextStyle(fontSize: 14),
                                 ),
                                 Text(
-                                  "${entry.value.toStringAsFixed(4)}",
+                                  entry.value.toStringAsFixed(4),
                                   style: const TextStyle(
                                     fontSize: 15,
                                     fontWeight: FontWeight.bold,

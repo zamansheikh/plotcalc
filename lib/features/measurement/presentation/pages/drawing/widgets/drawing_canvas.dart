@@ -15,6 +15,7 @@ class DrawingCanvas extends StatelessWidget {
   final Set<int> selectedIndices;
   final bool isResizeMode;
   final InputUnit inputUnit;
+  final bool useCompoundUnits;
   final TransformationController transformationController;
   final Size viewportSize;
   final Function(Offset) onTapDown;
@@ -31,6 +32,7 @@ class DrawingCanvas extends StatelessWidget {
     required this.selectedIndices,
     required this.isResizeMode,
     required this.inputUnit,
+    this.useCompoundUnits = false,
     required this.transformationController,
     required this.viewportSize,
     required this.onTapDown,
@@ -61,6 +63,7 @@ class DrawingCanvas extends StatelessWidget {
                   selectedIndices: selectedIndices,
                   isResizeMode: isResizeMode,
                   inputUnit: inputUnit,
+                  useCompoundUnits: useCompoundUnits,
                 ),
                 child: Container(),
               ),

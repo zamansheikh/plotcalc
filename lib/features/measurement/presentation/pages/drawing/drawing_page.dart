@@ -50,6 +50,9 @@ class _DrawingPageState extends State<DrawingPage>
   @override
   final TextEditingController _radiusController = TextEditingController();
 
+  // Compound Unit Toggle
+  bool _useCompoundUnits = false;
+
   // Rectangle Average Method State
   int _widthSegmentCount = 1;
   int _heightSegmentCount = 1;
@@ -307,16 +310,11 @@ class _DrawingPageState extends State<DrawingPage>
               style: TextStyle(color: Colors.grey[600]),
             ),
             const SizedBox(height: 16),
-            TextField(
+            _MeasurementInputRow(
+              label: loc.enterMeasurement,
+              unit: inputUnit,
+              useCompound: _useCompoundUnits,
               controller: controller,
-              decoration: InputDecoration(
-                labelText: '${loc.enterMeasurement} ($unitSymbol)',
-                border: const OutlineInputBorder(),
-                suffixText: unitSymbol,
-              ),
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
               autofocus: true,
             ),
           ],
@@ -626,7 +624,7 @@ class _DrawingPageState extends State<DrawingPage>
       context: context,
       builder: (context) => BlocBuilder<MeasurementUnitBloc, MeasurementUnitState>(
         builder: (context, state) {
-          final unitSymbol = state.unit.symbol;
+          final inputUnit = state.unit;
 
           return StatefulBuilder(
             builder: (context, setStateDialog) {
@@ -682,15 +680,11 @@ class _DrawingPageState extends State<DrawingPage>
                             ...List.generate(_widthSegmentCount, (index) {
                               return Padding(
                                 padding: const EdgeInsets.only(bottom: 8.0),
-                                child: TextField(
+                                child: _MeasurementInputRow(
+                                  label: '${loc.width} ${index + 1}',
+                                  unit: inputUnit,
+                                  useCompound: _useCompoundUnits,
                                   controller: _widthControllers[index],
-                                  decoration: InputDecoration(
-                                    labelText:
-                                        '${loc.width} ${index + 1} ($unitSymbol)',
-                                    border: const OutlineInputBorder(),
-                                    isDense: true,
-                                  ),
-                                  keyboardType: TextInputType.number,
                                 ),
                               );
                             }),
@@ -738,27 +732,21 @@ class _DrawingPageState extends State<DrawingPage>
                             ...List.generate(_heightSegmentCount, (index) {
                               return Padding(
                                 padding: const EdgeInsets.only(bottom: 8.0),
-                                child: TextField(
+                                child: _MeasurementInputRow(
+                                  label: '${loc.height} ${index + 1}',
+                                  unit: inputUnit,
+                                  useCompound: _useCompoundUnits,
                                   controller: _heightControllers[index],
-                                  decoration: InputDecoration(
-                                    labelText:
-                                        '${loc.height} ${index + 1} ($unitSymbol)',
-                                    border: const OutlineInputBorder(),
-                                    isDense: true,
-                                  ),
-                                  keyboardType: TextInputType.number,
                                 ),
                               );
                             }),
                           ],
                         )
-                      : TextField(
+                      : _MeasurementInputRow(
+                          label: loc.radius,
+                          unit: inputUnit,
+                          useCompound: _useCompoundUnits,
                           controller: _radiusController,
-                          decoration: InputDecoration(
-                            labelText: '${loc.radius} ($unitSymbol)',
-                            border: const OutlineInputBorder(),
-                          ),
-                          keyboardType: TextInputType.number,
                         ),
                 ),
                 actions: [
@@ -886,18 +874,11 @@ class _DrawingPageState extends State<DrawingPage>
                         ),
                       ),
                       SizedBox(
-                        width: 100,
-                        child: TextField(
-                          decoration: InputDecoration(
-                            border: const OutlineInputBorder(),
-                            hintText: '0.0',
-                            suffixText: inputUnit.symbol,
-                            filled: true,
-                            fillColor: Colors.grey[100],
-                          ),
-                          keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true,
-                          ),
+                        width: 200,
+                        child: _MeasurementInputRow(
+                          label: '',
+                          unit: inputUnit,
+                          useCompound: _useCompoundUnits,
                           controller: TextEditingController(
                             text: _sideMeasurements[i] != null
                                 ? inputUnit
@@ -1000,7 +981,6 @@ class _DrawingPageState extends State<DrawingPage>
   List<Widget> _generateDiagonalInputs() {
     final widgets = <Widget>[];
     final measurementUnitState = context.read<MeasurementUnitBloc>().state;
-    final unitSymbol = measurementUnitState.unit.symbol;
     final inputUnit = measurementUnitState.unit;
 
     // Formula: For N-sided polygon, need (N-3) diagonals to triangulate
@@ -1025,18 +1005,11 @@ class _DrawingPageState extends State<DrawingPage>
                 ),
               ),
               SizedBox(
-                width: 100,
-                child: TextField(
-                  decoration: InputDecoration(
-                    border: const OutlineInputBorder(),
-                    hintText: '0.0',
-                    suffixText: unitSymbol,
-                    filled: true,
-                    fillColor: Colors.grey[100],
-                  ),
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
+                width: 200,
+                child: _MeasurementInputRow(
+                  label: '',
+                  unit: inputUnit,
+                  useCompound: _useCompoundUnits,
                   controller: TextEditingController(
                     text: _diagonalMeasurements[diagonalKey] != null
                         ? inputUnit
@@ -1081,6 +1054,25 @@ class _DrawingPageState extends State<DrawingPage>
           onPressed: () => context.pop(),
         ),
         actions: [
+          IconButton(
+            icon: Icon(_useCompoundUnits ? Icons.grid_4x4 : Icons.numbers),
+            onPressed: () {
+              setState(() {
+                _useCompoundUnits = !_useCompoundUnits;
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    _useCompoundUnits
+                        ? 'Switched to Compound Units (e.g. 5\' 6")'
+                        : 'Switched to Decimal Units (e.g. 5.5)',
+                  ),
+                  duration: const Duration(seconds: 1),
+                ),
+              );
+            },
+            tooltip: 'Toggle Unit Format',
+          ),
           IconButton(
             icon: const Icon(Icons.category),
             onPressed: _showShapeOptions,
@@ -1161,6 +1153,7 @@ class _DrawingPageState extends State<DrawingPage>
                           .watch<MeasurementUnitBloc>()
                           .state
                           .unit,
+                      useCompoundUnits: _useCompoundUnits,
                       transformationController: _transformationController,
                       viewportSize: _viewportSize,
                       onTapDown: (localPosition) {
@@ -1243,6 +1236,149 @@ class _DrawingPageState extends State<DrawingPage>
           );
         },
       ),
+    );
+  }
+}
+
+class _MeasurementInputRow extends StatefulWidget {
+  final String label;
+  final InputUnit unit;
+  final bool useCompound;
+  final TextEditingController controller;
+  final ValueChanged<String>? onChanged;
+  final bool autofocus;
+
+  const _MeasurementInputRow({
+    required this.label,
+    required this.unit,
+    required this.useCompound,
+    required this.controller,
+    this.onChanged,
+    this.autofocus = false,
+  });
+
+  @override
+  State<_MeasurementInputRow> createState() => _MeasurementInputRowState();
+}
+
+class _MeasurementInputRowState extends State<_MeasurementInputRow> {
+  late TextEditingController _mainController;
+  late TextEditingController _smallController;
+
+  @override
+  void initState() {
+    super.initState();
+    _mainController = TextEditingController();
+    _smallController = TextEditingController();
+    _syncFromDecimal();
+
+    _mainController.addListener(_onCompoundChanged);
+    _smallController.addListener(_onCompoundChanged);
+  }
+
+  @override
+  void dispose() {
+    _mainController.dispose();
+    _smallController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(_MeasurementInputRow oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.useCompound != widget.useCompound) {
+      _syncFromDecimal();
+    }
+  }
+
+  void _syncFromDecimal() {
+    if (!widget.useCompound) return;
+
+    double? val = double.tryParse(widget.controller.text);
+    if (val == null) {
+      _mainController.text = "";
+      _smallController.text = "";
+      return;
+    }
+
+    if (widget.unit == InputUnit.feet) {
+      int feet = val.floor();
+      int inches = ((val - feet) * 12).round();
+      _mainController.text = feet.toString();
+      _smallController.text = inches.toString();
+    } else {
+      int meters = val.floor();
+      int cm = ((val - meters) * 100).round();
+      _mainController.text = meters.toString();
+      _smallController.text = cm.toString();
+    }
+  }
+
+  void _onCompoundChanged() {
+    if (!widget.useCompound) return;
+
+    double main = double.tryParse(_mainController.text) ?? 0;
+    double small = double.tryParse(_smallController.text) ?? 0;
+
+    double decimal;
+    if (widget.unit == InputUnit.feet) {
+      decimal = main + (small / 12.0);
+    } else {
+      decimal = main + (small / 100.0);
+    }
+
+    String newText = decimal == 0 ? "" : decimal.toString();
+    // Avoid infinite loop if we were listening to widget.controller
+    if (widget.controller.text != newText) {
+      widget.controller.text = newText;
+      widget.onChanged?.call(newText);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!widget.useCompound) {
+      return TextField(
+        controller: widget.controller,
+        decoration: InputDecoration(
+          labelText: '${widget.label} (${widget.unit.symbol})',
+          border: const OutlineInputBorder(),
+          suffixText: widget.unit.symbol,
+        ),
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        onChanged: widget.onChanged,
+        autofocus: widget.autofocus,
+      );
+    }
+
+    String mainLabel = widget.unit == InputUnit.feet ? 'Feet' : 'Meters';
+    String smallLabel = widget.unit == InputUnit.feet ? 'Inches' : 'Cm';
+
+    return Row(
+      children: [
+        Expanded(
+          child: TextField(
+            controller: _mainController,
+            decoration: InputDecoration(
+              labelText: mainLabel,
+              border: const OutlineInputBorder(),
+            ),
+            keyboardType: TextInputType.number,
+            autofocus: widget.autofocus,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: TextField(
+            controller: _smallController,
+            decoration: InputDecoration(
+              labelText: smallLabel,
+              border: const OutlineInputBorder(),
+            ),
+            keyboardType: TextInputType.number,
+          ),
+        ),
+      ],
     );
   }
 }

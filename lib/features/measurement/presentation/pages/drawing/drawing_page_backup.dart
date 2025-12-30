@@ -293,8 +293,9 @@ class _DrawingPageState extends State<DrawingPage> {
 
   double _distToSegment(Point p, Point v, Point w) {
     final l2 = math.pow(v.x - w.x, 2) + math.pow(v.y - w.y, 2);
-    if (l2 == 0)
+    if (l2 == 0) {
       return math.sqrt(math.pow(p.x - v.x, 2) + math.pow(p.y - v.y, 2));
+    }
     var t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
     t = t.clamp(0.0, 1.0);
     final px = v.x + t * (w.x - v.x);

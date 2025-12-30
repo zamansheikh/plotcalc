@@ -358,16 +358,18 @@ class _MeasurementResultBottomSheetState
                                   (u) => u.id == 'bigha',
                                   orElse: () => unit,
                                 );
-                                if (standard != unit)
+                                if (standard != unit) {
                                   standard.isEnabled = false;
+                                }
                               } else if (unit.id == 'kathaMymensingh') {
                                 // Uncheck Standard Katha
                                 final standard = _units.firstWhere(
                                   (u) => u.id == 'katha',
                                   orElse: () => unit,
                                 );
-                                if (standard != unit)
+                                if (standard != unit) {
                                   standard.isEnabled = false;
+                                }
                               }
                             }
 
