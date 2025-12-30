@@ -221,8 +221,8 @@ class _DrawingPageState extends State<DrawingPage>
     final ty = (_viewportSize.height / 2) - scale * centerY;
 
     final matrix = Matrix4.identity()
-      ..translate(tx, ty)
-      ..scale(scale);
+      ..multiply(Matrix4.translationValues(tx, ty, 0.0))
+      ..multiply(Matrix4.diagonal3Values(scale, scale, 1.0));
 
     _transformationController.value = matrix;
   }
@@ -640,14 +640,14 @@ class _DrawingPageState extends State<DrawingPage>
                           children: [
                             // Width Section
                             Text(
-                              '${loc.width} Measurements',
+                              '${loc.width} ${loc.measurements}',
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             Row(
                               children: [
-                                const Text('Count:'),
+                                Text('${loc.count}:'),
                                 Expanded(
                                   child: Slider(
                                     value: _widthSegmentCount.toDouble(),
@@ -692,14 +692,14 @@ class _DrawingPageState extends State<DrawingPage>
 
                             // Height Section
                             Text(
-                              '${loc.height} Measurements',
+                              '${loc.height} ${loc.measurements}',
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             Row(
                               children: [
-                                const Text('Count:'),
+                                Text('${loc.count}:'),
                                 Expanded(
                                   child: Slider(
                                     value: _heightSegmentCount.toDouble(),
@@ -980,6 +980,7 @@ class _DrawingPageState extends State<DrawingPage>
 
   List<Widget> _generateDiagonalInputs() {
     final widgets = <Widget>[];
+    final loc = AppLocalizations.of(context);
     final measurementUnitState = context.read<MeasurementUnitBloc>().state;
     final inputUnit = measurementUnitState.unit;
 
@@ -1000,7 +1001,7 @@ class _DrawingPageState extends State<DrawingPage>
             children: [
               Expanded(
                 child: Text(
-                  'Point $fromPoint to Point $toPoint:',
+                  '${loc.point} $fromPoint ${loc.to} ${loc.point} $toPoint:',
                   style: const TextStyle(fontWeight: FontWeight.w500),
                 ),
               ),
@@ -1064,14 +1065,14 @@ class _DrawingPageState extends State<DrawingPage>
                 SnackBar(
                   content: Text(
                     _useCompoundUnits
-                        ? 'Switched to Compound Units (e.g. 5\' 6")'
-                        : 'Switched to Decimal Units (e.g. 5.5)',
+                        ? loc.switchedToCompound
+                        : loc.switchedToDecimal,
                   ),
                   duration: const Duration(seconds: 1),
                 ),
               );
             },
-            tooltip: 'Toggle Unit Format',
+            tooltip: loc.toggleUnitFormat,
           ),
           IconButton(
             icon: const Icon(Icons.category),
@@ -1351,8 +1352,9 @@ class _MeasurementInputRowState extends State<_MeasurementInputRow> {
       );
     }
 
-    String mainLabel = widget.unit == InputUnit.feet ? 'Feet' : 'Meters';
-    String smallLabel = widget.unit == InputUnit.feet ? 'Inches' : 'Cm';
+    final loc = AppLocalizations.of(context);
+    String mainLabel = widget.unit == InputUnit.feet ? loc.feet : loc.meters;
+    String smallLabel = widget.unit == InputUnit.feet ? loc.inches : loc.cm;
 
     return Row(
       children: [

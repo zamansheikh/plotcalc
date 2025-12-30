@@ -148,7 +148,7 @@ class TopicDetailPage extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             child: DataTable(
               border: TableBorder.all(color: Colors.grey.shade300),
-              headingRowColor: MaterialStateProperty.all(Colors.grey.shade100),
+              headingRowColor: WidgetStateProperty.all(Colors.grey.shade100),
               columns: block.headers!
                   .map(
                     (header) => DataColumn(

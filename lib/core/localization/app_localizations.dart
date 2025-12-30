@@ -257,6 +257,24 @@ class AppLocalizations {
   String get hissya => isEnglish ? 'Hissya (Share)' : 'হিস্যা (অংশ)';
   String get yourLand => isEnglish ? 'Your Land Share' : 'আপনার প্রাপ্ত জমি';
   String get ana => isEnglish ? 'Ana' : 'আনা';
+
+  // Compound Units & New UI
+  String get feet => isEnglish ? 'Feet' : 'ফুট';
+  String get inches => isEnglish ? 'Inches' : 'ইঞ্চি';
+  String get meters => isEnglish ? 'Meters' : 'মিটার';
+  String get cm => isEnglish ? 'Cm' : 'সেমি';
+  String get switchedToCompound => isEnglish
+      ? 'Switched to Compound Units (e.g. 5\' 6")'
+      : 'যৌগিক এককে পরিবর্তিত হয়েছে (যেমন ৫\' ৬")';
+  String get switchedToDecimal => isEnglish
+      ? 'Switched to Decimal Units (e.g. 5.5)'
+      : 'দশমিক এককে পরিবর্তিত হয়েছে (যেমন ৫.৫)';
+  String get point => isEnglish ? 'Point' : 'পয়েন্ট';
+  String get to => isEnglish ? 'to' : 'থেকে';
+  String get count => isEnglish ? 'Count' : 'সংখ্যা';
+  String get measurements => isEnglish ? 'Measurements' : 'পরিমাপ';
+  String get toggleUnitFormat =>
+      isEnglish ? 'Toggle Unit Format' : 'একক বিন্যাস পরিবর্তন করুন';
 }
 
 class _AppLocalizationsDelegate
