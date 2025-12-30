@@ -5,6 +5,7 @@ import '../../features/measurement/presentation/pages/drawing_page.dart';
 import '../../features/measurement/presentation/pages/history_page.dart';
 import '../../features/measurement/presentation/pages/unit_converter_page.dart';
 import '../../features/measurement/presentation/pages/land_calculator_page.dart';
+import '../../features/measurement/presentation/pages/khotiyan_calculator_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/land_info/presentation/pages/land_info_page.dart';
 import '../../features/land_info/presentation/pages/topic_detail_page.dart';
@@ -17,10 +18,9 @@ class AppRouter {
   static const String drawing = '/drawing';
   static const String calculator = '/calculator';
   static const String converter = '/converter';
-  static const String measurement = '/measurement';
-  static const String results = '/results';
   static const String history = '/history';
   static const String landCalculator = '/land-calculator';
+  static const String khotiyanCalculator = '/khotiyan-calculator';
   static const String settings = '/settings';
   static const String landInfo = '/land-info';
   static const String topicDetail = '/land-info/detail';
@@ -91,23 +91,11 @@ class AppRouter {
             MaterialPage(key: state.pageKey, child: const LandCalculatorPage()),
       ),
       GoRoute(
-        path: measurement,
-        name: 'measurement',
+        path: khotiyanCalculator,
+        name: 'khotiyanCalculator',
         pageBuilder: (context, state) => MaterialPage(
           key: state.pageKey,
-          child: const Scaffold(
-            body: Center(child: Text('Measurement Page - Coming Soon')),
-          ),
-        ),
-      ),
-      GoRoute(
-        path: results,
-        name: 'results',
-        pageBuilder: (context, state) => MaterialPage(
-          key: state.pageKey,
-          child: const Scaffold(
-            body: Center(child: Text('Results Page - Coming Soon')),
-          ),
+          child: const KhotiyanCalculatorPage(),
         ),
       ),
       GoRoute(

@@ -82,6 +82,18 @@ class HomePage extends StatelessWidget {
                 const SizedBox(height: 16),
 
                 ElevatedButton.icon(
+                  onPressed: () => context.push('/khotiyan-calculator'),
+                  icon: const Icon(Icons.calculate, size: 28),
+                  label: const Text("Khotiyan Calculator"),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    backgroundColor: Colors.orangeAccent,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                ElevatedButton.icon(
                   onPressed: () => context.push('/land-info'),
                   icon: const Icon(Icons.info_outline, size: 28),
                   label: Text(loc.infoPortal),
