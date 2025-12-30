@@ -1,7 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import '../../features/measurement/presentation/pages/home_page.dart';
-import '../../features/measurement/presentation/pages/drawing_page.dart';
+import '../../features/measurement/presentation/pages/drawing/drawing_page.dart';
 import '../../features/measurement/presentation/pages/history_page.dart';
 import '../../features/measurement/presentation/pages/unit_converter_page.dart';
 import '../../features/measurement/presentation/pages/land_calculator_page.dart';
