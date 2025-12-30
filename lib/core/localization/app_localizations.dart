@@ -240,6 +240,23 @@ class AppLocalizations {
   String get tapToAddPointsMin3 => isEnglish
       ? 'Tap to add points (minimum 3)'
       : 'পয়েন্ট যোগ করতে ট্যাপ করুন (কমপক্ষে ৩টি)';
+
+  // Khotiyan Calculator
+  String get khotiyanCalculator =>
+      isEnglish ? 'Khotiyan Calculator' : 'খতিয়ান ক্যালকুলেটর';
+  String get selectUnits => isEnglish ? 'Select Units' : 'একক নির্বাচন করুন';
+  String get totalLand => isEnglish ? 'Total Land' : 'মোট জমি';
+  String get amount => isEnglish ? 'Amount' : 'পরিমাণ';
+  String get unit => isEnglish ? 'Unit' : 'একক';
+  String get calculateShare =>
+      isEnglish ? 'Calculate Land Share' : 'জমির হিস্যা গণনা করুন';
+  String get selectUnitsSubtitle => isEnglish
+      ? 'Select units to find Hissya & Land Amount'
+      : 'হিস্যা এবং জমির পরিমাণ বের করতে একক নির্বাচন করুন';
+  String get results => isEnglish ? 'Results' : 'ফলাফল';
+  String get hissya => isEnglish ? 'Hissya (Share)' : 'হিস্যা (অংশ)';
+  String get yourLand => isEnglish ? 'Your Land Share' : 'আপনার প্রাপ্ত জমি';
+  String get ana => isEnglish ? 'Ana' : 'আনা';
 }
 
 class _AppLocalizationsDelegate

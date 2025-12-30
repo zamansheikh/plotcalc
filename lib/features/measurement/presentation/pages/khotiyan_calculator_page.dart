@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:plotcalc/core/localization/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
 
 class KhotiyanCalculatorPage extends StatefulWidget {
@@ -22,7 +23,6 @@ class _KhotiyanCalculatorPageState extends State<KhotiyanCalculatorPage> {
 
   double _calculatedShare = 0.0;
   Map<String, double> _results = {};
-  String _shareText = "";
 
   // Constants for conversion
   static const int tilPerKranti = 20;
@@ -35,19 +35,6 @@ class _KhotiyanCalculatorPageState extends State<KhotiyanCalculatorPage> {
   // 16 * 20 * 4 * 3 * 20 = 76800
   static const int totalTilInWhole =
       anaPerWhole * gondaPerAna * koraPerGonda * krantiPerKora * tilPerKranti;
-
-  final Map<String, String> _unitLabels = {
-    'squareMeters': 'Square Meters (বর্গমিটার)',
-    'squareFeet': 'Square Feet (বর্গফুট)',
-    'hectares': 'Hectares (হেক্টর)',
-    'acres': 'Acres (একর)',
-    'bigha': 'Bigha (বিঘা)',
-    'katha': 'Katha (কাঠা)',
-    'shatak': 'Shatak (শতাংশ)',
-    'bighaMymensingh': 'Bigha (Mymensingh)',
-    'kathaMymensingh': 'Katha (Mymensingh)',
-    'chotak': 'Chotak (ছটাক)',
-  };
 
   @override
   void initState() {
@@ -78,9 +65,6 @@ class _KhotiyanCalculatorPageState extends State<KhotiyanCalculatorPage> {
 
       // Calculate share fraction
       _calculatedShare = currentTil / totalTilInWhole;
-
-      // Format share text (Hissya)
-      _shareText = "${_calculatedShare.toStringAsFixed(6)} ( অংশ )";
 
       // Calculate land share
       double totalLandInput = double.tryParse(_totalLandController.text) ?? 0.0;
@@ -141,8 +125,8 @@ class _KhotiyanCalculatorPageState extends State<KhotiyanCalculatorPage> {
     }
   }
 
-  String _getAnaSymbol(int value) {
-    if (value == 0) return "0 Ana (০ আনা)";
+  String _getAnaSymbol(int value, AppLocalizations loc) {
+    if (value == 0) return "0 ${loc.ana}";
     const symbols = [
       "",
       "⁄",
@@ -163,46 +147,62 @@ class _KhotiyanCalculatorPageState extends State<KhotiyanCalculatorPage> {
       "১",
     ];
     if (value > 0 && value < symbols.length) {
-      return "$value Ana ($value আনা)  ${symbols[value]}";
+      return "$value ${loc.ana}  ${symbols[value]}";
     }
-    return "$value Ana ($value আনা)";
+    return "$value ${loc.ana}";
   }
 
-  String _getGondaSymbol(int value) {
-    if (value == 0) return "0 Gonda (০ গন্ডা)";
-    return "$value Gonda ($value গন্ডা)";
+  String _getGondaSymbol(int value, AppLocalizations loc) {
+    if (value == 0) return "0 ${loc.gonda}";
+    return "$value ${loc.gonda}";
   }
 
-  String _getKoraSymbol(int value) {
-    if (value == 0) return "0 Kora (০ কড়া)";
+  String _getKoraSymbol(int value, AppLocalizations loc) {
+    if (value == 0) return "0 ${loc.kora}";
     const symbols = ["", "৷", "৷৷", "৸"];
     if (value > 0 && value < symbols.length) {
-      return "$value Kora ($value কড়া)  ${symbols[value]}";
+      return "$value ${loc.kora}  ${symbols[value]}";
     }
-    return "$value Kora ($value কড়া)";
+    return "$value ${loc.kora}";
   }
 
-  String _getKrantiSymbol(int value) {
-    if (value == 0) return "0 Kranti (০ ক্রান্তি)";
+  String _getKrantiSymbol(int value, AppLocalizations loc) {
+    if (value == 0) return "0 ${loc.kranti}";
     const symbols = ["", "৴", "৴৴"];
     if (value > 0 && value < symbols.length) {
-      return "$value Kranti ($value ক্রান্তি)  ${symbols[value]}";
+      return "$value ${loc.kranti}  ${symbols[value]}";
     }
-    return "$value Kranti ($value ক্রান্তি)";
+    return "$value ${loc.kranti}";
   }
 
-  String _getTilSymbol(int value) {
-    if (value == 0) return "0 Til (০ তিল)";
-    return "$value Til ($value তিল)";
+  String _getTilSymbol(int value, AppLocalizations loc) {
+    if (value == 0) return "0 ${loc.til}";
+    return "$value ${loc.til}";
   }
 
   @override
   Widget build(BuildContext context) {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = AppTheme.primaryColor;
+    final loc = AppLocalizations.of(context);
+    final shareText =
+        "${_calculatedShare.toStringAsFixed(6)} ( ${loc.hissya} )";
+
+    final Map<String, String> _unitLabels = {
+      'squareMeters': loc.squareMeters,
+      'squareFeet': loc.squareFeet,
+      'hectares': loc.hectares,
+      'acres': loc.acres,
+      'bigha': loc.bigha,
+      'katha': loc.katha,
+      'shatak': loc.shatak,
+      'bighaMymensingh': loc.bighaMymensingh,
+      'kathaMymensingh': loc.kathaMymensingh,
+      'chotak': loc.chotak,
+    };
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Khotiyan Calculator (খতিয়ান)")),
+      appBar: AppBar(title: Text(loc.khotiyanCalculator)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -221,14 +221,14 @@ class _KhotiyanCalculatorPageState extends State<KhotiyanCalculatorPage> {
                     Icon(Icons.calculate, size: 48, color: primaryColor),
                     const SizedBox(height: 8),
                     Text(
-                      "Calculate Land Share",
+                      loc.calculateShare,
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: primaryColor,
                       ),
                     ),
-                    const Text("Select units to find Hissya & Land Amount"),
+                    Text(loc.selectUnitsSubtitle),
                   ],
                 ),
               ),
@@ -243,9 +243,9 @@ class _KhotiyanCalculatorPageState extends State<KhotiyanCalculatorPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      "Select Units (একক নির্বাচন করুন)",
-                      style: TextStyle(
+                    Text(
+                      loc.selectUnits,
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -254,10 +254,10 @@ class _KhotiyanCalculatorPageState extends State<KhotiyanCalculatorPage> {
 
                     // Ana
                     DropdownButtonFormField<int>(
-                      decoration: const InputDecoration(
-                        labelText: "Ana (আনা)",
-                        border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.symmetric(
+                      decoration: InputDecoration(
+                        labelText: loc.ana,
+                        border: const OutlineInputBorder(),
+                        contentPadding: const EdgeInsets.symmetric(
                           horizontal: 12,
                           vertical: 12,
                         ),
@@ -266,7 +266,7 @@ class _KhotiyanCalculatorPageState extends State<KhotiyanCalculatorPage> {
                       items: List.generate(17, (index) {
                         return DropdownMenuItem(
                           value: index,
-                          child: Text(_getAnaSymbol(index)),
+                          child: Text(_getAnaSymbol(index, loc)),
                         );
                       }),
                       onChanged: (val) {
@@ -280,10 +280,10 @@ class _KhotiyanCalculatorPageState extends State<KhotiyanCalculatorPage> {
 
                     // Gonda
                     DropdownButtonFormField<int>(
-                      decoration: const InputDecoration(
-                        labelText: "Gonda (গন্ডা)",
-                        border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.symmetric(
+                      decoration: InputDecoration(
+                        labelText: loc.gonda,
+                        border: const OutlineInputBorder(),
+                        contentPadding: const EdgeInsets.symmetric(
                           horizontal: 12,
                           vertical: 12,
                         ),
@@ -292,7 +292,7 @@ class _KhotiyanCalculatorPageState extends State<KhotiyanCalculatorPage> {
                       items: List.generate(20, (index) {
                         return DropdownMenuItem(
                           value: index,
-                          child: Text(_getGondaSymbol(index)),
+                          child: Text(_getGondaSymbol(index, loc)),
                         );
                       }),
                       onChanged: (val) {
@@ -306,10 +306,10 @@ class _KhotiyanCalculatorPageState extends State<KhotiyanCalculatorPage> {
 
                     // Kora
                     DropdownButtonFormField<int>(
-                      decoration: const InputDecoration(
-                        labelText: "Kora (কড়া)",
-                        border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.symmetric(
+                      decoration: InputDecoration(
+                        labelText: loc.kora,
+                        border: const OutlineInputBorder(),
+                        contentPadding: const EdgeInsets.symmetric(
                           horizontal: 12,
                           vertical: 12,
                         ),
@@ -318,7 +318,7 @@ class _KhotiyanCalculatorPageState extends State<KhotiyanCalculatorPage> {
                       items: List.generate(4, (index) {
                         return DropdownMenuItem(
                           value: index,
-                          child: Text(_getKoraSymbol(index)),
+                          child: Text(_getKoraSymbol(index, loc)),
                         );
                       }),
                       onChanged: (val) {
@@ -332,10 +332,10 @@ class _KhotiyanCalculatorPageState extends State<KhotiyanCalculatorPage> {
 
                     // Kranti
                     DropdownButtonFormField<int>(
-                      decoration: const InputDecoration(
-                        labelText: "Kranti (ক্রান্তি)",
-                        border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.symmetric(
+                      decoration: InputDecoration(
+                        labelText: loc.kranti,
+                        border: const OutlineInputBorder(),
+                        contentPadding: const EdgeInsets.symmetric(
                           horizontal: 12,
                           vertical: 12,
                         ),
@@ -344,7 +344,7 @@ class _KhotiyanCalculatorPageState extends State<KhotiyanCalculatorPage> {
                       items: List.generate(3, (index) {
                         return DropdownMenuItem(
                           value: index,
-                          child: Text(_getKrantiSymbol(index)),
+                          child: Text(_getKrantiSymbol(index, loc)),
                         );
                       }),
                       onChanged: (val) {
@@ -358,10 +358,10 @@ class _KhotiyanCalculatorPageState extends State<KhotiyanCalculatorPage> {
 
                     // Til
                     DropdownButtonFormField<int>(
-                      decoration: const InputDecoration(
-                        labelText: "Til (তিল)",
-                        border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.symmetric(
+                      decoration: InputDecoration(
+                        labelText: loc.til,
+                        border: const OutlineInputBorder(),
+                        contentPadding: const EdgeInsets.symmetric(
                           horizontal: 12,
                           vertical: 12,
                         ),
@@ -370,7 +370,7 @@ class _KhotiyanCalculatorPageState extends State<KhotiyanCalculatorPage> {
                       items: List.generate(20, (index) {
                         return DropdownMenuItem(
                           value: index,
-                          child: Text(_getTilSymbol(index)),
+                          child: Text(_getTilSymbol(index, loc)),
                         );
                       }),
                       onChanged: (val) {
@@ -394,38 +394,45 @@ class _KhotiyanCalculatorPageState extends State<KhotiyanCalculatorPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      "Total Land (মোট জমি)",
-                      style: TextStyle(
+                    Text(
+                      loc.totalLand,
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 16),
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
-                          flex: 2,
+                          flex: 1,
                           child: TextField(
                             controller: _totalLandController,
                             keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
-                              labelText: "Amount",
-                              border: OutlineInputBorder(),
+                            decoration: InputDecoration(
+                              labelText: loc.amount,
+                              border: const OutlineInputBorder(),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 12,
+                              ),
+                              isDense: true,
                             ),
                           ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          flex: 3,
+                          flex: 1,
                           child: DropdownButtonFormField<String>(
-                            decoration: const InputDecoration(
-                              labelText: "Unit",
-                              border: OutlineInputBorder(),
-                              contentPadding: EdgeInsets.symmetric(
+                            decoration: InputDecoration(
+                              labelText: loc.unit,
+                              border: const OutlineInputBorder(),
+                              contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 12,
                                 vertical: 12,
                               ),
+                              isDense: true,
                             ),
                             value: _selectedLandUnit,
                             isExpanded: true,
@@ -471,9 +478,9 @@ class _KhotiyanCalculatorPageState extends State<KhotiyanCalculatorPage> {
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
                     children: [
-                      const Text(
-                        "Calculation Results",
-                        style: TextStyle(
+                      Text(
+                        loc.results,
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
@@ -490,15 +497,15 @@ class _KhotiyanCalculatorPageState extends State<KhotiyanCalculatorPage> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text(
-                              "Hissya (Share):",
-                              style: TextStyle(
+                            Text(
+                              "${loc.hissya}:",
+                              style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
                             Text(
-                              _shareText,
+                              shareText,
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -513,11 +520,11 @@ class _KhotiyanCalculatorPageState extends State<KhotiyanCalculatorPage> {
                         const SizedBox(height: 16),
                         const Divider(),
                         const SizedBox(height: 8),
-                        const Align(
+                        Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            "Your Land Share (আপনার প্রাপ্ত জমি):",
-                            style: TextStyle(
+                            "${loc.yourLand}:",
+                            style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
