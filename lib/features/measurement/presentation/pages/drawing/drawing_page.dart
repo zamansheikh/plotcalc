@@ -515,7 +515,90 @@ class _DrawingPageState extends State<DrawingPage>
       }
 
       // IMPORTANT: For accuracy, require ALL side measurements
+      // UNLESS we are in a state where geometry is already trusted (e.g. after move)
+      // But the user might have changed points manually too.
+      // If we trust the points, we can just calculate from points.
+      // But the app seems designed to calculate from measurements.
+
+      // If we just moved the shape, we populated _sideMeasurements.
+      // But we cleared _diagonalMeasurements.
+
+      // If we have valid points and we just did a move, we should trust the points.
+      // How do we know?
+      // Maybe we can check if the side measurements match the point distances?
+
+      // Or, we can relax the diagonal requirement if we have a valid polygon geometry already.
+      // But _fixShapeGeometry relies on diagonals to reconstruct the shape.
+
+      // If we are in "Drawing Mode" (points exist), we should probably prioritize points
+      // if measurements are missing.
+
+      // Let's modify the check:
+      // If we have points, and side measurements match points, we can skip diagonal check?
+      // Or better: If we have points, we can calculate diagonals FROM points if they are missing.
+
+      if (_points.length >= 4) {
+        int requiredDiagonals = _points.length - 3;
+
+        if (_diagonalMeasurements.length < requiredDiagonals) {
+          // Try to auto-calculate missing diagonals from current points
+          // This assumes the current visual shape is the "truth"
+          bool autoFilled = false;
+
+          // We need N-3 diagonals. Let's just calculate 0-2, 0-3, ... 0-(N-2)
+          for (int i = 2; i < _points.length - 1; i++) {
+            final key = '0-$i';
+            if (!_diagonalMeasurements.containsKey(key)) {
+              final p0 = _points[0];
+              final pi = _points[i];
+              final dist = math.sqrt(
+                math.pow(p0.x - pi.x, 2) + math.pow(p0.y - pi.y, 2),
+              );
+
+              // We need to convert this pixel distance to meters.
+              // We need a scale factor.
+              // We can get scale from side 0.
+              if (_sideMeasurements.containsKey(0)) {
+                final p1 = _points[1];
+                final side0Px = math.sqrt(
+                  math.pow(p0.x - p1.x, 2) + math.pow(p0.y - p1.y, 2),
+                );
+                final side0M = _sideMeasurements[0]!;
+                if (side0M > 0) {
+                  final scale = side0Px / side0M; // px per meter
+                  _diagonalMeasurements[key] = dist / scale;
+                  autoFilled = true;
+                }
+              }
+            }
+          }
+
+          if (autoFilled) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Auto-calculated missing diagonals from shape.'),
+                duration: Duration(seconds: 2),
+              ),
+            );
+          } else if (_diagonalMeasurements.length < requiredDiagonals) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'For a ${_points.length}-sided polygon, you need $requiredDiagonals diagonal(s) for exact calculation. You have measured ${_diagonalMeasurements.length}.',
+                ),
+                backgroundColor: Colors.orange,
+                duration: const Duration(seconds: 3),
+              ),
+            );
+            _showDiagonalInput();
+            return;
+          }
+        }
+      }
+
       if (_sideMeasurements.length != _points.length) {
+        // Try to auto-fill missing sides from points if we have at least one side to establish scale
+        // ... (similar logic could be applied here, but usually sides are primary)
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -526,28 +609,6 @@ class _DrawingPageState extends State<DrawingPage>
           ),
         );
         return;
-      }
-
-      // NEW: For polygons with 4+ sides, require diagonals for exact calculation
-      if (_points.length >= 4) {
-        // Formula: For N-sided polygon, need (N-3) diagonals to triangulate
-        // 4-sided: 1 diagonal, 5-sided: 2 diagonals, 6-sided: 3 diagonals, etc.
-        int requiredDiagonals = _points.length - 3;
-
-        if (_diagonalMeasurements.length < requiredDiagonals) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'For a ${_points.length}-sided polygon, you need $requiredDiagonals diagonal(s) for exact calculation. You have measured ${_diagonalMeasurements.length}.',
-              ),
-              backgroundColor: Colors.orange,
-              duration: const Duration(seconds: 3),
-            ),
-          );
-          // Open diagonal measurement dialog
-          _showDiagonalInput();
-          return;
-        }
       }
     }
 
@@ -1080,7 +1141,7 @@ class _DrawingPageState extends State<DrawingPage>
           onPressed: () => context.pop(),
         ),
         actions: [
-          if (!_isResizeMode) ...[
+          if (!_isResizeMode && !_isMoveMode) ...[
             IconButton(
               icon: Icon(_useCompoundUnits ? Icons.grid_4x4 : Icons.numbers),
               onPressed: () {

@@ -918,6 +918,7 @@ mixin ResizeMixin on State<DrawingPage> {
       _isResizeMode = !_isResizeMode;
       _isMoveMode = false;
       _previewPoints = null;
+      _compensationSideIndex = null;
       _selectedResizeIndices.clear();
       _lockedSideIndices.clear();
       _lockedPointIndices.clear();
@@ -929,6 +930,7 @@ mixin ResizeMixin on State<DrawingPage> {
       _isMoveMode = !_isMoveMode;
       _isResizeMode = false;
       _previewPoints = null;
+      _compensationSideIndex = null;
       _selectedResizeIndices.clear();
       _lockedSideIndices.clear();
       _lockedPointIndices.clear();
@@ -1094,6 +1096,34 @@ mixin ResizeMixin on State<DrawingPage> {
 
   void _confirmMove() {
     if (_previewPoints != null) {
+      // 1. Determine Scale Factor BEFORE clearing anything
+      double? pixelsPerMeter;
+
+      // Try to get scale from current area
+      if (_currentAreaMeters != null && _currentAreaMeters! > 0) {
+        final currentPixelArea = _calculatePolygonArea(
+          _points,
+        ); // Area of OLD points
+        pixelsPerMeter = math.sqrt(currentPixelArea / _currentAreaMeters!);
+      }
+      // Fallback: Try to get scale from side measurements
+      else if (_sideMeasurements.isNotEmpty) {
+        // Find a valid side to derive scale
+        for (final entry in _sideMeasurements.entries) {
+          final idx = entry.key;
+          final meters = entry.value;
+          if (meters > 0 && idx < _points.length) {
+            final p1 = _points[idx];
+            final p2 = _points[(idx + 1) % _points.length];
+            final distPx = math.sqrt(
+              math.pow(p1.x - p2.x, 2) + math.pow(p1.y - p2.y, 2),
+            );
+            pixelsPerMeter = distPx / meters;
+            break;
+          }
+        }
+      }
+
       setState(() {
         _points.clear();
         _points.addAll(_previewPoints!);
@@ -1101,18 +1131,56 @@ mixin ResizeMixin on State<DrawingPage> {
         _selectedResizeIndices.clear();
         _isMoveMode = false;
 
-        // Invalidate measurements as shape changed
+        // If shape was rectangle, convert to polygon as angles likely changed
+        if (_selectedShape == ShapeType.rectangle) {
+          _selectedShape = ShapeType.polygon;
+        }
+
+        // Recalculate side measurements automatically
         _sideMeasurements.clear();
+
+        if (pixelsPerMeter != null && pixelsPerMeter > 0) {
+          // Update all side measurements using the preserved scale
+          for (int i = 0; i < _points.length; i++) {
+            final p1 = _points[i];
+            final p2 = _points[(i + 1) % _points.length];
+            final distPx = math.sqrt(
+              math.pow(p1.x - p2.x, 2) + math.pow(p1.y - p2.y, 2),
+            );
+            _sideMeasurements[i] = distPx / pixelsPerMeter; // Store in meters
+          }
+        } else {
+          // If we really can't determine scale, we have to clear.
+          // But this shouldn't happen if the user was able to move (which requires scale).
+          _sideMeasurements.clear();
+        }
+
         _diagonalMeasurements.clear();
-        _isShapeComplete = false; // Require remeasurement?
-        // Actually, user wants to keep area.
-        // But side lengths definitely changed.
-        // So we should probably clear measurements.
+        _compensationSideIndex = null;
+        _isShapeComplete = true;
+
+        // Trigger a recalculation to update the UI with new area
+        if (pixelsPerMeter != null) {
+          // We can't call _calculateArea() directly here easily because it might trigger validation errors
+          // or require context/bloc access in a way that might be tricky inside setState?
+          // Actually _calculateArea() is on the State, so we can call it.
+          // But _calculateArea() checks for diagonals!
+          // And we just cleared diagonals.
+          // So calling _calculateArea() here might trigger the error we are trying to avoid?
+
+          // No, because we just populated _sideMeasurements.
+          // And _calculateArea has logic to auto-fill diagonals if sides are present.
+          // So it should be safe to call it, OR just let the user press Calculate.
+          // But the user said "after applying move.. when i try to calculate it shows some measurement missing".
+          // So the user IS pressing Calculate.
+
+          // So the fix above (populating _sideMeasurements) is the key.
+        }
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Move applied. Please verify measurements.'),
+          content: Text('Move applied. Measurements updated.'),
           backgroundColor: Colors.green,
         ),
       );
