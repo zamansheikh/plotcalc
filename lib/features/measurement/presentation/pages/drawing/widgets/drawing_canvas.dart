@@ -5,6 +5,8 @@ import '../../../../domain/entities/measurement.dart';
 import '../../../../../settings/presentation/bloc/measurement_unit_bloc.dart';
 import 'shape_painter.dart';
 
+import '../models/resize_constraint.dart';
+
 class DrawingCanvas extends StatelessWidget {
   final List<Point> points;
   final ShapeType selectedShape;
@@ -20,6 +22,7 @@ class DrawingCanvas extends StatelessWidget {
   final Size viewportSize;
   final Function(Offset) onTapDown;
   final VoidCallback onZoomToFit;
+  final ResizeConstraint resizeConstraint;
 
   const DrawingCanvas({
     super.key,
@@ -37,6 +40,7 @@ class DrawingCanvas extends StatelessWidget {
     required this.viewportSize,
     required this.onTapDown,
     required this.onZoomToFit,
+    this.resizeConstraint = ResizeConstraint.none,
   });
 
   @override
@@ -64,6 +68,7 @@ class DrawingCanvas extends StatelessWidget {
                   isResizeMode: isResizeMode,
                   inputUnit: inputUnit,
                   useCompoundUnits: useCompoundUnits,
+                  resizeConstraint: resizeConstraint,
                 ),
                 child: Container(),
               ),

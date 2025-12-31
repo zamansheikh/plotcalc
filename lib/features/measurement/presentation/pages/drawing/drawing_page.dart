@@ -10,7 +10,7 @@ import '../../../../settings/presentation/bloc/measurement_unit_bloc.dart';
 import '../../../domain/entities/measurement.dart';
 import '../../bloc/measurement_bloc.dart';
 import 'widgets/drawing_instruction_banner.dart';
-import 'widgets/resize_mode_banner.dart';
+import 'models/resize_constraint.dart';
 import 'widgets/drawing_canvas.dart';
 import 'widgets/drawing_controls_panel.dart';
 
@@ -1127,12 +1127,6 @@ class _DrawingPageState extends State<DrawingPage>
                   pointsLength: _points.length,
                 ),
 
-              if (_isResizeMode)
-                ResizeModeBanner(
-                  onCancel: _cancelResize,
-                  onApply: _confirmResize,
-                ),
-
               // Canvas Area
               Expanded(
                 child: LayoutBuilder(
@@ -1166,6 +1160,7 @@ class _DrawingPageState extends State<DrawingPage>
                         }
                       },
                       onZoomToFit: _zoomToFit,
+                      resizeConstraint: _resizeConstraint,
                     );
                   },
                 ),

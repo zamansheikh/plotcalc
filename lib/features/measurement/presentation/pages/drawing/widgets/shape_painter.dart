@@ -3,6 +3,7 @@ import '../../../../../../core/constants/app_constants.dart';
 import '../../../../../../core/theme/app_theme.dart';
 import '../../../../domain/entities/measurement.dart';
 import '../../../../../settings/presentation/bloc/measurement_unit_bloc.dart';
+import '../models/resize_constraint.dart';
 
 class ShapePainter extends CustomPainter {
   final List<Point> points;
@@ -15,6 +16,7 @@ class ShapePainter extends CustomPainter {
   final bool isResizeMode;
   final InputUnit inputUnit;
   final bool useCompoundUnits;
+  final ResizeConstraint resizeConstraint;
 
   ShapePainter(
     this.points,
@@ -27,6 +29,7 @@ class ShapePainter extends CustomPainter {
     this.isResizeMode = false,
     required this.inputUnit,
     this.useCompoundUnits = false,
+    this.resizeConstraint = ResizeConstraint.none,
   });
 
   @override
@@ -164,6 +167,22 @@ class ShapePainter extends CustomPainter {
 
       canvas.drawPath(path, paint);
 
+      // Draw fixed side highlight
+      final fixedSideIndices = _getFixedSideIndices();
+      for (final fixedSideIndex in fixedSideIndices) {
+        final p1 = points[fixedSideIndex];
+        final p2 = points[(fixedSideIndex + 1) % points.length];
+
+        canvas.drawLine(
+          Offset(p1.x, p1.y),
+          Offset(p2.x, p2.y),
+          Paint()
+            ..color = Colors.red
+            ..strokeWidth = 5
+            ..style = PaintingStyle.stroke,
+        );
+      }
+
       // Draw all points
       for (int i = 0; i < points.length; i++) {
         _drawPoint(canvas, points[i], i, pointPaint);
@@ -202,6 +221,54 @@ class ShapePainter extends CustomPainter {
       // Draw single point
       _drawPoint(canvas, points.first, 0, pointPaint);
     }
+  }
+
+  // Returns a list of fixed side indices
+  List<int> _getFixedSideIndices() {
+    if (!isResizeMode || selectedIndices.isEmpty) return [];
+    if (resizeConstraint == ResizeConstraint.none ||
+        resizeConstraint == ResizeConstraint.rigid) {
+      return [];
+    }
+
+    final n = points.length;
+    final indices = <int>[];
+
+    if (selectedIndices.length == 1) {
+      final k = selectedIndices.first;
+      if (resizeConstraint == ResizeConstraint.previousSide) {
+        indices.add((k - 1 + n) % n);
+      } else if (resizeConstraint == ResizeConstraint.nextSide) {
+        indices.add(k);
+      }
+    } else {
+      // Rigid + Constraint
+      final sorted = List<int>.from(selectedIndices)..sort();
+      int startIndex = sorted.first;
+      int endIndex = sorted.last;
+
+      // Wrap around check
+      for (int i = 0; i < sorted.length; i++) {
+        final current = sorted[i];
+        final next = sorted[(i + 1) % sorted.length];
+        final dist = (next - current + n) % n;
+        if (dist > 1) {
+          endIndex = current;
+          startIndex = next;
+          break;
+        }
+      }
+
+      if (resizeConstraint == ResizeConstraint.previousSide ||
+          resizeConstraint == ResizeConstraint.bothSides) {
+        indices.add((startIndex - 1 + n) % n);
+      }
+      if (resizeConstraint == ResizeConstraint.nextSide ||
+          resizeConstraint == ResizeConstraint.bothSides) {
+        indices.add(endIndex);
+      }
+    }
+    return indices;
   }
 
   void _drawPoint(Canvas canvas, Point point, int index, Paint defaultPaint) {
@@ -243,10 +310,21 @@ class ShapePainter extends CustomPainter {
   void _drawSideLabel(Canvas canvas, Offset start, Offset end, int sideIndex) {
     final midpoint = Offset((start.dx + end.dx) / 2, (start.dy + end.dy) / 2);
 
+    // Check if this side is fixed
+    final isFixed = _getFixedSideIndices().contains(sideIndex);
+
     // Draw background for label
     final hasMeasurement = sideMeasurements.containsKey(sideIndex);
+
+    Color bgColor;
+    if (isFixed) {
+      bgColor = Colors.red; // Highlight fixed side label
+    } else {
+      bgColor = hasMeasurement ? AppTheme.successColor : Colors.orange;
+    }
+
     final bgPaint = Paint()
-      ..color = hasMeasurement ? AppTheme.successColor : Colors.orange
+      ..color = bgColor
       ..style = PaintingStyle.fill;
 
     // Prepare text first to measure it
