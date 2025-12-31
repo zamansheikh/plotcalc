@@ -267,6 +267,31 @@ class _DrawingPageState extends State<DrawingPage>
     }
   }
 
+  void _handleSideTap(Offset localPosition) {
+    const double touchRadius = 20.0;
+    int? tappedSideIndex;
+
+    for (int i = 0; i < _points.length; i++) {
+      final p1 = _points[i];
+      final p2 = _points[(i + 1) % _points.length];
+
+      final dist = _distToSegment(
+        Point(localPosition.dx, localPosition.dy),
+        p1,
+        p2,
+      );
+
+      if (dist <= touchRadius) {
+        tappedSideIndex = i;
+        break;
+      }
+    }
+
+    if (tappedSideIndex != null) {
+      _askForSideMeasurement(tappedSideIndex);
+    }
+  }
+
   void _completePolygon() async {
     final loc = AppLocalizations.of(context);
     if (_points.length < 3) {
@@ -1055,51 +1080,53 @@ class _DrawingPageState extends State<DrawingPage>
           onPressed: () => context.pop(),
         ),
         actions: [
-          IconButton(
-            icon: Icon(_useCompoundUnits ? Icons.grid_4x4 : Icons.numbers),
-            onPressed: () {
-              setState(() {
-                _useCompoundUnits = !_useCompoundUnits;
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    _useCompoundUnits
-                        ? loc.switchedToCompound
-                        : loc.switchedToDecimal,
+          if (!_isResizeMode) ...[
+            IconButton(
+              icon: Icon(_useCompoundUnits ? Icons.grid_4x4 : Icons.numbers),
+              onPressed: () {
+                setState(() {
+                  _useCompoundUnits = !_useCompoundUnits;
+                });
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      _useCompoundUnits
+                          ? loc.switchedToCompound
+                          : loc.switchedToDecimal,
+                    ),
+                    duration: const Duration(seconds: 1),
                   ),
-                  duration: const Duration(seconds: 1),
-                ),
-              );
-            },
-            tooltip: loc.toggleUnitFormat,
-          ),
-          IconButton(
-            icon: const Icon(Icons.category),
-            onPressed: _showShapeOptions,
-            tooltip: loc.selectShape,
-          ),
-          if (_selectedShape == ShapeType.rectangle ||
-              _selectedShape == ShapeType.circle)
-            IconButton(
-              icon: const Icon(Icons.edit),
-              onPressed: _showDimensionInput,
-              tooltip: loc.enterMeasurement,
+                );
+              },
+              tooltip: loc.toggleUnitFormat,
             ),
-          if ((_selectedShape == ShapeType.polygon ||
-                  _selectedShape == ShapeType.triangle) &&
-              _points.length >= 2)
             IconButton(
-              icon: const Icon(Icons.straighten),
-              onPressed: _showSideMeasurements,
-              tooltip: loc.enterMeasurement,
+              icon: const Icon(Icons.category),
+              onPressed: _showShapeOptions,
+              tooltip: loc.selectShape,
             ),
-          if (_selectedShape == ShapeType.polygon && _points.length >= 4)
-            IconButton(
-              icon: const Icon(Icons.border_style),
-              onPressed: _showDiagonalInput,
-              tooltip: loc.diagonalMeasurementsTitle,
-            ),
+            if (_selectedShape == ShapeType.rectangle ||
+                _selectedShape == ShapeType.circle)
+              IconButton(
+                icon: const Icon(Icons.edit),
+                onPressed: _showDimensionInput,
+                tooltip: loc.enterMeasurement,
+              ),
+            if ((_selectedShape == ShapeType.polygon ||
+                    _selectedShape == ShapeType.triangle) &&
+                _points.length >= 2)
+              IconButton(
+                icon: const Icon(Icons.straighten),
+                onPressed: _showSideMeasurements,
+                tooltip: loc.enterMeasurement,
+              ),
+            if (_selectedShape == ShapeType.polygon && _points.length >= 4)
+              IconButton(
+                icon: const Icon(Icons.border_style),
+                onPressed: _showDiagonalInput,
+                tooltip: loc.diagonalMeasurementsTitle,
+              ),
+          ],
         ],
       ),
       body: BlocConsumer<MeasurementBloc, MeasurementState>(
@@ -1153,10 +1180,18 @@ class _DrawingPageState extends State<DrawingPage>
                       viewportSize: _viewportSize,
                       onTapDown: (localPosition) {
                         if (_isResizeMode) {
-                          _handleResizeTap(localPosition);
+                          // Only allow interaction if shape is not Circle
+                          // For Circle, resize is handled via slider/input only
+                          if (_selectedShape != ShapeType.circle) {
+                            _handleResizeTap(localPosition);
+                          }
                         } else if (_selectedShape == ShapeType.polygon ||
                             _selectedShape == ShapeType.triangle) {
-                          _addPoint(localPosition);
+                          if (_isShapeComplete) {
+                            _handleSideTap(localPosition);
+                          } else {
+                            _addPoint(localPosition);
+                          }
                         }
                       },
                       onZoomToFit: _zoomToFit,
