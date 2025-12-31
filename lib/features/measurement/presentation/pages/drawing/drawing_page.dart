@@ -575,16 +575,20 @@ class _DrawingPageState extends State<DrawingPage>
 
           if (autoFilled) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Auto-calculated missing diagonals from shape.'),
-                duration: Duration(seconds: 2),
+              SnackBar(
+                content: Text(loc.autoCalculatedDiagonals),
+                duration: const Duration(seconds: 2),
               ),
             );
           } else if (_diagonalMeasurements.length < requiredDiagonals) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                  'For a ${_points.length}-sided polygon, you need $requiredDiagonals diagonal(s) for exact calculation. You have measured ${_diagonalMeasurements.length}.',
+                  loc.missingDiagonalsMessage(
+                    _points.length,
+                    requiredDiagonals,
+                    _diagonalMeasurements.length,
+                  ),
                 ),
                 backgroundColor: Colors.orange,
                 duration: const Duration(seconds: 3),
@@ -1193,7 +1197,7 @@ class _DrawingPageState extends State<DrawingPage>
               IconButton(
                 icon: const Icon(Icons.open_with),
                 onPressed: _enterMoveMode,
-                tooltip: 'Move Points/Sides',
+                tooltip: loc.movePointsSides,
               ),
           ],
         ],

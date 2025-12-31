@@ -121,9 +121,9 @@ class DrawingControlsPanel extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Point Selection Chips
-        const Text(
-          'Select Corner to Move:',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        Text(
+          loc.selectCornerToMove,
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
         SingleChildScrollView(
@@ -155,7 +155,10 @@ class DrawingControlsPanel extends StatelessWidget {
         // Range Selector
         Row(
           children: [
-            const Text('Range:', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              loc.range,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(width: 8),
             ...[1.0, 5.0, 10.0].map((range) {
               final isSelected = moveRange == range;
@@ -180,7 +183,7 @@ class DrawingControlsPanel extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Horizontal (Left/Right)'),
+            Text(loc.horizontal),
             Text(
               '${moveX.toStringAsFixed(2)} m',
               style: const TextStyle(fontWeight: FontWeight.bold),
@@ -200,7 +203,7 @@ class DrawingControlsPanel extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Vertical (Up/Down)'),
+            Text(loc.vertical),
             Text(
               '${moveY.toStringAsFixed(2)} m',
               style: const TextStyle(fontWeight: FontWeight.bold),
@@ -221,9 +224,9 @@ class DrawingControlsPanel extends StatelessWidget {
           children: [
             Expanded(
               child: OutlinedButton(
-                onPressed: onConfirmMove,
+                onPressed: onCancelMove,
                 style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
-                child: const Text('Cancel'),
+                child: Text(loc.cancel),
               ),
             ),
             const SizedBox(width: 12),
@@ -236,7 +239,7 @@ class DrawingControlsPanel extends StatelessWidget {
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
-                child: const Text('Apply Move'),
+                child: Text(loc.applyMove),
               ),
             ),
           ],
@@ -252,7 +255,7 @@ class DrawingControlsPanel extends StatelessWidget {
           child: OutlinedButton(
             onPressed: onCancelResize,
             style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Cancel'),
+            child: Text(loc.cancel),
           ),
         ),
         const SizedBox(width: 12),
@@ -265,7 +268,7 @@ class DrawingControlsPanel extends StatelessWidget {
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 12),
             ),
-            child: const Text('Apply Resize'),
+            child: Text(loc.applyResize),
           ),
         ),
       ],

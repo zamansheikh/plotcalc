@@ -215,6 +215,8 @@ class AppLocalizations {
       ? 'Expand/Shrink to Target Area'
       : 'লক্ষ্য এলাকায় প্রসারিত/সংকুচিত করুন';
   String get resizeMode => isEnglish ? 'Resize Mode' : 'পরিবর্তন মোড';
+  String get applyResize =>
+      isEnglish ? 'Apply Resize' : 'পরিবর্তন প্রয়োগ করুন';
   String get resizeInstruction => isEnglish
       ? 'Select points to move. Unselected points will stay fixed.'
       : 'সরানোর জন্য পয়েন্ট নির্বাচন করুন। অনির্বাচিত পয়েন্ট স্থির থাকবে।';
@@ -275,6 +277,28 @@ class AppLocalizations {
   String get measurements => isEnglish ? 'Measurements' : 'পরিমাপ';
   String get toggleUnitFormat =>
       isEnglish ? 'Toggle Unit Format' : 'একক বিন্যাস পরিবর্তন করুন';
+
+  // Move Mode
+  String get movePointsSides =>
+      isEnglish ? 'Move Points/Sides' : 'বিন্দু/বাহু সরান';
+  String get selectCornerToMove =>
+      isEnglish ? 'Select Corner to Move:' : 'সরানোর জন্য কোণ নির্বাচন করুন:';
+  String get range => isEnglish ? 'Range:' : 'সীমা:';
+  String get horizontal =>
+      isEnglish ? 'Horizontal (Left/Right)' : 'অনুভূমিক (বাম/ডান)';
+  String get vertical => isEnglish ? 'Vertical (Up/Down)' : 'উল্লম্ব (উপর/নিচ)';
+  String get applyMove => isEnglish ? 'Apply Move' : 'সরানো প্রয়োগ করুন';
+  String get moveApplied => isEnglish
+      ? 'Move applied. Measurements updated.'
+      : 'সরানো হয়েছে। পরিমাপ আপডেট করা হয়েছে।';
+  String get autoCalculatedDiagonals => isEnglish
+      ? 'Auto-calculated missing diagonals from shape.'
+      : 'আকৃতি থেকে অনুপস্থিত কর্ণ স্বয়ংক্রিয়ভাবে গণনা করা হয়েছে।';
+
+  String missingDiagonalsMessage(int sides, int required, int measured) =>
+      isEnglish
+      ? 'For a $sides-sided polygon, you need $required diagonal(s) for exact calculation. You have measured $measured.'
+      : '$sides-বাহু বিশিষ্ট বহুভুজের সঠিক গণনার জন্য $required টি কর্ণের পরিমাপ প্রয়োজন। আপনি $measured টি পরিমাপ করেছেন।';
 }
 
 class _AppLocalizationsDelegate

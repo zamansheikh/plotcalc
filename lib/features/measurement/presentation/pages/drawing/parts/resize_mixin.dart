@@ -1178,11 +1178,9 @@ mixin ResizeMixin on State<DrawingPage> {
         }
       });
 
+      final loc = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Move applied. Measurements updated.'),
-          backgroundColor: Colors.green,
-        ),
+        SnackBar(content: Text(loc.moveApplied), backgroundColor: Colors.green),
       );
     }
   }
