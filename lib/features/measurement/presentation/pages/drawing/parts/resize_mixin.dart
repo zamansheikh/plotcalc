@@ -3,11 +3,19 @@ part of '../drawing_page.dart';
 mixin ResizeMixin on State<DrawingPage> {
   // State variables managed by this mixin
   bool _isResizeMode = false;
+  bool _isMoveMode = false;
   double? _resizeTargetArea;
   double? _currentAreaMeters;
   final Set<int> _selectedResizeIndices = {};
+  final Set<int> _lockedSideIndices = {}; // Sides that cannot move
+  int? _compensationSideIndex; // The side currently compensating (Orange)
   List<Point>? _previewPoints;
   ResizeConstraint _resizeConstraint = ResizeConstraint.none;
+
+  // Move Mode State
+  double _moveX = 0.0;
+  double _moveY = 0.0;
+  double _moveRange = 5.0;
 
   // Abstract members required from the main state
   List<Point> get _points;
@@ -789,6 +797,273 @@ mixin ResizeMixin on State<DrawingPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Shape resized successfully.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
+  }
+
+  void _enterMoveMode() {
+    if (_sideMeasurements.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Please measure at least one side first to establish scale.',
+          ),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isMoveMode = true;
+      _isResizeMode = false;
+      _selectedResizeIndices.clear();
+      _lockedSideIndices.clear();
+      _previewPoints = null;
+      _moveX = 0.0;
+      _moveY = 0.0;
+      _moveRange = 5.0;
+      _compensationSideIndex = null;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Select points to move (Green). Tap sides to Lock (Red).',
+        ),
+        duration: Duration(seconds: 3),
+      ),
+    );
+  }
+
+  void _handleMoveTap(Offset localPosition) {
+    const double touchRadius = 30.0;
+    int? tappedIndex;
+
+    // Check points (Toggle Selection)
+    for (int i = 0; i < _points.length; i++) {
+      final p = _points[i];
+      final dist = math.sqrt(
+        math.pow(p.x - localPosition.dx, 2) +
+            math.pow(p.y - localPosition.dy, 2),
+      );
+      if (dist <= touchRadius) {
+        tappedIndex = i;
+        break;
+      }
+    }
+
+    if (tappedIndex != null) {
+      setState(() {
+        if (_selectedResizeIndices.contains(tappedIndex)) {
+          _selectedResizeIndices.remove(tappedIndex);
+        } else {
+          _selectedResizeIndices.add(tappedIndex!);
+        }
+        _updateMovePreview();
+      });
+      return;
+    }
+
+    // Check sides (Toggle Lock)
+    int? tappedSideIndex;
+    for (int i = 0; i < _points.length; i++) {
+      final p1 = _points[i];
+      final p2 = _points[(i + 1) % _points.length];
+      final dist = _distToSegment(
+        Point(localPosition.dx, localPosition.dy),
+        p1,
+        p2,
+      );
+      if (dist <= touchRadius) {
+        tappedSideIndex = i;
+        break;
+      }
+    }
+
+    if (tappedSideIndex != null) {
+      setState(() {
+        if (_lockedSideIndices.contains(tappedSideIndex)) {
+          _lockedSideIndices.remove(tappedSideIndex);
+        } else {
+          _lockedSideIndices.add(tappedSideIndex!);
+        }
+        _updateMovePreview();
+      });
+    }
+  }
+
+  void _setMoveX(double value) {
+    setState(() {
+      _moveX = value;
+      _updateMovePreview();
+    });
+  }
+
+  void _setMoveY(double value) {
+    setState(() {
+      _moveY = value;
+      _updateMovePreview();
+    });
+  }
+
+  void _setMoveRange(double value) {
+    setState(() {
+      _moveRange = value;
+      if (_moveX.abs() > _moveRange) _moveX = _moveX.sign * _moveRange;
+      if (_moveY.abs() > _moveRange) _moveY = _moveY.sign * _moveRange;
+      _updateMovePreview();
+    });
+  }
+
+  void _updateMovePreview() {
+    if (_selectedResizeIndices.isEmpty) {
+      _previewPoints = null;
+      _compensationSideIndex = null;
+      return;
+    }
+    _calculateAndPreviewMove(_moveX, _moveY);
+  }
+
+  void _calculateAndPreviewMove(double xMeters, double yMeters) {
+    // 1. Calculate shift vector for selected points
+    double dx = 0, dy = 0;
+
+    // Calculate pixels per meter scale
+    double pixelsPerMeter = 1.0;
+    if (_sideMeasurements.isNotEmpty) {
+      final firstIdx = _sideMeasurements.keys.first;
+      final p1 = _points[firstIdx];
+      final p2 = _points[(firstIdx + 1) % _points.length];
+      final distPx = math.sqrt(
+        math.pow(p1.x - p2.x, 2) + math.pow(p1.y - p2.y, 2),
+      );
+      final distM = _sideMeasurements[firstIdx]!;
+      if (distM > 0) {
+        pixelsPerMeter = distPx / distM;
+      }
+    }
+
+    dx = xMeters * pixelsPerMeter;
+    dy = yMeters * pixelsPerMeter;
+
+    // 2. Apply shift to selected points to get P'
+    final tempPoints = List<Point>.from(_points);
+    for (final idx in _selectedResizeIndices) {
+      tempPoints[idx] = Point(tempPoints[idx].x + dx, tempPoints[idx].y + dy);
+    }
+
+    // 3. Find Compensation Side
+    int? bestCompIndex;
+    double maxLen = -1.0;
+
+    for (int i = 0; i < _points.length; i++) {
+      if (_lockedSideIndices.contains(i)) continue;
+
+      final idx1 = i;
+      final idx2 = (i + 1) % _points.length;
+
+      // If either vertex is selected, we can't use this side for pure compensation shift
+      if (_selectedResizeIndices.contains(idx1) ||
+          _selectedResizeIndices.contains(idx2)) {
+        continue;
+      }
+
+      // Found a candidate. Pick the longest one for stability?
+      final p1 = tempPoints[idx1];
+      final p2 = tempPoints[idx2];
+      final len = math.sqrt(
+        math.pow(p1.x - p2.x, 2) + math.pow(p1.y - p2.y, 2),
+      );
+
+      if (len > maxLen) {
+        maxLen = len;
+        bestCompIndex = i;
+      }
+    }
+
+    _compensationSideIndex = bestCompIndex;
+
+    if (bestCompIndex == null) {
+      setState(() {
+        _previewPoints = tempPoints;
+      });
+      return;
+    }
+
+    // 4. Calculate Area Change
+    final originalArea = _calculatePolygonArea(_points);
+    final newArea = _calculatePolygonArea(tempPoints);
+    final areaDiff = originalArea - newArea; // We want to restore this amount
+
+    // 5. Move Compensation Side
+    // Side C: P_c -> P_{c+1}
+    final c1 = bestCompIndex;
+    final c2 = (bestCompIndex + 1) % _points.length;
+    final pC1 = tempPoints[c1];
+    final pC2 = tempPoints[c2];
+
+    // Normal of compensation side
+    final vx = pC2.x - pC1.x;
+    final vy = pC2.y - pC1.y;
+    final len = math.sqrt(vx * vx + vy * vy);
+    if (len < 1e-5) return; // Degenerate side
+
+    // Outward normal
+    double nx = -vy / len;
+    double ny = vx / len;
+
+    // Ensure outward
+    double cx = 0, cy = 0;
+    for (var p in tempPoints) {
+      cx += p.x;
+      cy += p.y;
+    }
+    cx /= tempPoints.length;
+    cy /= tempPoints.length;
+
+    final mx = (pC1.x + pC2.x) / 2;
+    final my = (pC1.y + pC2.y) / 2;
+    if (nx * (mx - cx) + ny * (my - cy) < 0) {
+      nx = -nx;
+      ny = -ny;
+    }
+
+    final compDist = areaDiff / len;
+    final cDx = nx * compDist;
+    final cDy = ny * compDist;
+
+    // Apply to compensation side vertices
+    tempPoints[c1] = Point(tempPoints[c1].x + cDx, tempPoints[c1].y + cDy);
+    tempPoints[c2] = Point(tempPoints[c2].x + cDx, tempPoints[c2].y + cDy);
+
+    setState(() {
+      _previewPoints = tempPoints;
+    });
+  }
+
+  void _confirmMove() {
+    if (_previewPoints != null) {
+      setState(() {
+        _points.clear();
+        _points.addAll(_previewPoints!);
+        _previewPoints = null;
+        _selectedResizeIndices.clear();
+        _isMoveMode = false;
+
+        // Invalidate measurements as shape changed
+        _sideMeasurements.clear();
+        _diagonalMeasurements.clear();
+        _isShapeComplete = false; // Require remeasurement?
+        // Actually, user wants to keep area.
+        // But side lengths definitely changed.
+        // So we should probably clear measurements.
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Move applied. Please verify measurements.'),
           backgroundColor: Colors.green,
         ),
       );

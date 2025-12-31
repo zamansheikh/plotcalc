@@ -20,12 +20,25 @@ class DrawingControlsPanel extends StatelessWidget {
   final VoidCallback? onCompletePolygon;
   final VoidCallback? onCancelResize;
   final VoidCallback? onApplyResize;
+  final bool isMoveMode;
+  final VoidCallback? onConfigureMove;
+  final VoidCallback? onApplyMove;
+  final VoidCallback? onCancelMove;
+
+  // Move Mode Sliders
+  final double moveXValue;
+  final double moveYValue;
+  final double moveRange;
+  final ValueChanged<double>? onMoveXChanged;
+  final ValueChanged<double>? onMoveYChanged;
+  final ValueChanged<double>? onMoveRangeChanged;
 
   const DrawingControlsPanel({
     super.key,
     required this.selectedShape,
     required this.isShapeComplete,
     required this.isResizeMode,
+    this.isMoveMode = false,
     required this.pointsLength,
     required this.widthText,
     required this.heightText,
@@ -38,6 +51,15 @@ class DrawingControlsPanel extends StatelessWidget {
     this.onCompletePolygon,
     this.onCancelResize,
     this.onApplyResize,
+    this.onConfigureMove,
+    this.onApplyMove,
+    this.onCancelMove,
+    this.moveXValue = 0.0,
+    this.moveYValue = 0.0,
+    this.moveRange = 5.0,
+    this.onMoveXChanged,
+    this.onMoveYChanged,
+    this.onMoveRangeChanged,
   });
 
   @override
@@ -73,10 +95,109 @@ class DrawingControlsPanel extends StatelessWidget {
           // Action Buttons
           if (isResizeMode)
             _buildResizeModeButtons(loc)
+          else if (isMoveMode)
+            _buildMoveModeButtons(loc)
           else
             _buildNormalModeButtons(loc),
         ],
       ),
+    );
+  }
+
+  Widget _buildMoveModeButtons(AppLocalizations loc) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Range Selector
+        Row(
+          children: [
+            const Text('Range:', style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(width: 8),
+            ...[1.0, 5.0, 10.0].map((range) {
+              final isSelected = moveRange == range;
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: ChoiceChip(
+                  label: Text('${range.toInt()}m'),
+                  selected: isSelected,
+                  onSelected: (selected) {
+                    if (selected) onMoveRangeChanged?.call(range);
+                  },
+                  selectedColor: Colors.blue.withValues(alpha: 0.2),
+                  backgroundColor: Colors.grey[200],
+                ),
+              );
+            }),
+          ],
+        ),
+        const SizedBox(height: 8),
+
+        // X Slider
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('Horizontal (Left/Right)'),
+            Text(
+              '${moveXValue.toStringAsFixed(2)} m',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        Slider(
+          value: moveXValue,
+          min: -moveRange,
+          max: moveRange,
+          onChanged: onMoveXChanged,
+          label: moveXValue.toStringAsFixed(2),
+          activeColor: Colors.blue,
+        ),
+
+        // Y Slider
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('Vertical (Up/Down)'),
+            Text(
+              '${moveYValue.toStringAsFixed(2)} m',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        Slider(
+          value: moveYValue,
+          min: -moveRange,
+          max: moveRange,
+          onChanged: onMoveYChanged,
+          label: moveYValue.toStringAsFixed(2),
+          activeColor: Colors.blue,
+        ),
+
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: onCancelMove,
+                style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
+                child: const Text('Cancel'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              flex: 2,
+              child: ElevatedButton(
+                onPressed: onApplyMove,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+                child: const Text('Apply Move'),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 

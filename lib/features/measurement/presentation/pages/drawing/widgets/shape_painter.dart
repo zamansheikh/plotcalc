@@ -17,6 +17,8 @@ class ShapePainter extends CustomPainter {
   final InputUnit inputUnit;
   final bool useCompoundUnits;
   final ResizeConstraint resizeConstraint;
+  final int? compensationSideIndex;
+  final Set<int> lockedSideIndices;
 
   ShapePainter(
     this.points,
@@ -30,6 +32,8 @@ class ShapePainter extends CustomPainter {
     required this.inputUnit,
     this.useCompoundUnits = false,
     this.resizeConstraint = ResizeConstraint.none,
+    this.compensationSideIndex,
+    this.lockedSideIndices = const {},
   });
 
   @override
@@ -169,7 +173,9 @@ class ShapePainter extends CustomPainter {
 
       // Draw fixed side highlight
       final fixedSideIndices = _getFixedSideIndices();
-      for (final fixedSideIndex in fixedSideIndices) {
+      final allLockedIndices = {...fixedSideIndices, ...lockedSideIndices};
+
+      for (final fixedSideIndex in allLockedIndices) {
         final p1 = points[fixedSideIndex];
         final p2 = points[(fixedSideIndex + 1) % points.length];
 
@@ -178,6 +184,22 @@ class ShapePainter extends CustomPainter {
           Offset(p2.x, p2.y),
           Paint()
             ..color = Colors.red
+            ..strokeWidth = 5
+            ..style = PaintingStyle.stroke,
+        );
+      }
+
+      // Draw compensation side highlight
+      if (compensationSideIndex != null &&
+          points.length > compensationSideIndex!) {
+        final p1 = points[compensationSideIndex!];
+        final p2 = points[(compensationSideIndex! + 1) % points.length];
+
+        canvas.drawLine(
+          Offset(p1.x, p1.y),
+          Offset(p2.x, p2.y),
+          Paint()
+            ..color = Colors.orange
             ..strokeWidth = 5
             ..style = PaintingStyle.stroke,
         );
@@ -311,7 +333,9 @@ class ShapePainter extends CustomPainter {
     final midpoint = Offset((start.dx + end.dx) / 2, (start.dy + end.dy) / 2);
 
     // Check if this side is fixed
-    final isFixed = _getFixedSideIndices().contains(sideIndex);
+    final isFixed =
+        _getFixedSideIndices().contains(sideIndex) ||
+        lockedSideIndices.contains(sideIndex);
 
     // Draw background for label
     final hasMeasurement = sideMeasurements.containsKey(sideIndex);

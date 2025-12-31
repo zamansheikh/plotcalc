@@ -23,6 +23,8 @@ class DrawingCanvas extends StatelessWidget {
   final Function(Offset) onTapDown;
   final VoidCallback onZoomToFit;
   final ResizeConstraint resizeConstraint;
+  final int? compensationSideIndex;
+  final Set<int> lockedSideIndices;
 
   const DrawingCanvas({
     super.key,
@@ -41,6 +43,8 @@ class DrawingCanvas extends StatelessWidget {
     required this.onTapDown,
     required this.onZoomToFit,
     this.resizeConstraint = ResizeConstraint.none,
+    this.compensationSideIndex,
+    this.lockedSideIndices = const {},
   });
 
   @override
@@ -69,6 +73,8 @@ class DrawingCanvas extends StatelessWidget {
                   inputUnit: inputUnit,
                   useCompoundUnits: useCompoundUnits,
                   resizeConstraint: resizeConstraint,
+                  compensationSideIndex: compensationSideIndex,
+                  lockedSideIndices: lockedSideIndices,
                 ),
                 child: Container(),
               ),

@@ -1126,6 +1126,14 @@ class _DrawingPageState extends State<DrawingPage>
                 onPressed: _showDiagonalInput,
                 tooltip: loc.diagonalMeasurementsTitle,
               ),
+            // Move Button
+            if (_selectedShape == ShapeType.polygon ||
+                _selectedShape == ShapeType.rectangle)
+              IconButton(
+                icon: const Icon(Icons.open_with),
+                onPressed: _enterMoveMode,
+                tooltip: 'Move Points/Sides',
+              ),
           ],
         ],
       ),
@@ -1147,11 +1155,32 @@ class _DrawingPageState extends State<DrawingPage>
           return Column(
             children: [
               // Instruction Banner
-              if (!_isResizeMode)
+              if (!_isResizeMode && !_isMoveMode)
                 DrawingInstructionBanner(
                   selectedShape: _selectedShape,
                   isShapeComplete: _isShapeComplete,
                   pointsLength: _points.length,
+                ),
+
+              if (_isMoveMode)
+                Container(
+                  color: Colors.blue.shade50,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.info_outline, color: Colors.blue),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Select points/sides to move, then click Configure.',
+                          style: TextStyle(color: Colors.blue.shade900),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
 
               // Canvas Area
@@ -1170,7 +1199,7 @@ class _DrawingPageState extends State<DrawingPage>
                       diagonalMeasurements: _diagonalMeasurements,
                       previewPoints: _previewPoints ?? [],
                       selectedIndices: _selectedResizeIndices,
-                      isResizeMode: _isResizeMode,
+                      isResizeMode: _isResizeMode || _isMoveMode,
                       inputUnit: context
                           .watch<MeasurementUnitBloc>()
                           .state
@@ -1179,7 +1208,9 @@ class _DrawingPageState extends State<DrawingPage>
                       transformationController: _transformationController,
                       viewportSize: _viewportSize,
                       onTapDown: (localPosition) {
-                        if (_isResizeMode) {
+                        if (_isMoveMode) {
+                          _handleMoveTap(localPosition);
+                        } else if (_isResizeMode) {
                           // Only allow interaction if shape is not Circle
                           // For Circle, resize is handled via slider/input only
                           if (_selectedShape != ShapeType.circle) {
@@ -1196,6 +1227,8 @@ class _DrawingPageState extends State<DrawingPage>
                       },
                       onZoomToFit: _zoomToFit,
                       resizeConstraint: _resizeConstraint,
+                      compensationSideIndex: _compensationSideIndex,
+                      lockedSideIndices: _lockedSideIndices,
                     );
                   },
                 ),
@@ -1206,6 +1239,7 @@ class _DrawingPageState extends State<DrawingPage>
                 selectedShape: _selectedShape,
                 isShapeComplete: _isShapeComplete,
                 isResizeMode: _isResizeMode,
+                isMoveMode: _isMoveMode,
                 pointsLength: _points.length,
                 widthText: _widthController.text,
                 heightText: _heightController.text,
@@ -1231,6 +1265,22 @@ class _DrawingPageState extends State<DrawingPage>
                       }
                     : null,
                 onApplyResize: _isResizeMode ? _confirmResize : null,
+                onApplyMove: _isMoveMode ? _confirmMove : null,
+                onCancelMove: _isMoveMode
+                    ? () {
+                        setState(() {
+                          _isMoveMode = false;
+                          _previewPoints = null;
+                          _selectedResizeIndices.clear();
+                        });
+                      }
+                    : null,
+                moveXValue: _moveX,
+                moveYValue: _moveY,
+                moveRange: _moveRange,
+                onMoveXChanged: _isMoveMode ? _setMoveX : null,
+                onMoveYChanged: _isMoveMode ? _setMoveY : null,
+                onMoveRangeChanged: _isMoveMode ? _setMoveRange : null,
               ),
             ],
           );
