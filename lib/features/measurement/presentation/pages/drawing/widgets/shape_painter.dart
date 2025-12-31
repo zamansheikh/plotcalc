@@ -19,6 +19,7 @@ class ShapePainter extends CustomPainter {
   final ResizeConstraint resizeConstraint;
   final int? compensationSideIndex;
   final Set<int> lockedSideIndices;
+  final Set<int> lockedPointIndices;
 
   ShapePainter(
     this.points,
@@ -34,6 +35,7 @@ class ShapePainter extends CustomPainter {
     this.resizeConstraint = ResizeConstraint.none,
     this.compensationSideIndex,
     this.lockedSideIndices = const {},
+    this.lockedPointIndices = const {},
   });
 
   @override
@@ -300,16 +302,23 @@ class ShapePainter extends CustomPainter {
     double radius = 6;
 
     if (isResizeMode) {
-      if (selectedIndices.contains(index)) {
+      if (lockedPointIndices.contains(index)) {
+        // Locked point
+        paintToUse = Paint()..color = Colors.red;
+        radius = 8;
+        // Draw X or something to indicate lock?
+        // For now just Red color is distinct from Green (Selected) and Grey (Unselected)
+      } else if (selectedIndices.contains(index)) {
         // Selected point in resize mode
-        paintToUse = Paint()..color = Colors.deepOrange;
+        paintToUse = Paint()
+          ..color = Colors.green; // Changed to Green for Move Mode clarity
         radius = 8;
 
         // Draw selection halo
         canvas.drawCircle(
           offset,
           12,
-          Paint()..color = Colors.deepOrange.withValues(alpha: 0.3),
+          Paint()..color = Colors.green.withValues(alpha: 0.3),
         );
       } else {
         // Unselected point in resize mode

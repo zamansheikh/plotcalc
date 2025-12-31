@@ -25,6 +25,7 @@ class DrawingCanvas extends StatelessWidget {
   final ResizeConstraint resizeConstraint;
   final int? compensationSideIndex;
   final Set<int> lockedSideIndices;
+  final Set<int> lockedPointIndices;
 
   const DrawingCanvas({
     super.key,
@@ -45,6 +46,7 @@ class DrawingCanvas extends StatelessWidget {
     this.resizeConstraint = ResizeConstraint.none,
     this.compensationSideIndex,
     this.lockedSideIndices = const {},
+    this.lockedPointIndices = const {},
   });
 
   @override
@@ -75,6 +77,7 @@ class DrawingCanvas extends StatelessWidget {
                   resizeConstraint: resizeConstraint,
                   compensationSideIndex: compensationSideIndex,
                   lockedSideIndices: lockedSideIndices,
+                  lockedPointIndices: lockedPointIndices,
                 ),
                 child: Container(),
               ),

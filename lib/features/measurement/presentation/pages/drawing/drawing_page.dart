@@ -1229,6 +1229,7 @@ class _DrawingPageState extends State<DrawingPage>
                       resizeConstraint: _resizeConstraint,
                       compensationSideIndex: _compensationSideIndex,
                       lockedSideIndices: _lockedSideIndices,
+                      lockedPointIndices: _lockedPointIndices,
                     );
                   },
                 ),
@@ -1249,6 +1250,11 @@ class _DrawingPageState extends State<DrawingPage>
                 onUndo: _undoLastPoint,
                 onCalculate: _calculateArea,
                 onClear: _clearAll,
+                onToggleResizeMode: _toggleResizeMode,
+                onToggleMoveMode: _toggleMoveMode,
+                onWidthChanged: (v) => _widthController.text = v,
+                onHeightChanged: (v) => _heightController.text = v,
+                onRadiusChanged: (v) => _radiusController.text = v,
                 onCompletePolygon:
                     (_selectedShape == ShapeType.polygon &&
                         _points.length >= 3 &&
@@ -1265,7 +1271,6 @@ class _DrawingPageState extends State<DrawingPage>
                       }
                     : null,
                 onApplyResize: _isResizeMode ? _confirmResize : null,
-                onApplyMove: _isMoveMode ? _confirmMove : null,
                 onCancelMove: _isMoveMode
                     ? () {
                         setState(() {
@@ -1275,12 +1280,15 @@ class _DrawingPageState extends State<DrawingPage>
                         });
                       }
                     : null,
-                moveXValue: _moveX,
-                moveYValue: _moveY,
+                onConfirmMove: _isMoveMode ? _confirmMove : null,
+                moveX: _moveX,
+                moveY: _moveY,
                 moveRange: _moveRange,
                 onMoveXChanged: _isMoveMode ? _setMoveX : null,
                 onMoveYChanged: _isMoveMode ? _setMoveY : null,
                 onMoveRangeChanged: _isMoveMode ? _setMoveRange : null,
+                selectedResizeIndices: _selectedResizeIndices,
+                onTogglePointSelection: _togglePointSelection,
               ),
             ],
           );

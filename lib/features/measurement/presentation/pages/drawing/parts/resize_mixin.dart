@@ -837,11 +837,13 @@ mixin ResizeMixin on State<DrawingPage> {
     );
   }
 
+  final Set<int> _lockedPointIndices = {}; // Points that cannot move
+
   void _handleMoveTap(Offset localPosition) {
     const double touchRadius = 30.0;
     int? tappedIndex;
 
-    // Check points (Toggle Selection)
+    // Check points (Toggle Lock)
     for (int i = 0; i < _points.length; i++) {
       final p = _points[i];
       final dist = math.sqrt(
@@ -856,10 +858,12 @@ mixin ResizeMixin on State<DrawingPage> {
 
     if (tappedIndex != null) {
       setState(() {
-        if (_selectedResizeIndices.contains(tappedIndex)) {
-          _selectedResizeIndices.remove(tappedIndex);
+        if (_lockedPointIndices.contains(tappedIndex)) {
+          _lockedPointIndices.remove(tappedIndex);
         } else {
-          _selectedResizeIndices.add(tappedIndex!);
+          _lockedPointIndices.add(tappedIndex!);
+          // If locking, ensure it's not selected for move
+          _selectedResizeIndices.remove(tappedIndex);
         }
         _updateMovePreview();
       });
@@ -892,6 +896,45 @@ mixin ResizeMixin on State<DrawingPage> {
         _updateMovePreview();
       });
     }
+  }
+
+  void _togglePointSelection(int index) {
+    if (_lockedPointIndices.contains(index)) {
+      return; // Cannot select locked point
+    }
+
+    setState(() {
+      if (_selectedResizeIndices.contains(index)) {
+        _selectedResizeIndices.remove(index);
+      } else {
+        _selectedResizeIndices.add(index);
+      }
+      _updateMovePreview();
+    });
+  }
+
+  void _toggleResizeMode() {
+    setState(() {
+      _isResizeMode = !_isResizeMode;
+      _isMoveMode = false;
+      _previewPoints = null;
+      _selectedResizeIndices.clear();
+      _lockedSideIndices.clear();
+      _lockedPointIndices.clear();
+    });
+  }
+
+  void _toggleMoveMode() {
+    setState(() {
+      _isMoveMode = !_isMoveMode;
+      _isResizeMode = false;
+      _previewPoints = null;
+      _selectedResizeIndices.clear();
+      _lockedSideIndices.clear();
+      _lockedPointIndices.clear();
+      _moveX = 0;
+      _moveY = 0;
+    });
   }
 
   void _setMoveX(double value) {
@@ -963,6 +1006,12 @@ mixin ResizeMixin on State<DrawingPage> {
 
       final idx1 = i;
       final idx2 = (i + 1) % _points.length;
+
+      // If either vertex is locked, we can't use this side for compensation
+      if (_lockedPointIndices.contains(idx1) ||
+          _lockedPointIndices.contains(idx2)) {
+        continue;
+      }
 
       // If either vertex is selected, we can't use this side for pure compensation shift
       if (_selectedResizeIndices.contains(idx1) ||

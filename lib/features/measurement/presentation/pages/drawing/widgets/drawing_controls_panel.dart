@@ -8,6 +8,7 @@ class DrawingControlsPanel extends StatelessWidget {
   final ShapeType selectedShape;
   final bool isShapeComplete;
   final bool isResizeMode;
+  final bool isMoveMode;
   final int pointsLength;
   final String widthText;
   final String heightText;
@@ -20,18 +21,22 @@ class DrawingControlsPanel extends StatelessWidget {
   final VoidCallback? onCompletePolygon;
   final VoidCallback? onCancelResize;
   final VoidCallback? onApplyResize;
-  final bool isMoveMode;
-  final VoidCallback? onConfigureMove;
-  final VoidCallback? onApplyMove;
+  final VoidCallback? onToggleResizeMode;
+  final VoidCallback? onToggleMoveMode;
+  final ValueChanged<String>? onWidthChanged;
+  final ValueChanged<String>? onHeightChanged;
+  final ValueChanged<String>? onRadiusChanged;
+  final VoidCallback? onConfirmMove;
   final VoidCallback? onCancelMove;
-
-  // Move Mode Sliders
-  final double moveXValue;
-  final double moveYValue;
+  final VoidCallback? onConfigureMove;
+  final double moveX;
+  final double moveY;
   final double moveRange;
   final ValueChanged<double>? onMoveXChanged;
   final ValueChanged<double>? onMoveYChanged;
   final ValueChanged<double>? onMoveRangeChanged;
+  final Set<int> selectedResizeIndices;
+  final ValueChanged<int>? onTogglePointSelection;
 
   const DrawingControlsPanel({
     super.key,
@@ -51,15 +56,22 @@ class DrawingControlsPanel extends StatelessWidget {
     this.onCompletePolygon,
     this.onCancelResize,
     this.onApplyResize,
-    this.onConfigureMove,
-    this.onApplyMove,
+    this.onToggleResizeMode,
+    this.onToggleMoveMode,
+    this.onWidthChanged,
+    this.onHeightChanged,
+    this.onRadiusChanged,
+    this.onConfirmMove,
     this.onCancelMove,
-    this.moveXValue = 0.0,
-    this.moveYValue = 0.0,
+    this.onConfigureMove,
+    this.moveX = 0.0,
+    this.moveY = 0.0,
     this.moveRange = 5.0,
     this.onMoveXChanged,
     this.onMoveYChanged,
     this.onMoveRangeChanged,
+    this.selectedResizeIndices = const {},
+    this.onTogglePointSelection,
   });
 
   @override
@@ -108,6 +120,38 @@ class DrawingControlsPanel extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Point Selection Chips
+        const Text(
+          'Select Corner to Move:',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: List.generate(pointsLength, (index) {
+              final isSelected = selectedResizeIndices.contains(index);
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: FilterChip(
+                  label: Text('${index + 1}'),
+                  selected: isSelected,
+                  onSelected: (_) => onTogglePointSelection?.call(index),
+                  selectedColor: Colors.green.withValues(alpha: 0.3),
+                  checkmarkColor: Colors.green,
+                  labelStyle: TextStyle(
+                    color: isSelected ? Colors.green[900] : Colors.black,
+                    fontWeight: isSelected
+                        ? FontWeight.bold
+                        : FontWeight.normal,
+                  ),
+                ),
+              );
+            }),
+          ),
+        ),
+        const SizedBox(height: 16),
+
         // Range Selector
         Row(
           children: [
@@ -138,17 +182,17 @@ class DrawingControlsPanel extends StatelessWidget {
           children: [
             const Text('Horizontal (Left/Right)'),
             Text(
-              '${moveXValue.toStringAsFixed(2)} m',
+              '${moveX.toStringAsFixed(2)} m',
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ],
         ),
         Slider(
-          value: moveXValue,
+          value: moveX,
           min: -moveRange,
           max: moveRange,
           onChanged: onMoveXChanged,
-          label: moveXValue.toStringAsFixed(2),
+          label: moveX.toStringAsFixed(2),
           activeColor: Colors.blue,
         ),
 
@@ -158,17 +202,17 @@ class DrawingControlsPanel extends StatelessWidget {
           children: [
             const Text('Vertical (Up/Down)'),
             Text(
-              '${moveYValue.toStringAsFixed(2)} m',
+              '${moveY.toStringAsFixed(2)} m',
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ],
         ),
         Slider(
-          value: moveYValue,
+          value: moveY,
           min: -moveRange,
           max: moveRange,
           onChanged: onMoveYChanged,
-          label: moveYValue.toStringAsFixed(2),
+          label: moveY.toStringAsFixed(2),
           activeColor: Colors.blue,
         ),
 
@@ -177,7 +221,7 @@ class DrawingControlsPanel extends StatelessWidget {
           children: [
             Expanded(
               child: OutlinedButton(
-                onPressed: onCancelMove,
+                onPressed: onConfirmMove,
                 style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
                 child: const Text('Cancel'),
               ),
@@ -186,7 +230,7 @@ class DrawingControlsPanel extends StatelessWidget {
             Expanded(
               flex: 2,
               child: ElevatedButton(
-                onPressed: onApplyMove,
+                onPressed: onConfirmMove,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
                   foregroundColor: Colors.white,
