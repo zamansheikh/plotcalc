@@ -26,6 +26,8 @@ import '../../features/measurement/domain/usecases/get_all_measurements.dart'
     as _i318;
 import '../../features/measurement/domain/usecases/save_measurement.dart'
     as _i904;
+import '../../features/measurement/domain/usecases/update_measurement.dart'
+    as _i405;
 import '../../features/measurement/presentation/bloc/measurement_bloc.dart'
     as _i336;
 import '../database/database_helper.dart' as _i64;
@@ -58,10 +60,14 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i904.SaveMeasurement>(
       () => _i904.SaveMeasurement(gh<_i176.MeasurementRepository>()),
     );
+    gh.factory<_i405.UpdateMeasurement>(
+      () => _i405.UpdateMeasurement(gh<_i176.MeasurementRepository>()),
+    );
     gh.factory<_i336.MeasurementBloc>(
       () => _i336.MeasurementBloc(
         calculateArea: gh<_i933.CalculateArea>(),
         saveMeasurement: gh<_i904.SaveMeasurement>(),
+        updateMeasurement: gh<_i405.UpdateMeasurement>(),
         getAllMeasurements: gh<_i318.GetAllMeasurements>(),
         deleteMeasurement: gh<_i542.DeleteMeasurement>(),
       ),

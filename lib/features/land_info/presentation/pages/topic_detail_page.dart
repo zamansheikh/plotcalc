@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../data/models/land_info_model.dart';
 
 class TopicDetailPage extends StatelessWidget {
@@ -9,36 +10,62 @@ class TopicDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(topic.title)),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16.0),
-        itemCount: topic.content.length + 1,
-        itemBuilder: (context, index) {
-          // First item is the visible title in the body (in addition to AppBar)
-          if (index == 0) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12.0, top: 6.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      backgroundColor: Colors.grey[50],
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Green gradient header
+            Container(
+              padding: const EdgeInsets.fromLTRB(8, 12, 16, 20),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF2E7D32), Color(0xFF388E3C)],
+                ),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(32),
+                  bottomRight: Radius.circular(32),
+                ),
+              ),
+              child: Row(
                 children: [
-                  Text(
-                    topic.title,
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                  IconButton(
+                    icon: const Icon(
+                      Icons.arrow_back_rounded,
+                      color: Colors.white,
+                    ),
+                    onPressed: () => context.pop(),
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      topic.title,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                        letterSpacing: -0.3,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  const SizedBox(height: 8.0),
-                  const Divider(height: 1, thickness: 1),
                 ],
               ),
-            );
-          }
-
-          final block = topic.content[index - 1];
-          return _buildContentBlock(context, block);
-        },
+            ),
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+                itemCount: topic.content.length,
+                itemBuilder: (context, index) {
+                  final block = topic.content[index];
+                  return _buildContentBlock(context, block);
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

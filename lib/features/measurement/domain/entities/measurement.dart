@@ -17,8 +17,10 @@ class Measurement extends Equatable {
   final ShapeType shapeType;
   final List<Point> points;
   final Map<String, double>? dimensions; // For rectangles, circles, etc.
-  final Map<int, double>? sideMeasurements; // For polygons - side index to measurement
-  final Map<String, double>? diagonalMeasurements; // For polygons - "0-2" to measurement
+  final Map<int, double>?
+  sideMeasurements; // For polygons - side index to measurement
+  final Map<String, double>?
+  diagonalMeasurements; // For polygons - "0-2" to measurement
   final double area; // in square meters
   final DateTime createdAt;
   final MeasurementUnit preferredUnit;
@@ -35,6 +37,21 @@ class Measurement extends Equatable {
     required this.createdAt,
     this.preferredUnit = MeasurementUnit.squareMeters,
   });
+
+  Measurement copyWith({String? name}) {
+    return Measurement(
+      id: id,
+      name: name ?? this.name,
+      shapeType: shapeType,
+      points: points,
+      dimensions: dimensions,
+      sideMeasurements: sideMeasurements,
+      diagonalMeasurements: diagonalMeasurements,
+      area: area,
+      createdAt: createdAt,
+      preferredUnit: preferredUnit,
+    );
+  }
 
   double getAreaIn(MeasurementUnit unit) {
     switch (unit) {

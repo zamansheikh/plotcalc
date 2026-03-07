@@ -16,6 +16,8 @@ class DrawingCanvas extends StatelessWidget {
   final List<Point> previewPoints;
   final Set<int> selectedIndices;
   final bool isResizeMode;
+  final List<Point>? originalPoints;
+  final Map<int, double>? originalSideMeasurements;
   final InputUnit inputUnit;
   final bool useCompoundUnits;
   final TransformationController transformationController;
@@ -25,7 +27,6 @@ class DrawingCanvas extends StatelessWidget {
   final ResizeConstraint resizeConstraint;
   final int? compensationSideIndex;
   final Set<int> lockedSideIndices;
-  final Set<int> lockedPointIndices;
 
   const DrawingCanvas({
     super.key,
@@ -37,6 +38,8 @@ class DrawingCanvas extends StatelessWidget {
     required this.previewPoints,
     required this.selectedIndices,
     required this.isResizeMode,
+    this.originalPoints,
+    this.originalSideMeasurements,
     required this.inputUnit,
     this.useCompoundUnits = false,
     required this.transformationController,
@@ -46,23 +49,35 @@ class DrawingCanvas extends StatelessWidget {
     this.resizeConstraint = ResizeConstraint.none,
     this.compensationSideIndex,
     this.lockedSideIndices = const {},
-    this.lockedPointIndices = const {},
   });
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        InteractiveViewer(
-          transformationController: transformationController,
-          minScale: 0.1,
-          maxScale: 5.0,
-          boundaryMargin: const EdgeInsets.all(double.infinity),
-          child: GestureDetector(
-            onTapDown: (details) => onTapDown(details.localPosition),
+        GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTapUp: (details) {
+            // Transform viewport coordinates to canvas coordinates
+            // so taps work even when zoomed out or panned
+            final Matrix4 inverse = Matrix4.inverted(
+              transformationController.value,
+            );
+            final Offset canvasPos = MatrixUtils.transformPoint(
+              inverse,
+              details.localPosition,
+            );
+            onTapDown(canvasPos);
+          },
+          child: InteractiveViewer(
+            transformationController: transformationController,
+            minScale: 0.1,
+            maxScale: 5.0,
+            boundaryMargin: const EdgeInsets.all(double.infinity),
             child: Container(
               color: Colors.grey[200],
               child: CustomPaint(
+                size: viewportSize,
                 painter: ShapePainter(
                   points,
                   selectedShape,
@@ -72,12 +87,14 @@ class DrawingCanvas extends StatelessWidget {
                   previewPoints: previewPoints,
                   selectedIndices: selectedIndices,
                   isResizeMode: isResizeMode,
+                  originalPoints: originalPoints,
+                  originalSideMeasurements: originalSideMeasurements,
                   inputUnit: inputUnit,
                   useCompoundUnits: useCompoundUnits,
                   resizeConstraint: resizeConstraint,
                   compensationSideIndex: compensationSideIndex,
                   lockedSideIndices: lockedSideIndices,
-                  lockedPointIndices: lockedPointIndices,
+                  lockedPointIndices: const {},
                 ),
                 child: Container(),
               ),

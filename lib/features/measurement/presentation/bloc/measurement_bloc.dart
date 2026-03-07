@@ -4,6 +4,7 @@ import 'package:injectable/injectable.dart';
 import '../../domain/entities/measurement.dart';
 import '../../domain/usecases/calculate_area.dart';
 import '../../domain/usecases/save_measurement.dart';
+import '../../domain/usecases/update_measurement.dart';
 import '../../domain/usecases/get_all_measurements.dart';
 import '../../domain/usecases/delete_measurement.dart';
 import '../../../../core/usecases/usecase.dart';
@@ -15,17 +16,20 @@ part 'measurement_state.dart';
 class MeasurementBloc extends Bloc<MeasurementEvent, MeasurementState> {
   final CalculateArea calculateArea;
   final SaveMeasurement saveMeasurement;
+  final UpdateMeasurement updateMeasurement;
   final GetAllMeasurements getAllMeasurements;
   final DeleteMeasurement deleteMeasurement;
 
   MeasurementBloc({
     required this.calculateArea,
     required this.saveMeasurement,
+    required this.updateMeasurement,
     required this.getAllMeasurements,
     required this.deleteMeasurement,
   }) : super(const MeasurementInitial()) {
     on<CalculateAreaEvent>(_onCalculateArea);
     on<SaveMeasurementEvent>(_onSaveMeasurement);
+    on<UpdateMeasurementEvent>(_onUpdateMeasurement);
     on<LoadAllMeasurementsEvent>(_onLoadAllMeasurements);
     on<DeleteMeasurementEvent>(_onDeleteMeasurement);
     on<ClearCurrentMeasurementEvent>(_onClearCurrentMeasurement);
@@ -64,6 +68,21 @@ class MeasurementBloc extends Bloc<MeasurementEvent, MeasurementState> {
 
     result.fold((failure) => emit(MeasurementError(failure.message)), (_) {
       emit(const MeasurementSaved('Measurement saved successfully'));
+      add(const LoadAllMeasurementsEvent());
+    });
+  }
+
+  Future<void> _onUpdateMeasurement(
+    UpdateMeasurementEvent event,
+    Emitter<MeasurementState> emit,
+  ) async {
+    emit(const MeasurementLoading());
+
+    final result = await updateMeasurement(
+      UpdateMeasurementParams(measurement: event.measurement),
+    );
+
+    result.fold((failure) => emit(MeasurementError(failure.message)), (_) {
       add(const LoadAllMeasurementsEvent());
     });
   }

@@ -3,19 +3,20 @@ part of '../drawing_page.dart';
 mixin ResizeMixin on State<DrawingPage> {
   // State variables managed by this mixin
   bool _isResizeMode = false;
-  bool _isMoveMode = false;
+  bool _isAdjustMode = false;
   double? _resizeTargetArea;
   double? _currentAreaMeters;
+  double? _adjustTargetArea; // target area in sq meters (optional)
+  double? _adjustCurrentArea; // current area in sq meters
+  double? _adjustTargetSqFt; // target stored in sq ft for compound unit display
+  List<Point>? _originalAdjustPoints; // original shape before adjusting
+  Map<int, double>?
+  _originalAdjustSideMeasurements; // original side measurements
   final Set<int> _selectedResizeIndices = {};
-  final Set<int> _lockedSideIndices = {}; // Sides that cannot move
-  int? _compensationSideIndex; // The side currently compensating (Orange)
+  final Set<int> _lockedSideIndices = {};
+  int? _compensationSideIndex;
   List<Point>? _previewPoints;
   ResizeConstraint _resizeConstraint = ResizeConstraint.none;
-
-  // Move Mode State
-  double _moveX = 0.0;
-  double _moveY = 0.0;
-  double _moveRange = 5.0;
 
   // Abstract members required from the main state
   List<Point> get _points;
@@ -803,12 +804,1110 @@ mixin ResizeMixin on State<DrawingPage> {
     }
   }
 
-  void _enterMoveMode() {
-    if (_sideMeasurements.isEmpty) {
+  void _enterAdjustMode() {
+    if (_points.length < 3) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Need at least 3 points to adjust.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    // Calculate current real-world area
+    final currentArea = _calculateRealAreaFromPoints();
+
+    setState(() {
+      _isAdjustMode = true;
+      _isResizeMode = false;
+      _previewPoints = null;
+      _compensationSideIndex = null;
+      _adjustCurrentArea = currentArea;
+      // Save original shape for overlay comparison
+      _originalAdjustPoints = List<Point>.from(_points);
+      _originalAdjustSideMeasurements = Map<int, double>.from(
+        _sideMeasurements,
+      );
+    });
+  }
+
+  void _exitAdjustMode() {
+    setState(() {
+      _isAdjustMode = false;
+      _adjustTargetArea = null;
+      _adjustTargetSqFt = null;
+      _originalAdjustPoints = null;
+      _originalAdjustSideMeasurements = null;
+    });
+  }
+
+  void _cancelAdjustMode() {
+    if (_originalAdjustPoints != null) {
+      setState(() {
+        // Restore original points and side measurements
+        _points.clear();
+        _points.addAll(_originalAdjustPoints!);
+        _sideMeasurements.clear();
+        if (_originalAdjustSideMeasurements != null) {
+          _sideMeasurements.addAll(_originalAdjustSideMeasurements!);
+        }
+        _diagonalMeasurements.clear();
+        _isAdjustMode = false;
+        _adjustTargetArea = null;
+        _adjustTargetSqFt = null;
+        _originalAdjustPoints = null;
+        _originalAdjustSideMeasurements = null;
+      });
+    } else {
+      _exitAdjustMode();
+    }
+  }
+
+  double? _getPixelsPerMeter() {
+    if (_sideMeasurements.isEmpty) return null;
+    final n = _points.length;
+    for (final entry in _sideMeasurements.entries) {
+      final si = entry.key;
+      final meters = entry.value;
+      if (meters > 0 && si < n) {
+        final sp1 = _points[si];
+        final sp2 = _points[(si + 1) % n];
+        final distPx = math.sqrt(
+          math.pow(sp1.x - sp2.x, 2) + math.pow(sp1.y - sp2.y, 2),
+        );
+        return distPx / meters;
+      }
+    }
+    return null;
+  }
+
+  double? _calculateRealAreaFromPoints() {
+    if (_points.length < 3) return null;
+    final ppm = _getPixelsPerMeter();
+    if (ppm == null || ppm <= 0) return null;
+    final pixelArea = _calculatePolygonArea(_points);
+    return pixelArea / (ppm * ppm); // convert pixel² to meter²
+  }
+
+  void _handleAdjustTap(Offset localPosition) {
+    // Tap a POINT to move it
+    const double touchRadius = 30.0;
+    int? tappedIndex;
+
+    for (int i = 0; i < _points.length; i++) {
+      final point = _points[i];
+      final distance = (Offset(point.x, point.y) - localPosition).distance;
+      if (distance <= touchRadius) {
+        tappedIndex = i;
+        break;
+      }
+    }
+
+    if (tappedIndex != null) {
+      _showMovePointDialog(tappedIndex);
+    }
+  }
+
+  void _showMovePointDialog(int pointIndex) {
+    final loc = AppLocalizations.of(context);
+    final measurementUnitState = context.read<MeasurementUnitBloc>().state;
+    final inputUnit = measurementUnitState.unit;
+
+    int selectedDirection = -1; // -1 = none selected
+    final distController = TextEditingController();
+
+    // Direction vectors (screen coords: Y increases downward)
+    // Index: 0=Up, 1=UpRight, 2=Right, 3=DownRight, 4=Down, 5=DownLeft, 6=Left, 7=UpLeft
+    final directionVectors = [
+      const Offset(0, -1), // Up
+      Offset(1 / math.sqrt(2), -1 / math.sqrt(2)), // Up-Right
+      const Offset(1, 0), // Right
+      Offset(1 / math.sqrt(2), 1 / math.sqrt(2)), // Down-Right
+      const Offset(0, 1), // Down
+      Offset(-1 / math.sqrt(2), 1 / math.sqrt(2)), // Down-Left
+      const Offset(-1, 0), // Left
+      Offset(-1 / math.sqrt(2), -1 / math.sqrt(2)), // Up-Left
+    ];
+
+    final directionLabels = [
+      loc.up,
+      loc.upRight,
+      loc.right,
+      loc.downRight,
+      loc.down,
+      loc.downLeft,
+      loc.left,
+      loc.upLeft,
+    ];
+
+    final directionIcons = [
+      Icons.arrow_upward,
+      Icons.north_east,
+      Icons.arrow_forward,
+      Icons.south_east,
+      Icons.arrow_downward,
+      Icons.south_west,
+      Icons.arrow_back,
+      Icons.north_west,
+    ];
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setStateDialog) {
+          // Calculate preview area if direction and distance are set
+          String? previewAreaText;
+          if (selectedDirection >= 0 && distController.text.isNotEmpty) {
+            final dist = double.tryParse(distController.text);
+            if (dist != null && dist > 0) {
+              final ppm = _getPixelsPerMeter();
+              if (ppm != null) {
+                final distInMeters = inputUnit.toMeters(dist);
+                final pixelDist = distInMeters * ppm;
+                final dir = directionVectors[selectedDirection];
+                final dx = dir.dx * pixelDist;
+                final dy = dir.dy * pixelDist;
+                final testPoints = List<Point>.from(_points);
+                testPoints[pointIndex] = Point(
+                  _points[pointIndex].x + dx,
+                  _points[pointIndex].y + dy,
+                );
+                final newPixelArea = _calculatePolygonArea(testPoints);
+                final newRealArea = newPixelArea / (ppm * ppm);
+
+                // Format area for display in Shatak
+                final previewSqFt = newRealArea * AppConstants.sqMeterToSqFeet;
+                final previewShatak = previewSqFt / _shatakSqFt;
+                previewAreaText = '${previewShatak.toStringAsFixed(2)} Shatak';
+              }
+            }
+          }
+
+          final bool canAutoAdjust =
+              selectedDirection >= 0 && _adjustTargetArea != null;
+
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: const Color(
+                              0xFF2E7D32,
+                            ).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.open_with_rounded,
+                            color: Color(0xFF2E7D32),
+                            size: 22,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            '${loc.movePoint} ${pointIndex + 1}',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () => Navigator.pop(context),
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.close,
+                              size: 18,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Direction label
+                    Text(
+                      loc.direction,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Compass grid (3x3)
+                    Center(
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _dirBtn(
+                                7,
+                                directionIcons[7],
+                                directionLabels[7],
+                                selectedDirection,
+                                setStateDialog,
+                                (d) => selectedDirection = d,
+                              ),
+                              _dirBtn(
+                                0,
+                                directionIcons[0],
+                                directionLabels[0],
+                                selectedDirection,
+                                setStateDialog,
+                                (d) => selectedDirection = d,
+                              ),
+                              _dirBtn(
+                                1,
+                                directionIcons[1],
+                                directionLabels[1],
+                                selectedDirection,
+                                setStateDialog,
+                                (d) => selectedDirection = d,
+                              ),
+                            ],
+                          ),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _dirBtn(
+                                6,
+                                directionIcons[6],
+                                directionLabels[6],
+                                selectedDirection,
+                                setStateDialog,
+                                (d) => selectedDirection = d,
+                              ),
+                              Container(
+                                width: 56,
+                                height: 56,
+                                margin: const EdgeInsets.all(3),
+                                decoration: BoxDecoration(
+                                  color: const Color(
+                                    0xFF2E7D32,
+                                  ).withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    'P${pointIndex + 1}',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF2E7D32),
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              _dirBtn(
+                                2,
+                                directionIcons[2],
+                                directionLabels[2],
+                                selectedDirection,
+                                setStateDialog,
+                                (d) => selectedDirection = d,
+                              ),
+                            ],
+                          ),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _dirBtn(
+                                5,
+                                directionIcons[5],
+                                directionLabels[5],
+                                selectedDirection,
+                                setStateDialog,
+                                (d) => selectedDirection = d,
+                              ),
+                              _dirBtn(
+                                4,
+                                directionIcons[4],
+                                directionLabels[4],
+                                selectedDirection,
+                                setStateDialog,
+                                (d) => selectedDirection = d,
+                              ),
+                              _dirBtn(
+                                3,
+                                directionIcons[3],
+                                directionLabels[3],
+                                selectedDirection,
+                                setStateDialog,
+                                (d) => selectedDirection = d,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Divider
+                    Divider(color: Colors.grey[200], height: 1),
+                    const SizedBox(height: 16),
+
+                    // Manual distance input
+                    Text(
+                      loc.distance,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: distController,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      autofocus: false,
+                      onChanged: (_) => setStateDialog(() {}),
+                      decoration: InputDecoration(
+                        hintText: '0.00',
+                        suffixText: inputUnit.symbol,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey[300]!),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey[300]!),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: Color(0xFF2E7D32),
+                            width: 2,
+                          ),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 14,
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey[50],
+                      ),
+                    ),
+
+                    // Preview area
+                    if (previewAreaText != null) ...[
+                      const SizedBox(height: 10),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.green.shade50,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.green.shade200),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.preview,
+                              size: 16,
+                              color: Colors.green[700],
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'New area: $previewAreaText',
+                                style: TextStyle(
+                                  color: Colors.green[800],
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+
+                    const SizedBox(height: 12),
+
+                    // Apply manual move button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed:
+                            selectedDirection >= 0 &&
+                                distController.text.isNotEmpty &&
+                                (double.tryParse(distController.text) ?? 0) > 0
+                            ? () {
+                                final dist = double.tryParse(
+                                  distController.text,
+                                )!;
+                                final distMeters = inputUnit.toMeters(dist);
+                                Navigator.pop(context);
+                                _applyPointMove(
+                                  pointIndex,
+                                  directionVectors[selectedDirection],
+                                  distMeters,
+                                );
+                              }
+                            : null,
+                        icon: const Icon(Icons.moving, size: 18),
+                        label: Text(loc.apply),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2E7D32),
+                          foregroundColor: Colors.white,
+                          disabledBackgroundColor: Colors.grey[200],
+                          disabledForegroundColor: Colors.grey[400],
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // Auto-adjust section
+                    if (canAutoAdjust) ...[
+                      const SizedBox(height: 12),
+                      Divider(color: Colors.grey[200], height: 1),
+                      const SizedBox(height: 12),
+
+                      // Auto-adjust info
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.orange.shade200),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.auto_fix_high,
+                                  size: 16,
+                                  color: Colors.orange[800],
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    loc.autoComplete,
+                                    style: TextStyle(
+                                      color: Colors.orange[900],
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Auto-move this point to reach target area exactly',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.orange[700],
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                  _autoCompletePoint(
+                                    pointIndex,
+                                    directionVectors[selectedDirection],
+                                  );
+                                },
+                                icon: const Icon(Icons.auto_fix_high, size: 18),
+                                label: Text(loc.autoComplete),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.orange[700],
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _dirBtn(
+    int index,
+    IconData icon,
+    String label,
+    int selectedDirection,
+    StateSetter setStateDialog,
+    void Function(int) onSelect,
+  ) {
+    final isSelected = selectedDirection == index;
+    return GestureDetector(
+      onTap: () => setStateDialog(() => onSelect(index)),
+      child: Container(
+        width: 56,
+        height: 56,
+        margin: const EdgeInsets.all(3),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF2E7D32) : Colors.grey[50],
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? const Color(0xFF2E7D32) : Colors.grey[300]!,
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 18,
+              color: isSelected ? Colors.white : Colors.grey[700],
+            ),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 7,
+                color: isSelected ? Colors.white : Colors.grey[600],
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _applyPointMove(int pointIndex, Offset direction, double distMeters) {
+    final ppm = _getPixelsPerMeter();
+    if (ppm == null || ppm <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Cannot determine scale. Please measure sides first.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    final pixelDist = distMeters * ppm;
+    final dx = direction.dx * pixelDist;
+    final dy = direction.dy * pixelDist;
+    final n = _points.length;
+
+    setState(() {
+      // Move the single point
+      _points[pointIndex] = Point(
+        _points[pointIndex].x + dx,
+        _points[pointIndex].y + dy,
+      );
+
+      // Recalculate all side measurements from new point positions
+      for (int i = 0; i < n; i++) {
+        final sp1 = _points[i];
+        final sp2 = _points[(i + 1) % n];
+        final dist = math.sqrt(
+          math.pow(sp2.x - sp1.x, 2) + math.pow(sp2.y - sp1.y, 2),
+        );
+        _sideMeasurements[i] = dist / ppm;
+      }
+
+      // Clear diagonals
+      _diagonalMeasurements.clear();
+
+      // Update current area
+      _adjustCurrentArea = _calculateRealAreaFromPoints();
+
+      // Convert rectangle to polygon if shape was distorted
+      if (_selectedShape == ShapeType.rectangle) {
+        _selectedShape = ShapeType.polygon;
+        _isShapeComplete = true;
+      }
+    });
+
+    final loc = AppLocalizations.of(context);
+
+    // Check if target reached (within 1% tolerance)
+    if (_adjustTargetArea != null && _adjustCurrentArea != null) {
+      final ratio = _adjustCurrentArea! / _adjustTargetArea!;
+      if (ratio >= 0.99 && ratio <= 1.01) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(loc.targetReached),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+        return;
+      }
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(loc.pointMoved),
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 1),
+      ),
+    );
+  }
+
+  static const double _shatakSqFt = 435.6;
+
+  void _showSetTargetAreaDialog() {
+    final loc = AppLocalizations.of(context);
+    final shatakController = TextEditingController();
+    bool useBreakdown = false;
+
+    // Pre-fill with existing target or current area in Shatak
+    if (_adjustTargetSqFt != null && _adjustTargetSqFt! > 0) {
+      shatakController.text = (_adjustTargetSqFt! / _shatakSqFt)
+          .toStringAsFixed(2);
+    } else if (_adjustCurrentArea != null) {
+      final currentSqFt = _adjustCurrentArea! * AppConstants.sqMeterToSqFeet;
+      shatakController.text = (currentSqFt / _shatakSqFt).toStringAsFixed(2);
+    }
+
+    // Current area in Shatak
+    final currentShatak = _adjustCurrentArea != null
+        ? (_adjustCurrentArea! * AppConstants.sqMeterToSqFeet) / _shatakSqFt
+        : 0.0;
+
+    // Breakdown controllers - standard units
+    final bighaCtrl = TextEditingController();
+    final kathaCtrl = TextEditingController();
+    final shatakPartCtrl = TextEditingController();
+    final chotakCtrl = TextEditingController();
+
+    double calcBreakdownSqFt() {
+      final bigha = double.tryParse(bighaCtrl.text) ?? 0;
+      final katha = double.tryParse(kathaCtrl.text) ?? 0;
+      final shatak = double.tryParse(shatakPartCtrl.text) ?? 0;
+      final chotak = double.tryParse(chotakCtrl.text) ?? 0;
+      return bigha * 14520.0 + katha * 721.46 + shatak * 435.6 + chotak * 45.09;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setStateDialog) {
+          final breakdownTotalSqFt = calcBreakdownSqFt();
+          final breakdownShatak = breakdownTotalSqFt / _shatakSqFt;
+
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade50,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    Icons.track_changes,
+                    color: Colors.orange[700],
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(child: Text(loc.setTargetArea)),
+              ],
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Current area display
+                  if (_adjustCurrentArea != null)
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.info_outline,
+                            size: 16,
+                            color: Colors.grey[600],
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '${loc.currentArea}: ${currentShatak.toStringAsFixed(2)} Shatak',
+                            style: TextStyle(
+                              color: Colors.grey[700],
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                  // Toggle: Shatak / Breakdown
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () =>
+                                setStateDialog(() => useBreakdown = false),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              decoration: BoxDecoration(
+                                color: !useBreakdown
+                                    ? Colors.orange[700]
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                'Shatak',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: !useBreakdown
+                                      ? Colors.white
+                                      : Colors.grey[600],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () =>
+                                setStateDialog(() => useBreakdown = true),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              decoration: BoxDecoration(
+                                color: useBreakdown
+                                    ? Colors.orange[700]
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                loc.breakdownInput,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: useBreakdown
+                                      ? Colors.white
+                                      : Colors.grey[600],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  if (!useBreakdown) ...[
+                    // Shatak input with info button
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: shatakController,
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            autofocus: true,
+                            decoration: InputDecoration(
+                              labelText: loc.enterShatakValue,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              suffixText: 'Shatak',
+                              filled: true,
+                              fillColor: Colors.grey[50],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        IconButton(
+                          onPressed: () {
+                            final val = double.tryParse(shatakController.text);
+                            if (val != null && val > 0) {
+                              final sqFt = val * _shatakSqFt;
+                              final units = <LandUnitDef>[
+                                LandUnitDef(
+                                  id: 'bigha',
+                                  name: 'Bigha',
+                                  sqftFactor: 14520.0,
+                                ),
+                                LandUnitDef(
+                                  id: 'katha',
+                                  name: 'Katha',
+                                  sqftFactor: 721.46,
+                                ),
+                                LandUnitDef(
+                                  id: 'shatak',
+                                  name: 'Shatak',
+                                  sqftFactor: 435.6,
+                                ),
+                                LandUnitDef(
+                                  id: 'chotak',
+                                  name: 'Chotak',
+                                  sqftFactor: 45.09,
+                                ),
+                              ];
+                              final result = LandAreaCalculator.calculate(
+                                sqFt,
+                                units,
+                              );
+                              showDialog(
+                                context: context,
+                                builder: (ctx) => AlertDialog(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  title: Text(loc.areaDetails),
+                                  content: Wrap(
+                                    spacing: 8,
+                                    runSpacing: 8,
+                                    children: result.breakdown.map((part) {
+                                      return Chip(
+                                        label: Text(
+                                          part,
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.blue.shade900,
+                                          ),
+                                        ),
+                                        backgroundColor: Colors.blue.shade50,
+                                        side: BorderSide.none,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(ctx),
+                                      child: Text(loc.ok),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }
+                          },
+                          icon: Icon(
+                            Icons.info_outline,
+                            color: Colors.orange[700],
+                          ),
+                          tooltip: loc.areaDetails,
+                        ),
+                      ],
+                    ),
+                  ] else ...[
+                    // Breakdown inputs
+                    _buildBreakdownField('Bigha', bighaCtrl, setStateDialog),
+                    const SizedBox(height: 8),
+                    _buildBreakdownField('Katha', kathaCtrl, setStateDialog),
+                    const SizedBox(height: 8),
+                    _buildBreakdownField(
+                      'Shatak',
+                      shatakPartCtrl,
+                      setStateDialog,
+                    ),
+                    const SizedBox(height: 8),
+                    _buildBreakdownField('Chotak', chotakCtrl, setStateDialog),
+                    const SizedBox(height: 12),
+                    // Total in Shatak
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.shade50,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.functions,
+                            size: 16,
+                            color: Colors.orange[700],
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            '= ${breakdownShatak.toStringAsFixed(2)} Shatak',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.orange[800],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    _adjustTargetArea = null;
+                    _adjustTargetSqFt = null;
+                  });
+                  Navigator.pop(context);
+                },
+                child: Text(loc.clear),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  double? totalSqFt;
+                  if (useBreakdown) {
+                    final sqFt = calcBreakdownSqFt();
+                    if (sqFt > 0) totalSqFt = sqFt;
+                  } else {
+                    final val = double.tryParse(shatakController.text);
+                    if (val != null && val > 0) {
+                      totalSqFt = val * _shatakSqFt;
+                    }
+                  }
+                  if (totalSqFt != null) {
+                    final sqMeters = totalSqFt / AppConstants.sqMeterToSqFeet;
+                    setState(() {
+                      _adjustTargetArea = sqMeters;
+                      _adjustTargetSqFt = totalSqFt;
+                    });
+                  }
+                  Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange[700],
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: Text(loc.ok),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildBreakdownField(
+    String label,
+    TextEditingController ctrl,
+    StateSetter setStateDialog,
+  ) {
+    return TextField(
+      controller: ctrl,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      onChanged: (_) => setStateDialog(() {}),
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        suffixText: label,
+        filled: true,
+        fillColor: Colors.grey[50],
+        isDense: true,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 12,
+        ),
+      ),
+    );
+  }
+
+  void _autoCompletePoint(int pointIndex, Offset direction) {
+    final ppm = _getPixelsPerMeter();
+    if (ppm == null || ppm <= 0) return;
+    if (_adjustTargetArea == null) return;
+
+    final n = _points.length;
+    if (n < 3) return;
+
+    final targetPixelArea = _adjustTargetArea! * ppm * ppm;
+
+    // The shoelace formula gives signed area that changes LINEARLY with t
+    // when we move point[k] by (dx*t, dy*t).
+    //
+    // signedArea(t) = signedArea(0) + t * C
+    // where C = (dy*(x_{k-1} - x_{k+1}) + dx*(y_{k+1} - y_{k-1})) / 2
+    //
+    // We want |signedArea(t)| = targetPixelArea, solve for t exactly.
+
+    // Compute current signed area (without abs)
+    double signedArea = 0;
+    for (int i = 0; i < n; i++) {
+      final j = (i + 1) % n;
+      signedArea += _points[i].x * _points[j].y;
+      signedArea -= _points[j].x * _points[i].y;
+    }
+    signedArea /= 2;
+
+    // Linear coefficient of t
+    final prevIdx = (pointIndex - 1 + n) % n;
+    final nextIdx = (pointIndex + 1) % n;
+    final dCoeff =
+        (direction.dy * (_points[prevIdx].x - _points[nextIdx].x) +
+            direction.dx * (_points[nextIdx].y - _points[prevIdx].y)) /
+        2;
+
+    if (dCoeff.abs() < 1e-10) {
+      // Direction is parallel to adjacent edges — can't change area
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            'Please measure at least one side first to establish scale.',
+            'Cannot adjust in this direction. Try a different direction.',
           ),
           backgroundColor: Colors.orange,
         ),
@@ -816,372 +1915,52 @@ mixin ResizeMixin on State<DrawingPage> {
       return;
     }
 
+    // Solve: signedArea + t * dCoeff = ±targetPixelArea
+    // Use the same sign as current signed area to preserve winding order
+    final targetSigned = signedArea >= 0 ? targetPixelArea : -targetPixelArea;
+    final t = (targetSigned - signedArea) / dCoeff;
+
+    // Apply the move
+    final p = _points[pointIndex];
+    final moveX = direction.dx * t;
+    final moveY = direction.dy * t;
+
     setState(() {
-      _isMoveMode = true;
-      _isResizeMode = false;
-      _selectedResizeIndices.clear();
-      _lockedSideIndices.clear();
-      _previewPoints = null;
-      _moveX = 0.0;
-      _moveY = 0.0;
-      _moveRange = 5.0;
-      _compensationSideIndex = null;
+      _points[pointIndex] = Point(p.x + moveX, p.y + moveY);
+
+      for (int i = 0; i < n; i++) {
+        final sp1 = _points[i];
+        final sp2 = _points[(i + 1) % n];
+        final dist = math.sqrt(
+          math.pow(sp2.x - sp1.x, 2) + math.pow(sp2.y - sp1.y, 2),
+        );
+        _sideMeasurements[i] = dist / ppm;
+      }
+
+      _diagonalMeasurements.clear();
+      _adjustCurrentArea = _calculateRealAreaFromPoints();
+
+      if (_selectedShape == ShapeType.rectangle) {
+        _selectedShape = ShapeType.polygon;
+        _isShapeComplete = true;
+      }
     });
+
+    final loc = AppLocalizations.of(context);
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Select points to move (Green). Tap sides to Lock (Red).',
-        ),
-        duration: Duration(seconds: 3),
+      SnackBar(
+        content: Text(loc.targetReached),
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 2),
       ),
     );
   }
 
-  final Set<int> _lockedPointIndices = {}; // Points that cannot move
-
-  void _handleMoveTap(Offset localPosition) {
-    const double touchRadius = 30.0;
-    int? tappedIndex;
-
-    // Check points (Toggle Lock)
-    for (int i = 0; i < _points.length; i++) {
-      final p = _points[i];
-      final dist = math.sqrt(
-        math.pow(p.x - localPosition.dx, 2) +
-            math.pow(p.y - localPosition.dy, 2),
-      );
-      if (dist <= touchRadius) {
-        tappedIndex = i;
-        break;
-      }
-    }
-
-    if (tappedIndex != null) {
-      setState(() {
-        if (_lockedPointIndices.contains(tappedIndex)) {
-          _lockedPointIndices.remove(tappedIndex);
-        } else {
-          _lockedPointIndices.add(tappedIndex!);
-          // If locking, ensure it's not selected for move
-          _selectedResizeIndices.remove(tappedIndex);
-        }
-        _updateMovePreview();
-      });
-      return;
-    }
-
-    // Check sides (Toggle Lock)
-    int? tappedSideIndex;
-    for (int i = 0; i < _points.length; i++) {
-      final p1 = _points[i];
-      final p2 = _points[(i + 1) % _points.length];
-      final dist = _distToSegment(
-        Point(localPosition.dx, localPosition.dy),
-        p1,
-        p2,
-      );
-      if (dist <= touchRadius) {
-        tappedSideIndex = i;
-        break;
-      }
-    }
-
-    if (tappedSideIndex != null) {
-      setState(() {
-        if (_lockedSideIndices.contains(tappedSideIndex)) {
-          _lockedSideIndices.remove(tappedSideIndex);
-        } else {
-          _lockedSideIndices.add(tappedSideIndex!);
-        }
-        _updateMovePreview();
-      });
-    }
-  }
-
-  void _togglePointSelection(int index) {
-    if (_lockedPointIndices.contains(index)) {
-      return; // Cannot select locked point
-    }
-
-    setState(() {
-      if (_selectedResizeIndices.contains(index)) {
-        _selectedResizeIndices.remove(index);
-      } else {
-        _selectedResizeIndices.add(index);
-      }
-      _updateMovePreview();
-    });
-  }
-
-  void _toggleResizeMode() {
-    setState(() {
-      _isResizeMode = !_isResizeMode;
-      _isMoveMode = false;
-      _previewPoints = null;
-      _compensationSideIndex = null;
-      _selectedResizeIndices.clear();
-      _lockedSideIndices.clear();
-      _lockedPointIndices.clear();
-    });
-  }
-
-  void _toggleMoveMode() {
-    setState(() {
-      _isMoveMode = !_isMoveMode;
-      _isResizeMode = false;
-      _previewPoints = null;
-      _compensationSideIndex = null;
-      _selectedResizeIndices.clear();
-      _lockedSideIndices.clear();
-      _lockedPointIndices.clear();
-      _moveX = 0;
-      _moveY = 0;
-    });
-  }
-
-  void _setMoveX(double value) {
-    setState(() {
-      _moveX = value;
-      _updateMovePreview();
-    });
-  }
-
-  void _setMoveY(double value) {
-    setState(() {
-      _moveY = value;
-      _updateMovePreview();
-    });
-  }
-
-  void _setMoveRange(double value) {
-    setState(() {
-      _moveRange = value;
-      if (_moveX.abs() > _moveRange) _moveX = _moveX.sign * _moveRange;
-      if (_moveY.abs() > _moveRange) _moveY = _moveY.sign * _moveRange;
-      _updateMovePreview();
-    });
-  }
-
-  void _updateMovePreview() {
-    if (_selectedResizeIndices.isEmpty) {
-      _previewPoints = null;
-      _compensationSideIndex = null;
-      return;
-    }
-    _calculateAndPreviewMove(_moveX, _moveY);
-  }
-
-  void _calculateAndPreviewMove(double xMeters, double yMeters) {
-    // 1. Calculate shift vector for selected points
-    double dx = 0, dy = 0;
-
-    // Calculate pixels per meter scale
-    double pixelsPerMeter = 1.0;
-    if (_sideMeasurements.isNotEmpty) {
-      final firstIdx = _sideMeasurements.keys.first;
-      final p1 = _points[firstIdx];
-      final p2 = _points[(firstIdx + 1) % _points.length];
-      final distPx = math.sqrt(
-        math.pow(p1.x - p2.x, 2) + math.pow(p1.y - p2.y, 2),
-      );
-      final distM = _sideMeasurements[firstIdx]!;
-      if (distM > 0) {
-        pixelsPerMeter = distPx / distM;
-      }
-    }
-
-    dx = xMeters * pixelsPerMeter;
-    dy = yMeters * pixelsPerMeter;
-
-    // 2. Apply shift to selected points to get P'
-    final tempPoints = List<Point>.from(_points);
-    for (final idx in _selectedResizeIndices) {
-      tempPoints[idx] = Point(tempPoints[idx].x + dx, tempPoints[idx].y + dy);
-    }
-
-    // 3. Find Compensation Side
-    int? bestCompIndex;
-    double maxLen = -1.0;
-
-    for (int i = 0; i < _points.length; i++) {
-      if (_lockedSideIndices.contains(i)) continue;
-
-      final idx1 = i;
-      final idx2 = (i + 1) % _points.length;
-
-      // If either vertex is locked, we can't use this side for compensation
-      if (_lockedPointIndices.contains(idx1) ||
-          _lockedPointIndices.contains(idx2)) {
-        continue;
-      }
-
-      // If either vertex is selected, we can't use this side for pure compensation shift
-      if (_selectedResizeIndices.contains(idx1) ||
-          _selectedResizeIndices.contains(idx2)) {
-        continue;
-      }
-
-      // Found a candidate. Pick the longest one for stability?
-      final p1 = tempPoints[idx1];
-      final p2 = tempPoints[idx2];
-      final len = math.sqrt(
-        math.pow(p1.x - p2.x, 2) + math.pow(p1.y - p2.y, 2),
-      );
-
-      if (len > maxLen) {
-        maxLen = len;
-        bestCompIndex = i;
-      }
-    }
-
-    _compensationSideIndex = bestCompIndex;
-
-    if (bestCompIndex == null) {
-      setState(() {
-        _previewPoints = tempPoints;
-      });
-      return;
-    }
-
-    // 4. Calculate Area Change
-    final originalArea = _calculatePolygonArea(_points);
-    final newArea = _calculatePolygonArea(tempPoints);
-    final areaDiff = originalArea - newArea; // We want to restore this amount
-
-    // 5. Move Compensation Side
-    // Side C: P_c -> P_{c+1}
-    final c1 = bestCompIndex;
-    final c2 = (bestCompIndex + 1) % _points.length;
-    final pC1 = tempPoints[c1];
-    final pC2 = tempPoints[c2];
-
-    // Normal of compensation side
-    final vx = pC2.x - pC1.x;
-    final vy = pC2.y - pC1.y;
-    final len = math.sqrt(vx * vx + vy * vy);
-    if (len < 1e-5) return; // Degenerate side
-
-    // Outward normal
-    double nx = -vy / len;
-    double ny = vx / len;
-
-    // Ensure outward
-    double cx = 0, cy = 0;
-    for (var p in tempPoints) {
-      cx += p.x;
-      cy += p.y;
-    }
-    cx /= tempPoints.length;
-    cy /= tempPoints.length;
-
-    final mx = (pC1.x + pC2.x) / 2;
-    final my = (pC1.y + pC2.y) / 2;
-    if (nx * (mx - cx) + ny * (my - cy) < 0) {
-      nx = -nx;
-      ny = -ny;
-    }
-
-    final compDist = areaDiff / len;
-    final cDx = nx * compDist;
-    final cDy = ny * compDist;
-
-    // Apply to compensation side vertices
-    tempPoints[c1] = Point(tempPoints[c1].x + cDx, tempPoints[c1].y + cDy);
-    tempPoints[c2] = Point(tempPoints[c2].x + cDx, tempPoints[c2].y + cDy);
-
-    setState(() {
-      _previewPoints = tempPoints;
-    });
-  }
-
-  void _confirmMove() {
-    if (_previewPoints != null) {
-      // 1. Determine Scale Factor BEFORE clearing anything
-      double? pixelsPerMeter;
-
-      // Try to get scale from current area
-      if (_currentAreaMeters != null && _currentAreaMeters! > 0) {
-        final currentPixelArea = _calculatePolygonArea(
-          _points,
-        ); // Area of OLD points
-        pixelsPerMeter = math.sqrt(currentPixelArea / _currentAreaMeters!);
-      }
-      // Fallback: Try to get scale from side measurements
-      else if (_sideMeasurements.isNotEmpty) {
-        // Find a valid side to derive scale
-        for (final entry in _sideMeasurements.entries) {
-          final idx = entry.key;
-          final meters = entry.value;
-          if (meters > 0 && idx < _points.length) {
-            final p1 = _points[idx];
-            final p2 = _points[(idx + 1) % _points.length];
-            final distPx = math.sqrt(
-              math.pow(p1.x - p2.x, 2) + math.pow(p1.y - p2.y, 2),
-            );
-            pixelsPerMeter = distPx / meters;
-            break;
-          }
-        }
-      }
-
-      setState(() {
-        _points.clear();
-        _points.addAll(_previewPoints!);
-        _previewPoints = null;
-        _selectedResizeIndices.clear();
-        _isMoveMode = false;
-
-        // If shape was rectangle, convert to polygon as angles likely changed
-        if (_selectedShape == ShapeType.rectangle) {
-          _selectedShape = ShapeType.polygon;
-        }
-
-        // Recalculate side measurements automatically
-        _sideMeasurements.clear();
-
-        if (pixelsPerMeter != null && pixelsPerMeter > 0) {
-          // Update all side measurements using the preserved scale
-          for (int i = 0; i < _points.length; i++) {
-            final p1 = _points[i];
-            final p2 = _points[(i + 1) % _points.length];
-            final distPx = math.sqrt(
-              math.pow(p1.x - p2.x, 2) + math.pow(p1.y - p2.y, 2),
-            );
-            _sideMeasurements[i] = distPx / pixelsPerMeter; // Store in meters
-          }
-        } else {
-          // If we really can't determine scale, we have to clear.
-          // But this shouldn't happen if the user was able to move (which requires scale).
-          _sideMeasurements.clear();
-        }
-
-        _diagonalMeasurements.clear();
-        _compensationSideIndex = null;
-        _isShapeComplete = true;
-
-        // Trigger a recalculation to update the UI with new area
-        if (pixelsPerMeter != null) {
-          // We can't call _calculateArea() directly here easily because it might trigger validation errors
-          // or require context/bloc access in a way that might be tricky inside setState?
-          // Actually _calculateArea() is on the State, so we can call it.
-          // But _calculateArea() checks for diagonals!
-          // And we just cleared diagonals.
-          // So calling _calculateArea() here might trigger the error we are trying to avoid?
-
-          // No, because we just populated _sideMeasurements.
-          // And _calculateArea has logic to auto-fill diagonals if sides are present.
-          // So it should be safe to call it, OR just let the user press Calculate.
-          // But the user said "after applying move.. when i try to calculate it shows some measurement missing".
-          // So the user IS pressing Calculate.
-
-          // So the fix above (populating _sideMeasurements) is the key.
-        }
-      });
-
-      final loc = AppLocalizations.of(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(loc.moveApplied), backgroundColor: Colors.green),
-      );
+  void _toggleAdjustMode() {
+    if (_isAdjustMode) {
+      _exitAdjustMode();
+    } else {
+      _enterAdjustMode();
     }
   }
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:plotcalc/core/localization/app_localizations.dart';
-import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/land_area_breakdown.dart';
 import '../widgets/land_area_breakdown_widget.dart';
 
@@ -137,313 +137,352 @@ class _LandCalculatorPageState extends State<LandCalculatorPage> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = AppTheme.primaryColor;
-    final backgroundColor = isDarkTheme
-        ? Colors.grey.shade900
-        : Colors.grey.shade50;
+    const primaryColor = Color(0xFF2E7D32);
 
     return Scaffold(
-      backgroundColor: backgroundColor,
-      appBar: AppBar(
-        title: Text(loc.landCalculator),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            tooltip: loc.resetUnits,
-            onPressed: _resetUnits,
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+      backgroundColor: Colors.grey.shade50,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Green gradient header
+            Container(
+              padding: const EdgeInsets.fromLTRB(8, 12, 8, 20),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF2E7D32), Color(0xFF388E3C)],
+                ),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(32),
+                  bottomRight: Radius.circular(32),
+                ),
+              ),
+              child: Row(
                 children: [
-                  // Input Section
-                  Card(
-                    elevation: 0,
-                    color: isDarkTheme ? Colors.grey.shade800 : Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      side: BorderSide(color: Colors.grey.shade200),
+                  IconButton(
+                    icon: const Icon(
+                      Icons.arrow_back_rounded,
+                      color: Colors.white,
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            loc.totalArea,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: isDarkTheme
-                                  ? Colors.grey.shade300
-                                  : Colors.grey.shade700,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              TextField(
-                                controller: _inputController,
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                      decimal: true,
-                                    ),
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                decoration: InputDecoration(
-                                  hintText: '0.0',
-                                  filled: true,
-                                  fillColor: isDarkTheme
-                                      ? Colors.grey.shade700
-                                      : Colors.grey.shade50,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide.none,
-                                  ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 16,
-                                  ),
-                                ),
-                                onChanged: (_) => _calculate(),
-                              ),
-                              const SizedBox(height: 12),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: isDarkTheme
-                                      ? Colors.grey.shade700
-                                      : Colors.grey.shade50,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: DropdownButtonHideUnderline(
-                                  child: DropdownButton<String>(
-                                    value: _inputUnit,
-                                    isExpanded: true,
-                                    icon: const Icon(
-                                      Icons.keyboard_arrow_down_rounded,
-                                    ),
-                                    items: [
-                                      DropdownMenuItem(
-                                        value: 'squareFeet',
-                                        child: Text(loc.squareFeet),
-                                      ),
-                                      DropdownMenuItem(
-                                        value: 'squareMeters',
-                                        child: Text(loc.metersTitle),
-                                      ),
-                                      DropdownMenuItem(
-                                        value: 'acres',
-                                        child: Text(loc.acres),
-                                      ),
-                                      DropdownMenuItem(
-                                        value: 'bigha',
-                                        child: Text(loc.bighaStandard),
-                                      ),
-                                      DropdownMenuItem(
-                                        value: 'katha',
-                                        child: Text(loc.kathaStandard),
-                                      ),
-                                      DropdownMenuItem(
-                                        value: 'shatak',
-                                        child: Text(loc.shatak),
-                                      ),
-                                      DropdownMenuItem(
-                                        value: 'bighaMymensingh',
-                                        child: Text(loc.bighaMymensingh),
-                                      ),
-                                      DropdownMenuItem(
-                                        value: 'kathaMymensingh',
-                                        child: Text(loc.kathaMymensingh),
-                                      ),
-                                      DropdownMenuItem(
-                                        value: 'chotak',
-                                        child: Text(loc.chotak),
-                                      ),
-                                    ],
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _inputUnit = value!;
-                                        _calculate();
-                                      });
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                    onPressed: () => context.pop(),
+                  ),
+                  const SizedBox(width: 4),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.landscape_rounded,
+                      size: 24,
+                      color: Colors.white,
                     ),
                   ),
-                  const SizedBox(height: 24),
-
-                  // Results Section
-                  if (_breakdown.isNotEmpty || _remainderSqFt > 0)
-                    Container(
-                      margin: const EdgeInsets.only(bottom: 24),
-                      child: LandAreaBreakdownWidget(
-                        result: LandAreaResult(
-                          breakdown: _breakdown,
-                          unitValues: _unitValues,
-                          remainderSqFt: _remainderSqFt,
-                          lastUnitDecimal: _lastUnitDecimal,
-                        ),
-                      ),
-                    ),
-
-                  // Unit Configuration Header
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: Row(
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.tune, size: 20, color: primaryColor),
-                        const SizedBox(width: 8),
                         Text(
-                          loc.unitConfiguration,
+                          loc.landCalculator,
                           style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                            letterSpacing: -0.3,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          loc.dragToReorder,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.white.withValues(alpha: 0.85),
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    loc.dragToReorder,
-                    style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Reorderable List
-                  Theme(
-                    data: Theme.of(context).copyWith(
-                      canvasColor: Colors.transparent,
-                      shadowColor: Colors.transparent,
+                  IconButton(
+                    icon: const Icon(
+                      Icons.refresh_rounded,
+                      color: Colors.white,
                     ),
-                    child: ReorderableListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: _units.length,
-                      onReorder: _onReorder,
-                      proxyDecorator: (child, index, animation) {
-                        return Material(
-                          elevation: 4,
-                          color: isDarkTheme
-                              ? Colors.grey.shade800
-                              : Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          child: child,
-                        );
-                      },
-                      itemBuilder: (context, index) {
-                        final unit = _units[index];
-                        return Container(
-                          key: ValueKey(unit.id),
-                          margin: const EdgeInsets.only(bottom: 8),
-                          decoration: BoxDecoration(
-                            color: isDarkTheme
-                                ? Colors.grey.shade800
-                                : Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: isDarkTheme
-                                  ? Colors.grey.shade700
-                                  : Colors.grey.shade200,
-                            ),
-                          ),
-                          child: CheckboxListTile(
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 4,
-                            ),
-                            title: Text(
-                              _getLocalizedUnitName(context, unit.id),
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            subtitle: Text(
-                              '1 ${_getLocalizedUnitName(context, unit.id)} ≈ ${unit.sqftFactor.toStringAsFixed(1)} sq.ft',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey.shade500,
-                              ),
-                            ),
-                            value: unit.isEnabled,
-                            activeColor: primaryColor,
-                            secondary: ReorderableDragStartListener(
-                              index: index,
-                              child: Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: isDarkTheme
-                                      ? Colors.grey.shade700
-                                      : Colors.grey.shade100,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Icon(
-                                  Icons.drag_handle_rounded,
-                                  color: Colors.grey.shade500,
-                                ),
-                              ),
-                            ),
-                            onChanged: (bool? value) {
-                              setState(() {
-                                unit.isEnabled = value ?? false;
-
-                                // Auto-uncheck logic
-                                if (unit.isEnabled) {
-                                  if (unit.id == 'bighaMymensingh') {
-                                    // Uncheck Standard Bigha
-                                    final standard = _units.firstWhere(
-                                      (u) => u.id == 'bigha',
-                                      orElse: () => unit,
-                                    );
-                                    if (standard != unit) {
-                                      standard.isEnabled = false;
-                                    }
-                                  } else if (unit.id == 'kathaMymensingh') {
-                                    // Uncheck Standard Katha
-                                    final standard = _units.firstWhere(
-                                      (u) => u.id == 'katha',
-                                      orElse: () => unit,
-                                    );
-                                    if (standard != unit) {
-                                      standard.isEnabled = false;
-                                    }
-                                  }
-                                }
-
-                                _calculate();
-                              });
-                            },
-                            controlAffinity: ListTileControlAffinity.leading,
-                          ),
-                        );
-                      },
-                    ),
+                    tooltip: loc.resetUnits,
+                    onPressed: _resetUnits,
                   ),
-                  const SizedBox(height: 40),
                 ],
               ),
             ),
-          ),
-        ],
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Input Section
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.grey.shade200),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              loc.totalArea,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.grey.shade700,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                TextField(
+                                  controller: _inputController,
+                                  keyboardType:
+                                      const TextInputType.numberWithOptions(
+                                        decimal: true,
+                                      ),
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  decoration: InputDecoration(
+                                    hintText: '0.0',
+                                    filled: true,
+                                    fillColor: Colors.grey.shade50,
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 16,
+                                    ),
+                                  ),
+                                  onChanged: (_) => _calculate(),
+                                ),
+                                const SizedBox(height: 12),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade50,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton<String>(
+                                      value: _inputUnit,
+                                      isExpanded: true,
+                                      icon: const Icon(
+                                        Icons.keyboard_arrow_down_rounded,
+                                      ),
+                                      items: [
+                                        DropdownMenuItem(
+                                          value: 'squareFeet',
+                                          child: Text(loc.squareFeet),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'squareMeters',
+                                          child: Text(loc.metersTitle),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'acres',
+                                          child: Text(loc.acres),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'bigha',
+                                          child: Text(loc.bighaStandard),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'katha',
+                                          child: Text(loc.kathaStandard),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'shatak',
+                                          child: Text(loc.shatak),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'bighaMymensingh',
+                                          child: Text(loc.bighaMymensingh),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'kathaMymensingh',
+                                          child: Text(loc.kathaMymensingh),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'chotak',
+                                          child: Text(loc.chotak),
+                                        ),
+                                      ],
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _inputUnit = value!;
+                                          _calculate();
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Results Section
+                    if (_breakdown.isNotEmpty || _remainderSqFt > 0)
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 24),
+                        child: LandAreaBreakdownWidget(
+                          result: LandAreaResult(
+                            breakdown: _breakdown,
+                            unitValues: _unitValues,
+                            remainderSqFt: _remainderSqFt,
+                            lastUnitDecimal: _lastUnitDecimal,
+                          ),
+                        ),
+                      ),
+
+                    // Unit Configuration Header
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: Row(
+                        children: [
+                          Icon(Icons.tune, size: 20, color: primaryColor),
+                          const SizedBox(width: 8),
+                          Text(
+                            loc.unitConfiguration,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Reorderable List
+                    Theme(
+                      data: Theme.of(context).copyWith(
+                        canvasColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                      ),
+                      child: ReorderableListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: _units.length,
+                        onReorder: _onReorder,
+                        proxyDecorator: (child, index, animation) {
+                          return Material(
+                            elevation: 4,
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            child: child,
+                          );
+                        },
+                        itemBuilder: (context, index) {
+                          final unit = _units[index];
+                          return Container(
+                            key: ValueKey(unit.id),
+                            margin: const EdgeInsets.only(bottom: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.grey.shade200),
+                            ),
+                            child: CheckboxListTile(
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 4,
+                              ),
+                              title: Text(
+                                _getLocalizedUnitName(context, unit.id),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              subtitle: Text(
+                                '1 ${_getLocalizedUnitName(context, unit.id)} ≈ ${unit.sqftFactor.toStringAsFixed(1)} sq.ft',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade500,
+                                ),
+                              ),
+                              value: unit.isEnabled,
+                              activeColor: primaryColor,
+                              secondary: ReorderableDragStartListener(
+                                index: index,
+                                child: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade100,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Icon(
+                                    Icons.drag_handle_rounded,
+                                    color: Colors.grey.shade500,
+                                  ),
+                                ),
+                              ),
+                              onChanged: (bool? value) {
+                                setState(() {
+                                  unit.isEnabled = value ?? false;
+
+                                  // Auto-uncheck logic
+                                  if (unit.isEnabled) {
+                                    if (unit.id == 'bighaMymensingh') {
+                                      // Uncheck Standard Bigha
+                                      final standard = _units.firstWhere(
+                                        (u) => u.id == 'bigha',
+                                        orElse: () => unit,
+                                      );
+                                      if (standard != unit) {
+                                        standard.isEnabled = false;
+                                      }
+                                    } else if (unit.id == 'kathaMymensingh') {
+                                      // Uncheck Standard Katha
+                                      final standard = _units.firstWhere(
+                                        (u) => u.id == 'katha',
+                                        orElse: () => unit,
+                                      );
+                                      if (standard != unit) {
+                                        standard.isEnabled = false;
+                                      }
+                                    }
+                                  }
+
+                                  _calculate();
+                                });
+                              },
+                              controlAffinity: ListTileControlAffinity.leading,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 40),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

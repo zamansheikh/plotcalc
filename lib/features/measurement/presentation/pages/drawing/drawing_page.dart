@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:plotcalc/core/localization/app_localizations.dart';
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/theme/app_theme.dart';
+import '../../../../../core/utils/land_area_breakdown.dart';
 import '../../widgets/measurement_result_bottom_sheet.dart';
 import '../../../../settings/presentation/bloc/measurement_unit_bloc.dart';
 import '../../../domain/entities/measurement.dart';
@@ -52,6 +53,9 @@ class _DrawingPageState extends State<DrawingPage>
 
   // Compound Unit Toggle
   bool _useCompoundUnits = false;
+
+  // Scaffold key for end drawer
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   // Rectangle Average Method State
   int _widthSegmentCount = 1;
@@ -1138,70 +1142,31 @@ class _DrawingPageState extends State<DrawingPage>
     final loc = AppLocalizations.of(context);
 
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
-        title: Text(_selectedShape.displayName),
+        title: Text(
+          _isAdjustMode ? loc.adjustMode : _selectedShape.displayName,
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: _isAdjustMode ? _cancelAdjustMode : () => context.pop(),
         ),
         actions: [
-          if (!_isResizeMode && !_isMoveMode) ...[
+          if (!_isResizeMode && !_isAdjustMode)
             IconButton(
-              icon: Icon(_useCompoundUnits ? Icons.grid_4x4 : Icons.numbers),
-              onPressed: () {
-                setState(() {
-                  _useCompoundUnits = !_useCompoundUnits;
-                });
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      _useCompoundUnits
-                          ? loc.switchedToCompound
-                          : loc.switchedToDecimal,
-                    ),
-                    duration: const Duration(seconds: 1),
-                  ),
-                );
-              },
-              tooltip: loc.toggleUnitFormat,
+              icon: const Icon(Icons.menu_rounded),
+              onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
+              tooltip: loc.settings,
             ),
+          if (_isAdjustMode)
             IconButton(
-              icon: const Icon(Icons.category),
-              onPressed: _showShapeOptions,
-              tooltip: loc.selectShape,
+              icon: const Icon(Icons.close),
+              onPressed: _cancelAdjustMode,
+              tooltip: loc.cancel,
             ),
-            if (_selectedShape == ShapeType.rectangle ||
-                _selectedShape == ShapeType.circle)
-              IconButton(
-                icon: const Icon(Icons.edit),
-                onPressed: _showDimensionInput,
-                tooltip: loc.enterMeasurement,
-              ),
-            if ((_selectedShape == ShapeType.polygon ||
-                    _selectedShape == ShapeType.triangle) &&
-                _points.length >= 2)
-              IconButton(
-                icon: const Icon(Icons.straighten),
-                onPressed: _showSideMeasurements,
-                tooltip: loc.enterMeasurement,
-              ),
-            if (_selectedShape == ShapeType.polygon && _points.length >= 4)
-              IconButton(
-                icon: const Icon(Icons.border_style),
-                onPressed: _showDiagonalInput,
-                tooltip: loc.diagonalMeasurementsTitle,
-              ),
-            // Move Button
-            if (_selectedShape == ShapeType.polygon ||
-                _selectedShape == ShapeType.rectangle)
-              IconButton(
-                icon: const Icon(Icons.open_with),
-                onPressed: _enterMoveMode,
-                tooltip: loc.movePointsSides,
-              ),
-          ],
         ],
       ),
+      endDrawer: _buildToolsDrawer(loc),
       body: BlocConsumer<MeasurementBloc, MeasurementState>(
         listener: (context, state) {
           if (state is MeasurementCalculated) {
@@ -1217,143 +1182,117 @@ class _DrawingPageState extends State<DrawingPage>
           }
         },
         builder: (context, state) {
-          return Column(
+          return Stack(
             children: [
-              // Instruction Banner
-              if (!_isResizeMode && !_isMoveMode)
-                DrawingInstructionBanner(
-                  selectedShape: _selectedShape,
-                  isShapeComplete: _isShapeComplete,
-                  pointsLength: _points.length,
-                ),
-
-              if (_isMoveMode)
-                Container(
-                  color: Colors.blue.shade50,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.info_outline, color: Colors.blue),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Select points/sides to move, then click Configure.',
-                          style: TextStyle(color: Colors.blue.shade900),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-              // Canvas Area
-              Expanded(
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    _viewportSize = Size(
-                      constraints.maxWidth,
-                      constraints.maxHeight,
-                    );
-                    return DrawingCanvas(
-                      points: _points,
+              // Canvas Area (full screen behind panel)
+              Column(
+                children: [
+                  // Instruction Banner
+                  if (!_isResizeMode && !_isAdjustMode)
+                    DrawingInstructionBanner(
                       selectedShape: _selectedShape,
-                      radiusText: _radiusController.text,
-                      sideMeasurements: _sideMeasurements,
-                      diagonalMeasurements: _diagonalMeasurements,
-                      previewPoints: _previewPoints ?? [],
-                      selectedIndices: _selectedResizeIndices,
-                      isResizeMode: _isResizeMode || _isMoveMode,
-                      inputUnit: context
-                          .watch<MeasurementUnitBloc>()
-                          .state
-                          .unit,
-                      useCompoundUnits: _useCompoundUnits,
-                      transformationController: _transformationController,
-                      viewportSize: _viewportSize,
-                      onTapDown: (localPosition) {
-                        if (_isMoveMode) {
-                          _handleMoveTap(localPosition);
-                        } else if (_isResizeMode) {
-                          // Only allow interaction if shape is not Circle
-                          // For Circle, resize is handled via slider/input only
-                          if (_selectedShape != ShapeType.circle) {
-                            _handleResizeTap(localPosition);
-                          }
-                        } else if (_selectedShape == ShapeType.polygon ||
-                            _selectedShape == ShapeType.triangle) {
-                          if (_isShapeComplete) {
-                            _handleSideTap(localPosition);
-                          } else {
-                            _addPoint(localPosition);
-                          }
-                        }
+                      isShapeComplete: _isShapeComplete,
+                      pointsLength: _points.length,
+                    ),
+
+                  Expanded(
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        _viewportSize = Size(
+                          constraints.maxWidth,
+                          constraints.maxHeight,
+                        );
+                        return DrawingCanvas(
+                          points: _points,
+                          selectedShape: _selectedShape,
+                          radiusText: _radiusController.text,
+                          sideMeasurements: _sideMeasurements,
+                          diagonalMeasurements: _diagonalMeasurements,
+                          previewPoints: _previewPoints ?? [],
+                          selectedIndices: _selectedResizeIndices,
+                          isResizeMode: _isResizeMode,
+                          originalPoints: _originalAdjustPoints,
+                          originalSideMeasurements:
+                              _originalAdjustSideMeasurements,
+                          inputUnit: context
+                              .watch<MeasurementUnitBloc>()
+                              .state
+                              .unit,
+                          useCompoundUnits: _useCompoundUnits,
+                          transformationController: _transformationController,
+                          viewportSize: _viewportSize,
+                          onTapDown: (localPosition) {
+                            if (_isAdjustMode) {
+                              _handleAdjustTap(localPosition);
+                            } else if (_isResizeMode) {
+                              if (_selectedShape != ShapeType.circle) {
+                                _handleResizeTap(localPosition);
+                              }
+                            } else if (_selectedShape == ShapeType.polygon ||
+                                _selectedShape == ShapeType.triangle) {
+                              if (_isShapeComplete) {
+                                _handleSideTap(localPosition);
+                              } else {
+                                _addPoint(localPosition);
+                              }
+                            }
+                          },
+                          onZoomToFit: _zoomToFit,
+                          resizeConstraint: _resizeConstraint,
+                          compensationSideIndex: _compensationSideIndex,
+                          lockedSideIndices: _lockedSideIndices,
+                        );
                       },
-                      onZoomToFit: _zoomToFit,
-                      resizeConstraint: _resizeConstraint,
-                      compensationSideIndex: _compensationSideIndex,
-                      lockedSideIndices: _lockedSideIndices,
-                      lockedPointIndices: _lockedPointIndices,
-                    );
-                  },
-                ),
+                    ),
+                  ),
+                ],
               ),
 
-              // Controls
-              DrawingControlsPanel(
-                selectedShape: _selectedShape,
-                isShapeComplete: _isShapeComplete,
-                isResizeMode: _isResizeMode,
-                isMoveMode: _isMoveMode,
-                pointsLength: _points.length,
-                widthText: _widthController.text,
-                heightText: _heightController.text,
-                radiusText: _radiusController.text,
-                sideMeasurementsLength: _sideMeasurements.length,
-                isLoading: state is MeasurementLoading,
-                onUndo: _undoLastPoint,
-                onCalculate: _calculateArea,
-                onClear: _clearAll,
-                onToggleResizeMode: _toggleResizeMode,
-                onToggleMoveMode: _toggleMoveMode,
-                onWidthChanged: (v) => _widthController.text = v,
-                onHeightChanged: (v) => _heightController.text = v,
-                onRadiusChanged: (v) => _radiusController.text = v,
-                onCompletePolygon:
-                    (_selectedShape == ShapeType.polygon &&
-                        _points.length >= 3 &&
-                        !_isShapeComplete)
-                    ? _completePolygon
-                    : null,
-                onCancelResize: _isResizeMode
-                    ? () {
-                        setState(() {
-                          _isResizeMode = false;
-                          _previewPoints = [];
-                          _selectedResizeIndices.clear();
-                        });
-                      }
-                    : null,
-                onApplyResize: _isResizeMode ? _confirmResize : null,
-                onCancelMove: _isMoveMode
-                    ? () {
-                        setState(() {
-                          _isMoveMode = false;
-                          _previewPoints = null;
-                          _selectedResizeIndices.clear();
-                        });
-                      }
-                    : null,
-                onConfirmMove: _isMoveMode ? _confirmMove : null,
-                moveX: _moveX,
-                moveY: _moveY,
-                moveRange: _moveRange,
-                onMoveXChanged: _isMoveMode ? _setMoveX : null,
-                onMoveYChanged: _isMoveMode ? _setMoveY : null,
-                onMoveRangeChanged: _isMoveMode ? _setMoveRange : null,
-                selectedResizeIndices: _selectedResizeIndices,
-                onTogglePointSelection: _togglePointSelection,
+              // Controls Panel (floating at bottom)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: DrawingControlsPanel(
+                  selectedShape: _selectedShape,
+                  isShapeComplete: _isShapeComplete,
+                  isResizeMode: _isResizeMode,
+                  isAdjustMode: _isAdjustMode,
+                  pointsLength: _points.length,
+                  widthText: _widthController.text,
+                  heightText: _heightController.text,
+                  radiusText: _radiusController.text,
+                  sideMeasurementsLength: _sideMeasurements.length,
+                  isLoading: state is MeasurementLoading,
+                  onUndo: _undoLastPoint,
+                  onCalculate: _calculateArea,
+                  onClear: _clearAll,
+                  onToggleAdjustMode: _toggleAdjustMode,
+                  onDoneAdjusting: _exitAdjustMode,
+                  onCancelAdjusting: _cancelAdjustMode,
+                  onSetTargetArea: _showSetTargetAreaDialog,
+                  adjustCurrentArea: _adjustCurrentArea,
+                  adjustTargetArea: _adjustTargetArea,
+                  onWidthChanged: (v) => _widthController.text = v,
+                  onHeightChanged: (v) => _heightController.text = v,
+                  onRadiusChanged: (v) => _radiusController.text = v,
+                  onCompletePolygon:
+                      (_selectedShape == ShapeType.polygon &&
+                          _points.length >= 3 &&
+                          !_isShapeComplete)
+                      ? _completePolygon
+                      : null,
+                  onCancelResize: _isResizeMode
+                      ? () {
+                          setState(() {
+                            _isResizeMode = false;
+                            _previewPoints = [];
+                            _selectedResizeIndices.clear();
+                          });
+                        }
+                      : null,
+                  onApplyResize: _isResizeMode ? _confirmResize : null,
+                ),
               ),
             ],
           );
@@ -1362,33 +1301,300 @@ class _DrawingPageState extends State<DrawingPage>
     );
   }
 
-  void _showResultBottomSheet(Measurement measurement) {
-    final loc = AppLocalizations.of(context);
+  Widget _buildToolsDrawer(AppLocalizations loc) {
+    final currentUnit = context.read<MeasurementUnitBloc>().state.unit;
 
+    return Drawer(
+      width: 280,
+      child: SafeArea(
+        child: Column(
+          children: [
+            // Header
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF2E7D32), Color(0xFF388E3C)],
+                ),
+              ),
+              child: Text(
+                loc.tools,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                children: [
+                  // Unit Selection Section
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                    child: Text(
+                      loc.measurementUnit,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.grey[500],
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                  _buildDrawerRadioTile(
+                    icon: Icons.straighten,
+                    title: loc.metersTitle,
+                    subtitle: 'm / cm',
+                    isSelected: currentUnit == InputUnit.meters,
+                    onTap: () {
+                      context.read<MeasurementUnitBloc>().add(
+                        const ChangeMeasurementUnitEvent(InputUnit.meters),
+                      );
+                      _scaffoldKey.currentState?.closeEndDrawer();
+                      setState(() {});
+                    },
+                  ),
+                  _buildDrawerRadioTile(
+                    icon: Icons.square_foot,
+                    title: loc.feetTitle,
+                    subtitle: 'ft / inch',
+                    isSelected: currentUnit == InputUnit.feet,
+                    onTap: () {
+                      context.read<MeasurementUnitBloc>().add(
+                        const ChangeMeasurementUnitEvent(InputUnit.feet),
+                      );
+                      _scaffoldKey.currentState?.closeEndDrawer();
+                      setState(() {});
+                    },
+                  ),
+                  const Divider(height: 24),
+                  // Display Format Section
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                    child: Text(
+                      loc.toggleUnitFormat,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.grey[500],
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                  _buildDrawerRadioTile(
+                    icon: Icons.numbers,
+                    title: loc.switchedToDecimal.split('(')[0].trim(),
+                    subtitle: '222.5 m',
+                    isSelected: !_useCompoundUnits,
+                    onTap: () {
+                      setState(() => _useCompoundUnits = false);
+                      _scaffoldKey.currentState?.closeEndDrawer();
+                    },
+                  ),
+                  _buildDrawerRadioTile(
+                    icon: Icons.grid_4x4,
+                    title: loc.switchedToCompound.split('(')[0].trim(),
+                    subtitle: '222m 50cm',
+                    isSelected: _useCompoundUnits,
+                    onTap: () {
+                      setState(() => _useCompoundUnits = true);
+                      _scaffoldKey.currentState?.closeEndDrawer();
+                    },
+                  ),
+                  const Divider(height: 24),
+                  // Shape & Measurement Tools Section
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                    child: Text(
+                      loc.tools.toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.grey[500],
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                  _buildDrawerActionTile(
+                    icon: Icons.category,
+                    title: loc.selectShape,
+                    onTap: () {
+                      _scaffoldKey.currentState?.closeEndDrawer();
+                      _showShapeOptions();
+                    },
+                  ),
+                  if (_selectedShape == ShapeType.rectangle ||
+                      _selectedShape == ShapeType.circle)
+                    _buildDrawerActionTile(
+                      icon: Icons.edit,
+                      title: loc.enterMeasurement,
+                      onTap: () {
+                        _scaffoldKey.currentState?.closeEndDrawer();
+                        _showDimensionInput();
+                      },
+                    ),
+                  if ((_selectedShape == ShapeType.polygon ||
+                          _selectedShape == ShapeType.triangle) &&
+                      _points.length >= 2)
+                    _buildDrawerActionTile(
+                      icon: Icons.straighten,
+                      title: loc.enterMeasurement,
+                      onTap: () {
+                        _scaffoldKey.currentState?.closeEndDrawer();
+                        _showSideMeasurements();
+                      },
+                    ),
+                  if (_selectedShape == ShapeType.polygon &&
+                      _points.length >= 4)
+                    _buildDrawerActionTile(
+                      icon: Icons.border_style,
+                      title: loc.diagonalMeasurementsTitle,
+                      onTap: () {
+                        _scaffoldKey.currentState?.closeEndDrawer();
+                        _showDiagonalInput();
+                      },
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDrawerRadioTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      dense: true,
+      leading: Icon(
+        icon,
+        size: 22,
+        color: isSelected ? const Color(0xFF2E7D32) : Colors.grey[600],
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+          color: isSelected ? const Color(0xFF2E7D32) : const Color(0xFF1A1A1A),
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+      ),
+      trailing: isSelected
+          ? Container(
+              width: 22,
+              height: 22,
+              decoration: const BoxDecoration(
+                color: Color(0xFF2E7D32),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.check, size: 14, color: Colors.white),
+            )
+          : null,
+      onTap: onTap,
+    );
+  }
+
+  Widget _buildDrawerActionTile({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      dense: true,
+      leading: Icon(icon, size: 22, color: Colors.grey[700]),
+      title: Text(
+        title,
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+      ),
+      trailing: Icon(Icons.chevron_right, size: 20, color: Colors.grey[400]),
+      onTap: onTap,
+    );
+  }
+
+  void _showResultBottomSheet(Measurement measurement) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => MeasurementResultBottomSheet(
+      builder: (sheetContext) => MeasurementResultBottomSheet(
         measurement: measurement,
-        onResizeRequest: (targetArea, unit, currentArea) {
-          // Sheet is already closed by the widget
-          _applyResize(targetArea, unit, currentArea);
-        },
         onSave: () {
-          context.read<MeasurementBloc>().add(
-            SaveMeasurementEvent(measurement),
-          );
-          context.pop(); // Go back to home
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(loc.measurementSaved),
-              backgroundColor: AppTheme.successColor,
-            ),
-          );
+          // Bottom sheet pops itself before calling onSave
+          // Small delay to ensure bottom sheet is fully dismissed
+          Future.delayed(const Duration(milliseconds: 300), () {
+            if (mounted) _showSaveWithNameDialog(measurement);
+          });
         },
+      ),
+    );
+  }
+
+  void _showSaveWithNameDialog(Measurement measurement) {
+    final loc = AppLocalizations.of(context);
+    final nameController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(loc.saveMeasurement),
+        content: TextField(
+          controller: nameController,
+          autofocus: true,
+          decoration: InputDecoration(
+            hintText: loc.enterName,
+            labelText: loc.nameOptional,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(loc.cancel),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final name = nameController.text.trim();
+              final namedMeasurement = name.isNotEmpty
+                  ? measurement.copyWith(name: name)
+                  : measurement;
+              context.read<MeasurementBloc>().add(
+                SaveMeasurementEvent(namedMeasurement),
+              );
+              Navigator.pop(dialogContext);
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(loc.measurementSaved),
+                    backgroundColor: AppTheme.successColor,
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryColor,
+              foregroundColor: Colors.white,
+            ),
+            child: Text(loc.save),
+          ),
+        ],
       ),
     );
   }

@@ -54,3 +54,12 @@ class DeleteMeasurementEvent extends MeasurementEvent {
 class ClearCurrentMeasurementEvent extends MeasurementEvent {
   const ClearCurrentMeasurementEvent();
 }
+
+class UpdateMeasurementEvent extends MeasurementEvent {
+  final Measurement measurement;
+
+  const UpdateMeasurementEvent(this.measurement);
+
+  @override
+  List<Object> get props => [measurement];
+}

@@ -278,7 +278,7 @@ class AppLocalizations {
   String get toggleUnitFormat =>
       isEnglish ? 'Toggle Unit Format' : 'একক বিন্যাস পরিবর্তন করুন';
 
-  // Move Mode
+  // Move Mode (Legacy)
   String get movePointsSides =>
       isEnglish ? 'Move Points/Sides' : 'বিন্দু/বাহু সরান';
   String get selectCornerToMove =>
@@ -294,6 +294,109 @@ class AppLocalizations {
   String get autoCalculatedDiagonals => isEnglish
       ? 'Auto-calculated missing diagonals from shape.'
       : 'আকৃতি থেকে অনুপস্থিত কর্ণ স্বয়ংক্রিয়ভাবে গণনা করা হয়েছে।';
+
+  // Edit Side Mode (kept for side tap editing)
+  String get editSide => isEnglish ? 'Edit Side' : 'বাহু সম্পাদনা';
+  String get editSideLength =>
+      isEnglish ? 'Edit Side Length' : 'বাহুর দৈর্ঘ্য সম্পাদনা';
+  String get currentLength => isEnglish ? 'Current Length' : 'বর্তমান দৈর্ঘ্য';
+  String get newLength => isEnglish ? 'New Length' : 'নতুন দৈর্ঘ্য';
+  String get sideUpdated => isEnglish
+      ? 'Side updated successfully.'
+      : 'বাহু সফলভাবে আপডেট করা হয়েছে।';
+  String get doneEditing => isEnglish ? 'Done Editing' : 'সম্পাদনা সম্পন্ন';
+
+  // Adjust Mode (Land Adjustment)
+  String get adjustMode => isEnglish ? 'Adjust Land' : 'জমি সমন্বয়';
+  String get tapPointToMove => isEnglish
+      ? 'Tap a corner point to move it'
+      : 'সরাতে একটি কোণার পয়েন্টে ট্যাপ করুন';
+  String get movePoint => isEnglish ? 'Move Point' : 'পয়েন্ট সরান';
+  String get direction => isEnglish ? 'Direction' : 'দিক';
+  String get distance => isEnglish ? 'Distance' : 'দূরত্ব';
+  String get targetArea => isEnglish ? 'Target Area' : 'লক্ষ্য এলাকা';
+  String get setTargetArea =>
+      isEnglish ? 'Set Target Area' : 'লক্ষ্য এলাকা সেট করুন';
+  String get currentArea => isEnglish ? 'Current Area' : 'বর্তমান এলাকা';
+  String get remaining => isEnglish ? 'Remaining' : 'বাকি';
+  String get exceeded => isEnglish ? 'Exceeded' : 'অতিক্রম';
+  String get pointMoved => isEnglish
+      ? 'Point moved. Measurements updated.'
+      : 'পয়েন্ট সরানো হয়েছে। পরিমাপ আপডেট করা হয়েছে।';
+  String get targetReached =>
+      isEnglish ? 'Target area reached!' : 'লক্ষ্য এলাকায় পৌঁছেছে!';
+  String get up => isEnglish ? 'Up' : 'উপরে';
+  String get down => isEnglish ? 'Down' : 'নিচে';
+  String get left => isEnglish ? 'Left' : 'বাম';
+  String get right => isEnglish ? 'Right' : 'ডান';
+  String get upLeft => isEnglish ? 'Up-Left' : 'উপর-বাম';
+  String get upRight => isEnglish ? 'Up-Right' : 'উপর-ডান';
+  String get downLeft => isEnglish ? 'Down-Left' : 'নিচ-বাম';
+  String get downRight => isEnglish ? 'Down-Right' : 'নিচ-ডান';
+  String get enterTargetAreaValue =>
+      isEnglish ? 'Enter target area' : 'লক্ষ্য এলাকা লিখুন';
+  String get optional => isEnglish ? 'Optional' : 'ঐচ্ছিক';
+  String get adjustDone => isEnglish ? 'Done Adjusting' : 'সমন্বয় সম্পন্ন';
+  String get autoCompleteSide => isEnglish
+      ? 'Tap a side to auto-complete to target'
+      : 'লক্ষ্যে পৌঁছাতে একটি বাহুতে ট্যাপ করুন';
+  String get autoComplete =>
+      isEnglish ? 'Auto-Complete' : 'স্বয়ংক্রিয় সম্পূর্ণ';
+  String get sideAutoCompleted => isEnglish
+      ? 'Side adjusted to reach target area.'
+      : 'লক্ষ্য এলাকায় পৌঁছাতে বাহু সমন্বয় করা হয়েছে।';
+  String get nearTarget => isEnglish
+      ? 'Almost there! Tap a side to auto-complete.'
+      : 'প্রায় পৌঁছে গেছে! স্বয়ংক্রিয় সম্পূর্ণ করতে একটি বাহুতে ট্যাপ করুন।';
+  String get selectAutoCompleteDirection => isEnglish
+      ? 'Select direction to auto-adjust'
+      : 'স্বয়ংক্রিয় সমন্বয়ের দিক নির্বাচন করুন';
+  String get breakdownInput =>
+      isEnglish ? 'Breakdown Input' : 'ব্রেকডাউন ইনপুট';
+  String get compoundTarget => isEnglish
+      ? 'Set target using multiple units'
+      : 'একাধিক ইউনিট ব্যবহার করে লক্ষ্য সেট করুন';
+  String get areaDetails => isEnglish ? 'Area Details' : 'এলাকার বিবরণ';
+  String get standardUnits => isEnglish ? 'Standard' : 'স্ট্যান্ডার্ড';
+  String get mymensinghUnits => isEnglish ? 'Mymensingh' : 'ময়মনসিংহ';
+  String get enterShatakValue =>
+      isEnglish ? 'Enter target in Shatak' : 'শতাংশে লক্ষ্য দিন';
+  String get tapToSeeDetails =>
+      isEnglish ? 'Tap to see details' : 'বিস্তারিত দেখতে ট্যাপ করুন';
+
+  // Home Page
+  String get quickStart => isEnglish ? 'Quick Start' : 'দ্রুত শুরু';
+  String get tools => isEnglish ? 'Tools' : 'টুলস';
+  String get drawShapeDesc => isEnglish
+      ? 'Draw & measure any land shape'
+      : 'যেকোনো জমির আকৃতি আঁকুন ও পরিমাপ করুন';
+  String get unitConverterDesc =>
+      isEnglish ? 'Convert between area units' : 'এলাকা ইউনিট রূপান্তর করুন';
+  String get landCalculatorDesc =>
+      isEnglish ? 'Calculate land area breakdown' : 'জমির ক্ষেত্রফল বিশ্লেষণ';
+  String get khotiyanDesc =>
+      isEnglish ? 'Calculate land shares' : 'জমির হিস্যা গণনা করুন';
+  String get infoPortalDesc =>
+      isEnglish ? 'Land information & guides' : 'জমির তথ্য ও নির্দেশিকা';
+
+  // History & Save
+  String get rename => isEnglish ? 'Rename' : 'নাম পরিবর্তন';
+  String get renameMeasurement =>
+      isEnglish ? 'Rename Measurement' : 'পরিমাপের নাম পরিবর্তন';
+  String get enterName => isEnglish ? 'Enter name' : 'নাম লিখুন';
+  String get measurementName => isEnglish ? 'Measurement Name' : 'পরিমাপের নাম';
+  String get saveMeasurement =>
+      isEnglish ? 'Save Measurement' : 'পরিমাপ সংরক্ষণ';
+  String get nameOptional => isEnglish ? 'Name (optional)' : 'নাম (ঐচ্ছিক)';
+  String get measurementRenamed =>
+      isEnglish ? 'Measurement renamed' : 'পরিমাপের নাম পরিবর্তিত হয়েছে';
+  String get aboutDeveloper =>
+      isEnglish ? 'About Developer' : 'ডেভেলপার সম্পর্কে';
+  String get appInfoContact => isEnglish
+      ? 'App info & developer contact'
+      : 'অ্যাপ তথ্য ও ডেভেলপার যোগাযোগ';
+  String get fullStackDeveloper =>
+      isEnglish ? 'Full Stack Developer' : 'ফুল স্ট্যাক ডেভেলপার';
 
   String missingDiagonalsMessage(int sides, int required, int measured) =>
       isEnglish

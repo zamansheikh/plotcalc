@@ -20,6 +20,8 @@ class ShapePainter extends CustomPainter {
   final int? compensationSideIndex;
   final Set<int> lockedSideIndices;
   final Set<int> lockedPointIndices;
+  final List<Point>? originalPoints;
+  final Map<int, double>? originalSideMeasurements;
 
   ShapePainter(
     this.points,
@@ -30,6 +32,8 @@ class ShapePainter extends CustomPainter {
     this.previewPoints = const [],
     this.selectedIndices = const {},
     this.isResizeMode = false,
+    this.originalPoints,
+    this.originalSideMeasurements,
     required this.inputUnit,
     this.useCompoundUnits = false,
     this.resizeConstraint = ResizeConstraint.none,
@@ -41,6 +45,11 @@ class ShapePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (points.isEmpty) return;
+
+    // Draw original shape overlay (ghost) if available
+    if (originalPoints != null && originalPoints!.length >= 3) {
+      _drawOriginalShapeOverlay(canvas);
+    }
 
     final paint = Paint()
       ..color = AppTheme.primaryColor
@@ -365,6 +374,24 @@ class ShapePainter extends CustomPainter {
         ? _formatLength(inputUnit.fromMeters(sideMeasurements[sideIndex]!))
         : '${sideIndex + 1}';
 
+    // Check if we have original measurement to show diff
+    String? diffLine;
+    bool sideChanged = false;
+    if (originalSideMeasurements != null &&
+        originalSideMeasurements!.containsKey(sideIndex) &&
+        hasMeasurement) {
+      final oldLength = inputUnit.fromMeters(
+        originalSideMeasurements![sideIndex]!,
+      );
+      final newLength = inputUnit.fromMeters(sideMeasurements[sideIndex]!);
+      final diff = newLength - oldLength;
+      if (diff.abs() > 0.01) {
+        sideChanged = true;
+        final sign = diff > 0 ? '+' : '';
+        diffLine = '$sign${_formatLength(diff)}';
+      }
+    }
+
     // Determine font size based on text length
     double fontSize;
     if (labelText.length <= 2) {
@@ -412,6 +439,67 @@ class ShapePainter extends CustomPainter {
         midpoint.dy - textPainter.height / 2,
       ),
     );
+
+    // Draw diff badge below the circle if side changed
+    if (sideChanged && diffLine != null) {
+      final diffColor = diffLine.startsWith('+')
+          ? Colors.green[700]!
+          : Colors.red[700]!;
+      final diffBgColor = diffLine.startsWith('+')
+          ? Colors.green[50]!
+          : Colors.red[50]!;
+
+      final diffPainter = TextPainter(
+        text: TextSpan(
+          text: diffLine,
+          style: TextStyle(
+            color: diffColor,
+            fontSize: 8,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      );
+      diffPainter.layout();
+
+      final badgeWidth = diffPainter.width + 6;
+      final badgeHeight = diffPainter.height + 3;
+      final badgeCenter = Offset(
+        midpoint.dx,
+        midpoint.dy + circleRadius + badgeHeight / 2 + 2,
+      );
+
+      final badgeRect = RRect.fromRectAndRadius(
+        Rect.fromCenter(
+          center: badgeCenter,
+          width: badgeWidth,
+          height: badgeHeight,
+        ),
+        const Radius.circular(4),
+      );
+
+      canvas.drawRRect(
+        badgeRect,
+        Paint()
+          ..color = diffBgColor
+          ..style = PaintingStyle.fill,
+      );
+      canvas.drawRRect(
+        badgeRect,
+        Paint()
+          ..color = diffColor.withValues(alpha: 0.5)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 0.8,
+      );
+
+      diffPainter.paint(
+        canvas,
+        Offset(
+          badgeCenter.dx - diffPainter.width / 2,
+          badgeCenter.dy - diffPainter.height / 2,
+        ),
+      );
+    }
   }
 
   void _drawPointNumber(Canvas canvas, Offset pointPosition, int pointIndex) {
@@ -513,7 +601,9 @@ class ShapePainter extends CustomPainter {
       oldDelegate.points != points ||
       oldDelegate.sideMeasurements != sideMeasurements ||
       oldDelegate.isResizeMode != isResizeMode ||
-      oldDelegate.useCompoundUnits != useCompoundUnits;
+      oldDelegate.useCompoundUnits != useCompoundUnits ||
+      oldDelegate.originalPoints != originalPoints ||
+      oldDelegate.originalSideMeasurements != originalSideMeasurements;
 
   String _formatLength(double value) {
     if (!useCompoundUnits) {
@@ -529,6 +619,85 @@ class ShapePainter extends CustomPainter {
       final meters = value.floor();
       final cm = ((value - meters) * 100).round();
       return '${meters}m ${cm}cm';
+    }
+  }
+
+  void _drawOriginalShapeOverlay(Canvas canvas) {
+    final origPts = originalPoints!;
+    final n = origPts.length;
+
+    // Draw ghost fill
+    final ghostFillPaint = Paint()
+      ..color = Colors.red.withValues(alpha: 0.08)
+      ..style = PaintingStyle.fill;
+
+    final ghostPath = Path();
+    ghostPath.moveTo(origPts[0].x, origPts[0].y);
+    for (int i = 1; i < n; i++) {
+      ghostPath.lineTo(origPts[i].x, origPts[i].y);
+    }
+    ghostPath.close();
+    canvas.drawPath(ghostPath, ghostFillPaint);
+
+    // Draw ghost outline (dashed)
+    final ghostStrokePaint = Paint()
+      ..color = Colors.red.withValues(alpha: 0.4)
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+
+    for (int i = 0; i < n; i++) {
+      final p1 = origPts[i];
+      final p2 = origPts[(i + 1) % n];
+      _drawDashedLine(
+        canvas,
+        Offset(p1.x, p1.y),
+        Offset(p2.x, p2.y),
+        ghostStrokePaint,
+      );
+    }
+
+    // Draw ghost points (small hollow circles)
+    for (int i = 0; i < n; i++) {
+      canvas.drawCircle(
+        Offset(origPts[i].x, origPts[i].y),
+        4,
+        Paint()
+          ..color = Colors.red.withValues(alpha: 0.4)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5,
+      );
+    }
+  }
+
+  void _drawDashedLine(Canvas canvas, Offset start, Offset end, Paint paint) {
+    const double dashLength = 6;
+    const double gapLength = 4;
+    final dx = end.dx - start.dx;
+    final dy = end.dy - start.dy;
+    final distance = (Offset(dx, dy)).distance;
+    if (distance == 0) return;
+
+    final unitDx = dx / distance;
+    final unitDy = dy / distance;
+    double drawn = 0;
+    bool drawing = true;
+
+    while (drawn < distance) {
+      final segLen = drawing ? dashLength : gapLength;
+      final remaining = distance - drawn;
+      final len = segLen > remaining ? remaining : segLen;
+      if (drawing) {
+        canvas.drawLine(
+          Offset(start.dx + unitDx * drawn, start.dy + unitDy * drawn),
+          Offset(
+            start.dx + unitDx * (drawn + len),
+            start.dy + unitDy * (drawn + len),
+          ),
+          paint,
+        );
+      }
+      drawn += len;
+      drawing = !drawing;
     }
   }
 }
