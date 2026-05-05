@@ -1,82 +1,50 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+import 'app_colors.dart';
+import 'app_typography.dart';
 
 class AppTheme {
-  static const Color primaryColor = Color(
-    0xFF2E7D32,
-  ); // Green for land/agriculture
-  static const Color secondaryColor = Color(0xFF1976D2); // Blue
-  static const Color accentColor = Color(0xFFFF6F00); // Orange
-  static const Color errorColor = Color(0xFFD32F2F);
-  static const Color successColor = Color(0xFF388E3C);
+  AppTheme._();
 
-  static ThemeData lightTheme = ThemeData(
-    useMaterial3: true,
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: primaryColor,
-      brightness: Brightness.light,
-    ),
-    appBarTheme: const AppBarTheme(
-      centerTitle: true,
-      elevation: 0,
-      backgroundColor: primaryColor,
-      foregroundColor: Colors.white,
-    ),
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-      ),
-    ),
-    cardTheme: CardThemeData(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(12)),
-      ),
-    ),
-    inputDecorationTheme: InputDecorationTheme(
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-      filled: true,
-      fillColor: Colors.grey[100],
-    ),
-  );
-
-  static ThemeData darkTheme = ThemeData(
-    useMaterial3: true,
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: primaryColor,
+  static ThemeData get dark {
+    return ThemeData(
       brightness: Brightness.dark,
-    ),
-    appBarTheme: const AppBarTheme(
-      centerTitle: true, 
-      elevation: 0,
-      backgroundColor: primaryColor,
-      foregroundColor: Colors.white,
-    ),
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      scaffoldBackgroundColor: AppColors.ink,
+      colorScheme: const ColorScheme.dark(
+        surface: AppColors.surface,
+        primary: AppColors.lime,
+        onPrimary: AppColors.ink,
+        secondary: AppColors.soil,
       ),
-    ),
-    cardTheme: CardThemeData(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(12)),
+      textTheme: TextTheme(
+        bodyMedium: AppTypography.sans(),
+        labelMedium: AppTypography.mono(),
       ),
-    ),
-    inputDecorationTheme: InputDecorationTheme(
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-      filled: true,
-      fillColor: Colors.grey[800],
-      hintStyle: const TextStyle(color: Colors.grey),
-    ),
-    listTileTheme: ListTileThemeData(
-      textColor: Colors.white,
-      iconColor: Colors.lightGreen.shade300,
-      dense: false,
-    ),
-    iconTheme: const IconThemeData(color: Colors.lightGreen),
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: AppColors.surfaceHi,
+        contentTextStyle: AppTypography.sans(
+          size: 13,
+          weight: FontWeight.w500,
+          color: AppColors.text,
+        ),
+        actionTextColor: AppColors.lime,
+        behavior: SnackBarBehavior.floating,
+        elevation: 6,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: AppColors.lineMid),
+        ),
+      ),
+      splashColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+    );
+  }
+
+  static const SystemUiOverlayStyle systemOverlay = SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.light,
+    systemNavigationBarColor: AppColors.ink,
+    systemNavigationBarIconBrightness: Brightness.light,
   );
 }

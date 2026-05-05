@@ -1,115 +1,160 @@
-import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
-import '../../features/measurement/presentation/pages/home_page.dart';
-import '../../features/measurement/presentation/pages/drawing/drawing_page.dart';
-import '../../features/measurement/presentation/pages/history_page.dart';
-import '../../features/measurement/presentation/pages/unit_converter_page.dart';
-import '../../features/measurement/presentation/pages/land_calculator_page.dart';
-import '../../features/measurement/presentation/pages/khotiyan_calculator_page.dart';
-import '../../features/settings/presentation/pages/settings_page.dart';
-import '../../features/land_info/presentation/pages/land_info_page.dart';
-import '../../features/land_info/presentation/pages/topic_detail_page.dart';
-import '../../features/land_info/data/models/land_info_model.dart';
-import '../../features/measurement/domain/entities/measurement.dart';
-import '../constants/app_constants.dart';
+import 'package:go_router/go_router.dart';
 
-class AppRouter {
-  static const String home = '/';
-  static const String drawing = '/drawing';
-  static const String calculator = '/calculator';
-  static const String converter = '/converter';
-  static const String history = '/history';
-  static const String landCalculator = '/land-calculator';
-  static const String khotiyanCalculator = '/khotiyan-calculator';
-  static const String settings = '/settings';
-  static const String landInfo = '/land-info';
-  static const String topicDetail = '/land-info/detail';
+import '../../presentation/features/about/view/about_screen.dart';
+import '../../presentation/features/adjust/view/adjust_screen.dart';
+import '../../presentation/features/compare/view/compare_screen.dart';
+import '../../presentation/features/converter/view/converter_screen.dart';
+import '../../presentation/features/draw/view/draw_screen.dart';
+import '../../presentation/features/history/view/history_screen.dart';
+import '../../presentation/features/home/view/home_screen.dart';
+import '../../presentation/features/info/data/articles.dart';
+import '../../presentation/features/info/view/article_screen.dart';
+import '../../presentation/features/info/view/info_screen.dart';
+import '../../presentation/features/picker/view/picker_screen.dart';
+import '../../presentation/features/result/view/result_screen.dart';
+import '../../presentation/features/settings/view/settings_screen.dart';
+import '../../presentation/features/subdivide/view/subdivide_screen.dart';
+import '../../presentation/shared/widgets/main_shell.dart';
+import '../geometry/presets.dart';
+import '../input_method.dart';
 
-  static GoRouter router = GoRouter(
-    initialLocation: home,
+class AppRoutes {
+  // Tabs (inside the shell)
+  static const home = '/';
+  static const history = '/history';
+  static const subdivide = '/subdivide';
+  static const info = '/info';
+
+  // Pushed on top of the shell (no bottom nav)
+  static const picker = '/picker';
+  static const draw = '/draw';
+  static const result = '/result';
+  static const adjust = '/adjust';
+  static const compare = '/compare';
+  static const converter = '/converter';
+  static const article = '/article';
+  static const settings = '/settings';
+  static const about = '/about';
+}
+
+GoRouter buildRouter() {
+  return GoRouter(
+    initialLocation: AppRoutes.home,
     routes: [
-      GoRoute(
-        path: home,
-        name: 'home',
-        pageBuilder: (context, state) =>
-            MaterialPage(key: state.pageKey, child: const HomePage()),
+      // Persistent shell with the four bottom-nav tabs. Each branch keeps
+      // its own navigation stack, so deep navigation in one tab doesn't
+      // disturb the others.
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) =>
+            MainShell(navigationShell: navigationShell),
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.home,
+                builder: (_, _) => const HomeScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.history,
+                builder: (_, _) => const HistoryScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.subdivide,
+                builder: (_, _) => const SubdivideScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.info,
+                builder: (_, _) => const InfoScreen(),
+              ),
+            ],
+          ),
+        ],
       ),
-      GoRoute(
-        path: landInfo,
-        name: 'landInfo',
-        pageBuilder: (context, state) =>
-            MaterialPage(key: state.pageKey, child: const LandInfoPage()),
-      ),
-      GoRoute(
-        path: topicDetail,
-        name: 'topicDetail',
-        pageBuilder: (context, state) {
-          final topic = state.extra as LandTopic;
-          return MaterialPage(
-            key: state.pageKey,
-            child: TopicDetailPage(topic: topic),
-          );
-        },
-      ),
-      GoRoute(
-        path: drawing,
-        name: 'drawing',
-        pageBuilder: (context, state) {
-          Measurement? measurement;
-          double? resizeTargetArea;
-          MeasurementUnit? resizeTargetUnit;
 
-          if (state.extra is Measurement) {
-            measurement = state.extra as Measurement;
-          } else if (state.extra is Map<String, dynamic>) {
-            final map = state.extra as Map<String, dynamic>;
-            measurement = map['measurement'] as Measurement?;
-            resizeTargetArea = map['resizeTargetArea'] as double?;
-            resizeTargetUnit = map['resizeTargetUnit'] as MeasurementUnit?;
+      // Top-level routes pushed over the shell (bottom nav hidden while
+      // they're active).
+      GoRoute(
+        path: AppRoutes.picker,
+        builder: (_, _) => const PickerScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.draw,
+        builder: (_, state) {
+          final extra = state.extra;
+          if (extra is DrawArgs) return DrawScreen(args: extra);
+          if (extra is ShapePreset) {
+            return DrawScreen(
+              args: DrawArgs(method: InputMethod.draw, preset: extra),
+            );
           }
-
-          return MaterialPage(
-            key: state.pageKey,
-            child: DrawingPage(
-              measurement: measurement,
-              resizeTargetArea: resizeTargetArea,
-              resizeTargetUnit: resizeTargetUnit,
+          return const DrawScreen(
+            args: DrawArgs(
+              method: InputMethod.draw,
+              preset: ShapePreset.freeform,
             ),
           );
         },
       ),
       GoRoute(
-        path: converter,
-        name: 'converter',
-        pageBuilder: (context, state) =>
-            MaterialPage(key: state.pageKey, child: const UnitConverterPage()),
+        path: AppRoutes.result,
+        builder: (_, state) {
+          final args = state.extra as ResultArgs?;
+          return ResultScreen(args: args ?? const ResultArgs.demo());
+        },
       ),
       GoRoute(
-        path: landCalculator,
-        name: 'landCalculator',
-        pageBuilder: (context, state) =>
-            MaterialPage(key: state.pageKey, child: const LandCalculatorPage()),
+        path: AppRoutes.adjust,
+        builder: (_, state) {
+          final args = state.extra as AdjustArgs?;
+          return AdjustScreen(
+            args: args ??
+                const AdjustArgs(
+                  name: 'Plot',
+                  vertices: [],
+                ),
+          );
+        },
       ),
       GoRoute(
-        path: khotiyanCalculator,
-        name: 'khotiyanCalculator',
-        pageBuilder: (context, state) => MaterialPage(
-          key: state.pageKey,
-          child: const KhotiyanCalculatorPage(),
-        ),
+        path: AppRoutes.compare,
+        builder: (_, _) => const CompareScreen(),
       ),
       GoRoute(
-        path: history,
-        name: 'history',
-        pageBuilder: (context, state) =>
-            MaterialPage(key: state.pageKey, child: const HistoryPage()),
+        path: AppRoutes.converter,
+        builder: (_, _) => const ConverterScreen(),
       ),
       GoRoute(
-        path: settings,
-        name: 'settings',
-        pageBuilder: (context, state) =>
-            MaterialPage(key: state.pageKey, child: const SettingsPage()),
+        path: AppRoutes.article,
+        builder: (_, state) {
+          final article = state.extra as Article?;
+          if (article == null) return const InfoScreen();
+          return ArticleScreen(article: article);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.settings,
+        builder: (_, _) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.about,
+        builder: (_, _) => const AboutScreen(),
       ),
     ],
+    errorBuilder: (_, state) => Scaffold(
+      body: Center(child: Text('Route not found: ${state.uri}')),
+    ),
   );
 }
