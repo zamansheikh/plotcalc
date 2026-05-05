@@ -398,6 +398,59 @@ class AppLocalizations {
   String get fullStackDeveloper =>
       isEnglish ? 'Full Stack Developer' : 'ফুল স্ট্যাক ডেভেলপার';
 
+  // New UI strings (modern redesign)
+  String get welcomeBack => isEnglish ? 'Welcome back' : 'স্বাগতম';
+  String get measureLand =>
+      isEnglish ? 'Measure your land precisely' : 'আপনার জমি নির্ভুলভাবে মাপুন';
+  String get quickActions => isEnglish ? 'Quick Actions' : 'দ্রুত কাজ';
+  String get featuredTools => isEnglish ? 'Featured Tools' : 'বৈশিষ্ট্যপূর্ণ টুল';
+  String get more => isEnglish ? 'More' : 'আরও';
+  String get aboutApp => isEnglish ? 'About' : 'সম্পর্কে';
+  String get presets => isEnglish ? 'Quick Presets' : 'দ্রুত প্রিসেট';
+  String get adjustArea => isEnglish ? 'Adjust Area' : 'এলাকা সমন্বয়';
+  String get adjustAreaDesc => isEnglish
+      ? 'Increase or decrease total to a target value'
+      : 'মোট মান বাড়ান বা কমান একটি লক্ষ্য মানের দিকে';
+  String get setAsTotal => isEnglish ? 'Set as Total' : 'মোট হিসেবে সেট করুন';
+  String get clearInput => isEnglish ? 'Clear' : 'মুছুন';
+  String get copy => isEnglish ? 'Copy' : 'অনুলিপি করুন';
+  String get copied => isEnglish ? 'Copied!' : 'অনুলিপি হয়েছে!';
+  String get all => isEnglish ? 'All' : 'সব';
+  String get standard => isEnglish ? 'Standard' : 'স্ট্যান্ডার্ড';
+  String get mymensingh => isEnglish ? 'Mymensingh' : 'ময়মনসিংহ';
+  String get metric => isEnglish ? 'Metric' : 'মেট্রিক';
+  String get configureUnits =>
+      isEnglish ? 'Configure Units' : 'ইউনিট কনফিগার করুন';
+  String get visibleUnits => isEnglish ? 'Visible Units' : 'দৃশ্যমান ইউনিট';
+  String get total => isEnglish ? 'Total' : 'মোট';
+  String get inAllUnits => isEnglish ? 'In all units' : 'সব ইউনিটে';
+  String get swap => isEnglish ? 'Swap' : 'অদলবদল';
+  String get from => isEnglish ? 'From' : 'থেকে';
+  String get add => isEnglish ? 'Add' : 'যোগ';
+  String get subtract => isEnglish ? 'Subtract' : 'বিয়োগ';
+  String get applyAdjustment => isEnglish ? 'Apply' : 'প্রয়োগ করুন';
+  String get currentTotal => isEnglish ? 'Current' : 'বর্তমান';
+  String get newTotal => isEnglish ? 'New Total' : 'নতুন মোট';
+  String get difference => isEnglish ? 'Difference' : 'পার্থক্য';
+  String get combineUnits => isEnglish
+      ? 'Combine multiple units to set total'
+      : 'একাধিক ইউনিট একত্রিত করে মোট সেট করুন';
+  String get useCombined => isEnglish ? 'Use Combined' : 'সমন্বিত ব্যবহার করুন';
+  String get tools2 => isEnglish ? 'All Tools' : 'সব টুল';
+  String get history2 => isEnglish ? 'History' : 'ইতিহাস';
+  String get drawTitle => isEnglish ? 'Draw' : 'আঁকুন';
+  String get drawSubtitle =>
+      isEnglish ? 'Sketch a land shape' : 'জমির আকৃতি আঁকুন';
+  String get convertTitle => isEnglish ? 'Convert' : 'রূপান্তর';
+  String get convertSubtitle =>
+      isEnglish ? 'Switch between units' : 'ইউনিটের মধ্যে পরিবর্তন';
+  String get calculatorTitle => isEnglish ? 'Calculator' : 'ক্যালকুলেটর';
+  String get calculatorSubtitle =>
+      isEnglish ? 'Break area into units' : 'এলাকা ইউনিটে ভাঙুন';
+  String get khotiyanTitle => isEnglish ? 'Khotiyan' : 'খতিয়ান';
+  String get khotiyanSubtitle =>
+      isEnglish ? 'Calculate share' : 'হিস্যা গণনা';
+
   String missingDiagonalsMessage(int sides, int required, int measured) =>
       isEnglish
       ? 'For a $sides-sided polygon, you need $required diagonal(s) for exact calculation. You have measured $measured.'

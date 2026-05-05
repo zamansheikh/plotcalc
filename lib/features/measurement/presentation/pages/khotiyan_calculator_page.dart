@@ -1,16 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:plotcalc/core/localization/app_localizations.dart';
+import '../../../../core/utils/land_unit_system.dart';
 
 class KhotiyanCalculatorPage extends StatefulWidget {
   const KhotiyanCalculatorPage({super.key});
 
   @override
-  State<KhotiyanCalculatorPage> createState() => _KhotiyanCalculatorPageState();
+  State<KhotiyanCalculatorPage> createState() =>
+      _KhotiyanCalculatorPageState();
 }
 
 class _KhotiyanCalculatorPageState extends State<KhotiyanCalculatorPage> {
-  // Selected values
+  static const _primary = Color(0xFFEF6C00);
+  static const _bg = Color(0xFFF6F8FA);
+
+  // Hierarchy: 16 Ana = 1; 20 Gonda = 1 Ana; 4 Kora = 1 Gonda;
+  // 3 Kranti = 1 Kora; 20 Til = 1 Kranti.
+  static const int tilPerKranti = 20;
+  static const int krantiPerKora = 3;
+  static const int koraPerGonda = 4;
+  static const int gondaPerAna = 20;
+  static const int anaPerWhole = 16;
+  static const int totalTilInWhole =
+      anaPerWhole * gondaPerAna * koraPerGonda * krantiPerKora * tilPerKranti;
+
   int _selectedAna = 0;
   int _selectedGonda = 0;
   int _selectedKora = 0;
@@ -18,27 +33,12 @@ class _KhotiyanCalculatorPageState extends State<KhotiyanCalculatorPage> {
   int _selectedTil = 0;
 
   final TextEditingController _totalLandController = TextEditingController();
-  String _selectedLandUnit = 'shatak'; // Default unit
-
-  double _calculatedShare = 0.0;
-  Map<String, double> _results = {};
-
-  // Constants for conversion
-  static const int tilPerKranti = 20;
-  static const int krantiPerKora = 3;
-  static const int koraPerGonda = 4;
-  static const int gondaPerAna = 20;
-  static const int anaPerWhole = 16;
-
-  // Total Til in 1 unit (16 Ana)
-  // 16 * 20 * 4 * 3 * 20 = 76800
-  static const int totalTilInWhole =
-      anaPerWhole * gondaPerAna * koraPerGonda * krantiPerKora * tilPerKranti;
+  LandUnitId _selectedLandUnit = LandUnitId.shatak;
 
   @override
   void initState() {
     super.initState();
-    _totalLandController.addListener(_calculate);
+    _totalLandController.addListener(() => setState(() {}));
   }
 
   @override
@@ -47,511 +47,67 @@ class _KhotiyanCalculatorPageState extends State<KhotiyanCalculatorPage> {
     super.dispose();
   }
 
-  void _calculate() {
+  int get _totalTil {
+    int t = _selectedTil;
+    t += _selectedKranti * tilPerKranti;
+    t += _selectedKora * krantiPerKora * tilPerKranti;
+    t += _selectedGonda * koraPerGonda * krantiPerKora * tilPerKranti;
+    t +=
+        _selectedAna *
+        gondaPerAna *
+        koraPerGonda *
+        krantiPerKora *
+        tilPerKranti;
+    return t;
+  }
+
+  double get _share => _totalTil / totalTilInWhole;
+
+  double get _totalLandSqft {
+    final v = double.tryParse(_totalLandController.text);
+    if (v == null || v <= 0) return 0;
+    return LandUnitSystem.toSqft(v, _selectedLandUnit);
+  }
+
+  double get _userLandSqft => _totalLandSqft * _share;
+
+  void _reset() {
     setState(() {
-      // Calculate total selected Til
-      int currentTil = _selectedTil;
-      currentTil += _selectedKranti * tilPerKranti;
-      currentTil += _selectedKora * krantiPerKora * tilPerKranti;
-      currentTil +=
-          _selectedGonda * koraPerGonda * krantiPerKora * tilPerKranti;
-      currentTil +=
-          _selectedAna *
-          gondaPerAna *
-          koraPerGonda *
-          krantiPerKora *
-          tilPerKranti;
-
-      // Calculate share fraction
-      _calculatedShare = currentTil / totalTilInWhole;
-
-      // Calculate land share
-      double totalLandInput = double.tryParse(_totalLandController.text) ?? 0.0;
-
-      if (totalLandInput > 0) {
-        // 1. Convert input to Square Meters
-        double totalLandSqMeters = _convertToSqMeters(
-          totalLandInput,
-          _selectedLandUnit,
-        );
-
-        // 2. Calculate user's share in Square Meters
-        double userLandSqMeters = totalLandSqMeters * _calculatedShare;
-
-        // 3. Convert user's share to all units
-        _results = {
-          'squareMeters': userLandSqMeters,
-          'squareFeet': userLandSqMeters / 0.092903,
-          'hectares': userLandSqMeters / 10000,
-          'acres': userLandSqMeters / 4046.86,
-          'bigha': userLandSqMeters / 1335.46,
-          'katha': userLandSqMeters / 66.773,
-          'shatak': userLandSqMeters / 40.4686,
-          'bighaMymensingh': userLandSqMeters / 5260.91,
-          'kathaMymensingh': userLandSqMeters / 263.046,
-          'chotak': userLandSqMeters / 4.173,
-        };
-      } else {
-        _results = {};
-      }
+      _selectedAna = 0;
+      _selectedGonda = 0;
+      _selectedKora = 0;
+      _selectedKranti = 0;
+      _selectedTil = 0;
+      _totalLandController.clear();
     });
-  }
-
-  double _convertToSqMeters(double value, String unit) {
-    switch (unit) {
-      case 'squareMeters':
-        return value;
-      case 'squareFeet':
-        return value * 0.092903;
-      case 'hectares':
-        return value * 10000;
-      case 'acres':
-        return value * 4046.86;
-      case 'bigha':
-        return value * 1335.46;
-      case 'katha':
-        return value * 66.773;
-      case 'shatak':
-        return value * 40.4686;
-      case 'bighaMymensingh':
-        return value * 5260.91;
-      case 'kathaMymensingh':
-        return value * 263.046;
-      case 'chotak':
-        return value * 4.173;
-      default:
-        return 0;
-    }
-  }
-
-  String _getAnaSymbol(int value, AppLocalizations loc) {
-    if (value == 0) return "0 ${loc.ana}";
-    const symbols = [
-      "",
-      "⁄",
-      "৵",
-      "৶",
-      "৷",
-      "৷⁄",
-      "৷৵",
-      "৷৶",
-      "৷৷",
-      "৷৷⁄",
-      "৷৷৵",
-      "৷৷৶",
-      "৸",
-      "৸ ⁄",
-      "৸৵",
-      "৸৶",
-      "১",
-    ];
-    if (value > 0 && value < symbols.length) {
-      return "$value ${loc.ana}  ${symbols[value]}";
-    }
-    return "$value ${loc.ana}";
-  }
-
-  String _getGondaSymbol(int value, AppLocalizations loc) {
-    if (value == 0) return "0 ${loc.gonda}";
-    return "$value ${loc.gonda}";
-  }
-
-  String _getKoraSymbol(int value, AppLocalizations loc) {
-    if (value == 0) return "0 ${loc.kora}";
-    const symbols = ["", "৷", "৷৷", "৸"];
-    if (value > 0 && value < symbols.length) {
-      return "$value ${loc.kora}  ${symbols[value]}";
-    }
-    return "$value ${loc.kora}";
-  }
-
-  String _getKrantiSymbol(int value, AppLocalizations loc) {
-    if (value == 0) return "0 ${loc.kranti}";
-    const symbols = ["", "৴", "৴৴"];
-    if (value > 0 && value < symbols.length) {
-      return "$value ${loc.kranti}  ${symbols[value]}";
-    }
-    return "$value ${loc.kranti}";
-  }
-
-  String _getTilSymbol(int value, AppLocalizations loc) {
-    if (value == 0) return "0 ${loc.til}";
-    return "$value ${loc.til}";
   }
 
   @override
   Widget build(BuildContext context) {
-    const primaryColor = Color(0xFF2E7D32);
     final loc = AppLocalizations.of(context);
-    final shareText =
-        "${_calculatedShare.toStringAsFixed(6)} ( ${loc.hissya} )";
-
-    final Map<String, String> unitLabels = {
-      'squareMeters': loc.squareMeters,
-      'squareFeet': loc.squareFeet,
-      'hectares': loc.hectares,
-      'acres': loc.acres,
-      'bigha': loc.bigha,
-      'katha': loc.katha,
-      'shatak': loc.shatak,
-      'bighaMymensingh': loc.bighaMymensingh,
-      'kathaMymensingh': loc.kathaMymensingh,
-      'chotak': loc.chotak,
-    };
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: _bg,
       body: SafeArea(
+        bottom: false,
         child: Column(
           children: [
-            // Green gradient header
-            Container(
-              padding: const EdgeInsets.fromLTRB(8, 12, 16, 20),
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFF2E7D32), Color(0xFF388E3C)],
-                ),
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(32),
-                  bottomRight: Radius.circular(32),
-                ),
-              ),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(
-                      Icons.arrow_back_rounded,
-                      color: Colors.white,
-                    ),
-                    onPressed: () => context.pop(),
-                  ),
-                  const SizedBox(width: 4),
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.account_balance_rounded,
-                      size: 24,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          loc.khotiyanCalculator,
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
-                            letterSpacing: -0.3,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          loc.selectUnitsSubtitle,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.white.withValues(alpha: 0.85),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            _buildHeader(loc),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+                padding: const EdgeInsets.fromLTRB(16, 18, 16, 32),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Unit Selection Card
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.grey.shade200),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            loc.selectUnits,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF1A1A1A),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Ana
-                          _buildDropdownField(
-                            label: loc.ana,
-                            value: _selectedAna,
-                            itemCount: 17,
-                            symbolGetter: (i) => _getAnaSymbol(i, loc),
-                            onChanged: (val) {
-                              setState(() => _selectedAna = val);
-                              _calculate();
-                            },
-                          ),
-                          const SizedBox(height: 12),
-
-                          // Gonda
-                          _buildDropdownField(
-                            label: loc.gonda,
-                            value: _selectedGonda,
-                            itemCount: 20,
-                            symbolGetter: (i) => _getGondaSymbol(i, loc),
-                            onChanged: (val) {
-                              setState(() => _selectedGonda = val);
-                              _calculate();
-                            },
-                          ),
-                          const SizedBox(height: 12),
-
-                          // Kora
-                          _buildDropdownField(
-                            label: loc.kora,
-                            value: _selectedKora,
-                            itemCount: 4,
-                            symbolGetter: (i) => _getKoraSymbol(i, loc),
-                            onChanged: (val) {
-                              setState(() => _selectedKora = val);
-                              _calculate();
-                            },
-                          ),
-                          const SizedBox(height: 12),
-
-                          // Kranti
-                          _buildDropdownField(
-                            label: loc.kranti,
-                            value: _selectedKranti,
-                            itemCount: 3,
-                            symbolGetter: (i) => _getKrantiSymbol(i, loc),
-                            onChanged: (val) {
-                              setState(() => _selectedKranti = val);
-                              _calculate();
-                            },
-                          ),
-                          const SizedBox(height: 12),
-
-                          // Til
-                          _buildDropdownField(
-                            label: loc.til,
-                            value: _selectedTil,
-                            itemCount: 20,
-                            symbolGetter: (i) => _getTilSymbol(i, loc),
-                            onChanged: (val) {
-                              setState(() => _selectedTil = val);
-                              _calculate();
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Total Land Input
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.grey.shade200),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            loc.totalLand,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF1A1A1A),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: TextField(
-                                  controller: _totalLandController,
-                                  keyboardType: TextInputType.number,
-                                  decoration: InputDecoration(
-                                    hintText: loc.amount,
-                                    filled: true,
-                                    fillColor: Colors.grey.shade50,
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                      borderSide: BorderSide.none,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey.shade50,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: DropdownButtonHideUnderline(
-                                    child: DropdownButton<String>(
-                                      value: _selectedLandUnit,
-                                      isExpanded: true,
-                                      icon: const Icon(
-                                        Icons.keyboard_arrow_down_rounded,
-                                      ),
-                                      items: unitLabels.entries.map((entry) {
-                                        return DropdownMenuItem(
-                                          value: entry.key,
-                                          child: Text(
-                                            entry.value,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: const TextStyle(
-                                              fontSize: 14,
-                                            ),
-                                          ),
-                                        );
-                                      }).toList(),
-                                      onChanged: (val) {
-                                        if (val != null) {
-                                          setState(
-                                            () => _selectedLandUnit = val,
-                                          );
-                                          _calculate();
-                                        }
-                                      },
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Results
-                    if (_calculatedShare > 0)
-                      Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.grey.shade200),
-                        ),
-                        child: Column(
-                          children: [
-                            Text(
-                              loc.results,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF1A1A1A),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-
-                            // Hissya Result
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: const Color(
-                                  0xFF2E7D32,
-                                ).withValues(alpha: 0.08),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    "${loc.hissya}:",
-                                    style: const TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  Text(
-                                    shareText,
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w700,
-                                      color: primaryColor,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            if (_results.isNotEmpty) ...[
-                              const SizedBox(height: 16),
-                              Divider(height: 1, color: Colors.grey.shade200),
-                              const SizedBox(height: 12),
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  "${loc.yourLand}:",
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w700,
-                                    color: Color(0xFF1A1A1A),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-
-                              ..._results.entries.map((entry) {
-                                return Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 4,
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        unitLabels[entry.key] ?? entry.key,
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          color: Colors.grey[700],
-                                        ),
-                                      ),
-                                      Text(
-                                        entry.value.toStringAsFixed(4),
-                                        style: const TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w700,
-                                          color: primaryColor,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              }),
-                            ],
-                          ],
-                        ),
-                      ),
+                    _buildShareCard(loc),
+                    const SizedBox(height: 14),
+                    _buildSelectorCard(loc),
+                    const SizedBox(height: 14),
+                    _buildTotalLandCard(loc),
+                    if (_share > 0 && _userLandSqft > 0) ...[
+                      const SizedBox(height: 14),
+                      _buildResultsCard(loc),
+                    ],
                   ],
                 ),
               ),
@@ -562,49 +118,520 @@ class _KhotiyanCalculatorPageState extends State<KhotiyanCalculatorPage> {
     );
   }
 
-  Widget _buildDropdownField({
-    required String label,
-    required int value,
-    required int itemCount,
-    required String Function(int) symbolGetter,
-    required ValueChanged<int> onChanged,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: Colors.grey.shade700,
-          ),
+  Widget _buildHeader(AppLocalizations loc) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(8, 10, 12, 18),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFE65100), Color(0xFFEF6C00), Color(0xFFFB8C00)],
         ),
-        const SizedBox(height: 6),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(
-            color: Colors.grey.shade50,
-            borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
+        ),
+      ),
+      child: Row(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+            onPressed: () => context.pop(),
           ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<int>(
-              value: value,
-              isExpanded: true,
-              icon: const Icon(Icons.keyboard_arrow_down_rounded),
-              items: List.generate(itemCount, (index) {
-                return DropdownMenuItem(
-                  value: index,
-                  child: Text(symbolGetter(index)),
-                );
-              }),
-              onChanged: (val) {
-                if (val != null) onChanged(val);
-              },
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.18),
+              borderRadius: BorderRadius.circular(11),
+            ),
+            child: const Icon(
+              Icons.grid_view_rounded,
+              color: Colors.white,
+              size: 20,
             ),
           ),
-        ),
-      ],
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  loc.khotiyanCalculator,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 19,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.3,
+                  ),
+                ),
+                Text(
+                  loc.khotiyanSubtitle,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.85),
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            tooltip: loc.clear,
+            icon: const Icon(Icons.refresh_rounded, color: Colors.white),
+            onPressed: _reset,
+          ),
+        ],
+      ),
     );
+  }
+
+  Widget _buildShareCard(AppLocalizations loc) {
+    final share = _share;
+    final pct = (share * 100).toStringAsFixed(4);
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFE65100), Color(0xFFFB8C00)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: _primary.withValues(alpha: 0.25),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.pie_chart_rounded,
+                  color: Colors.white,
+                  size: 18,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                loc.hissya,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                  letterSpacing: 0.4,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                share.toStringAsFixed(6),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 32,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -1,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Text(
+                  '$pct%',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: LinearProgressIndicator(
+              value: share.clamp(0.0, 1.0),
+              minHeight: 8,
+              backgroundColor: Colors.white.withValues(alpha: 0.2),
+              valueColor: const AlwaysStoppedAnimation(Colors.white),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            '$_totalTil / $totalTilInWhole ${loc.til}',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.85),
+              fontSize: 11.5,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSelectorCard(AppLocalizations loc) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.tune_rounded,
+                color: _primary,
+                size: 18,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                loc.selectUnits,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.4,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _stepperRow(
+            label: loc.ana,
+            sub: '/16',
+            value: _selectedAna,
+            max: 16,
+            onChanged: (v) => setState(() => _selectedAna = v),
+          ),
+          _stepperRow(
+            label: loc.gonda,
+            sub: '/20',
+            value: _selectedGonda,
+            max: 19,
+            onChanged: (v) => setState(() => _selectedGonda = v),
+          ),
+          _stepperRow(
+            label: loc.kora,
+            sub: '/4',
+            value: _selectedKora,
+            max: 3,
+            onChanged: (v) => setState(() => _selectedKora = v),
+          ),
+          _stepperRow(
+            label: loc.kranti,
+            sub: '/3',
+            value: _selectedKranti,
+            max: 2,
+            onChanged: (v) => setState(() => _selectedKranti = v),
+          ),
+          _stepperRow(
+            label: loc.til,
+            sub: '/20',
+            value: _selectedTil,
+            max: 19,
+            onChanged: (v) => setState(() => _selectedTil = v),
+            isLast: true,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _stepperRow({
+    required String label,
+    required String sub,
+    required int value,
+    required int max,
+    required ValueChanged<int> onChanged,
+    bool isLast = false,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        border: !isLast
+            ? Border(bottom: BorderSide(color: Colors.grey.shade100))
+            : null,
+      ),
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
+        children: [
+          Expanded(
+            child: Row(
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF1A1A1A),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  sub,
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[500],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          _stepperBtn(
+            icon: Icons.remove_rounded,
+            enabled: value > 0,
+            onTap: () => onChanged(value - 1),
+          ),
+          Container(
+            width: 56,
+            alignment: Alignment.center,
+            child: Text(
+              '$value',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: _primary,
+              ),
+            ),
+          ),
+          _stepperBtn(
+            icon: Icons.add_rounded,
+            enabled: value < max,
+            onTap: () => onChanged(value + 1),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _stepperBtn({
+    required IconData icon,
+    required bool enabled,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(10),
+      onTap: enabled ? onTap : null,
+      child: Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: enabled
+              ? _primary.withValues(alpha: 0.1)
+              : Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Icon(
+          icon,
+          size: 18,
+          color: enabled ? _primary : Colors.grey[400],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTotalLandCard(AppLocalizations loc) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.landscape_rounded,
+                color: _primary,
+                size: 18,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                loc.totalLand,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.4,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                flex: 5,
+                child: TextField(
+                  controller: _totalLandController,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                  ],
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.3,
+                  ),
+                  decoration: InputDecoration(
+                    isDense: true,
+                    hintText: '0',
+                    hintStyle: TextStyle(
+                      color: Colors.grey[400],
+                      fontWeight: FontWeight.w800,
+                      fontSize: 24,
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                flex: 4,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF3E0),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: _primary.withValues(alpha: 0.2),
+                    ),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<LandUnitId>(
+                      value: _selectedLandUnit,
+                      isExpanded: true,
+                      icon: const Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        color: _primary,
+                      ),
+                      style: const TextStyle(
+                        color: _primary,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13.5,
+                      ),
+                      dropdownColor: Colors.white,
+                      items: LandUnitSystem.allConversionUnits.map((id) {
+                        return DropdownMenuItem(
+                          value: id,
+                          child: Text(
+                            LandUnitSystem.shortName(context, id),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (v) {
+                        if (v != null) {
+                          setState(() => _selectedLandUnit = v);
+                        }
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildResultsCard(AppLocalizations loc) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.account_balance_wallet_rounded,
+                  color: _primary,
+                  size: 18,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  loc.yourLand,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          ..._buildResultRows(),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildResultRows() {
+    final units = LandUnitSystem.allConversionUnits;
+    return List.generate(units.length, (i) {
+      final unit = units[i];
+      final value = LandUnitSystem.fromSqft(_userLandSqft, unit);
+      return Container(
+        decoration: BoxDecoration(
+          border: i < units.length - 1
+              ? Border(bottom: BorderSide(color: Colors.grey.shade100))
+              : null,
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                LandUnitSystem.name(context, unit),
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[800],
+                ),
+              ),
+            ),
+            Text(
+              LandUnitSystem.formatNumber(value),
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+                color: _primary,
+              ),
+            ),
+          ],
+        ),
+      );
+    });
   }
 }

@@ -8,8 +8,9 @@ class AppConstants {
   static const String settingsBox = 'settings_box';
 
   // Unit Conversions
-  static const double sqMeterToSqFeet = 10.7639;
-  static const double sqMeterToAcre = 0.000247105;
+  // Precise factors. For full conversions across land units, use LandUnitSystem.
+  static const double sqMeterToSqFeet = 10.7639104167;
+  static const double sqMeterToAcre = 0.0002471053815;
   static const double sqMeterToHectare = 0.0001;
 
   // UI Constants

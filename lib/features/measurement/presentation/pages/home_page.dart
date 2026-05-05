@@ -10,199 +10,245 @@ class HomePage extends StatelessWidget {
     final loc = AppLocalizations.of(context);
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: const Color(0xFFF6F8FA),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Hero Header
-              _buildHeroHeader(context, loc),
-
-              // Primary Action - Draw Shape
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-                child: _buildPrimaryAction(context, loc),
+        bottom: false,
+        child: CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(child: _Hero(loc: loc)),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+              sliver: SliverToBoxAdapter(
+                child: _PrimaryAction(loc: loc),
               ),
-
-              // Tools Grid
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-                child: Text(
-                  loc.tools,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF1A1A1A),
-                  ),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
+              sliver: SliverToBoxAdapter(
+                child: _SectionHeader(
+                  title: loc.featuredTools,
+                  trailing: loc.tools2,
                 ),
               ),
-              const SizedBox(height: 12),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: _buildToolsGrid(context, loc),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+              sliver: SliverToBoxAdapter(child: _ToolsGrid(loc: loc)),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
+              sliver: SliverToBoxAdapter(
+                child: _SectionHeader(title: loc.more),
               ),
-
-              // Bottom Actions
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _buildBottomAction(
-                        context,
-                        icon: Icons.history_rounded,
-                        label: loc.historyTitle,
-                        onTap: () => context.push('/history'),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _buildBottomAction(
-                        context,
-                        icon: Icons.settings_rounded,
-                        label: loc.settings,
-                        onTap: () => context.push('/settings'),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+              sliver: SliverToBoxAdapter(child: _SecondaryRow(loc: loc)),
+            ),
+            const SliverPadding(padding: EdgeInsets.only(bottom: 24)),
+          ],
         ),
       ),
     );
   }
+}
 
-  Widget _buildHeroHeader(BuildContext context, AppLocalizations loc) {
+class _Hero extends StatelessWidget {
+  final AppLocalizations loc;
+  const _Hero({required this.loc});
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(24, 32, 24, 28),
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF2E7D32), Color(0xFF388E3C)],
+          colors: [Color(0xFF1B5E20), Color(0xFF2E7D32), Color(0xFF43A047)],
         ),
         borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(32),
-          bottomRight: Radius.circular(32),
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
         ),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(16),
+                  color: Colors.white.withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: const Icon(
                   Icons.terrain_rounded,
-                  size: 32,
+                  size: 26,
                   color: Colors.white,
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 12),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      loc.appTitle,
-                      style: const TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      loc.homeTitle,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.white.withValues(alpha: 0.85),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  loc.appTitle,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    letterSpacing: -0.3,
+                  ),
                 ),
               ),
+              IconButton(
+                onPressed: () => context.push('/settings'),
+                icon: const Icon(
+                  Icons.settings_rounded,
+                  color: Colors.white,
+                ),
+                tooltip: loc.settings,
+              ),
             ],
+          ),
+          const SizedBox(height: 18),
+          Text(
+            loc.welcomeBack,
+            style: TextStyle(
+              fontSize: 13,
+              color: Colors.white.withValues(alpha: 0.85),
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.4,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            loc.measureLand,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+              letterSpacing: -0.5,
+              height: 1.2,
+            ),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildPrimaryAction(BuildContext context, AppLocalizations loc) {
+class _PrimaryAction extends StatelessWidget {
+  final AppLocalizations loc;
+  const _PrimaryAction({required this.loc});
+
+  @override
+  Widget build(BuildContext context) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
         onTap: () => context.push('/drawing'),
         child: Container(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF2E7D32), Color(0xFF43A047)],
-            ),
+            color: Colors.white,
             borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.grey.shade200),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF2E7D32).withValues(alpha: 0.3),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 20,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(14),
+                width: 56,
+                height: 56,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(14),
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF2E7D32), Color(0xFF43A047)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF2E7D32).withValues(alpha: 0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: const Icon(
-                  Icons.edit_rounded,
-                  size: 28,
+                  Icons.draw_rounded,
                   color: Colors.white,
+                  size: 28,
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      loc.drawingTitle,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
+                    Row(
+                      children: [
+                        Text(
+                          loc.drawTitle,
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF1A1A1A),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE8F5E9),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Text(
+                            'PRO',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF2E7D32),
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 4),
                     Text(
                       loc.drawShapeDesc,
                       style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.white.withValues(alpha: 0.85),
+                        fontSize: 12.5,
+                        color: Colors.grey[600],
+                        height: 1.3,
                       ),
                     ),
                   ],
                 ),
               ),
-              Icon(
-                Icons.arrow_forward_ios_rounded,
-                color: Colors.white.withValues(alpha: 0.7),
-                size: 20,
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2E7D32).withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.arrow_forward_rounded,
+                  color: Color(0xFF2E7D32),
+                  size: 18,
+                ),
               ),
             ],
           ),
@@ -210,114 +256,166 @@ class HomePage extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildToolsGrid(BuildContext context, AppLocalizations loc) {
-    return Column(
+class _SectionHeader extends StatelessWidget {
+  final String title;
+  final String? trailing;
+  const _SectionHeader({required this.title, this.trailing});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: _buildToolCard(
-                context,
-                icon: Icons.swap_horiz_rounded,
-                label: loc.unitConverter,
-                description: loc.unitConverterDesc,
-                color: const Color(0xFF00897B),
-                onTap: () => context.push('/converter'),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildToolCard(
-                context,
-                icon: Icons.landscape_rounded,
-                label: loc.landCalculator,
-                description: loc.landCalculatorDesc,
-                color: const Color(0xFF6D4C41),
-                onTap: () => context.push('/land-calculator'),
-              ),
-            ),
-          ],
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+            color: Color(0xFF1A1A1A),
+            letterSpacing: -0.2,
+          ),
         ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildToolCard(
-                context,
-                icon: Icons.grid_view_rounded,
-                label: loc.khotiyanCalculator,
-                description: loc.khotiyanDesc,
-                color: const Color(0xFFEF6C00),
-                onTap: () => context.push('/khotiyan-calculator'),
-              ),
+        const Spacer(),
+        if (trailing != null)
+          Text(
+            trailing!,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[500],
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildToolCard(
-                context,
-                icon: Icons.menu_book_rounded,
-                label: loc.infoPortal,
-                description: loc.infoPortalDesc,
-                color: const Color(0xFF546E7A),
-                onTap: () => context.push('/land-info'),
-              ),
-            ),
-          ],
+          ),
+      ],
+    );
+  }
+}
+
+class _ToolsGrid extends StatelessWidget {
+  final AppLocalizations loc;
+  const _ToolsGrid({required this.loc});
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.count(
+      crossAxisCount: 2,
+      crossAxisSpacing: 12,
+      mainAxisSpacing: 12,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      childAspectRatio: 1.05,
+      children: [
+        _ToolCard(
+          icon: Icons.landscape_rounded,
+          title: loc.calculatorTitle,
+          subtitle: loc.calculatorSubtitle,
+          gradient: const [Color(0xFF6D4C41), Color(0xFF8D6E63)],
+          onTap: () => context.push('/land-calculator'),
+        ),
+        _ToolCard(
+          icon: Icons.swap_horiz_rounded,
+          title: loc.convertTitle,
+          subtitle: loc.convertSubtitle,
+          gradient: const [Color(0xFF00838F), Color(0xFF00ACC1)],
+          onTap: () => context.push('/converter'),
+        ),
+        _ToolCard(
+          icon: Icons.grid_view_rounded,
+          title: loc.khotiyanTitle,
+          subtitle: loc.khotiyanSubtitle,
+          gradient: const [Color(0xFFEF6C00), Color(0xFFFB8C00)],
+          onTap: () => context.push('/khotiyan-calculator'),
+        ),
+        _ToolCard(
+          icon: Icons.menu_book_rounded,
+          title: loc.infoPortal,
+          subtitle: loc.infoPortalDesc,
+          gradient: const [Color(0xFF455A64), Color(0xFF607D8B)],
+          onTap: () => context.push('/land-info'),
         ),
       ],
     );
   }
+}
 
-  Widget _buildToolCard(
-    BuildContext context, {
-    required IconData icon,
-    required String label,
-    required String description,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
+class _ToolCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final List<Color> gradient;
+  final VoidCallback onTap;
+
+  const _ToolCard({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.gradient,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(18),
             border: Border.all(color: Colors.grey.shade200),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.02),
+                blurRadius: 12,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                padding: const EdgeInsets.all(10),
+                width: 44,
+                height: 44,
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
+                  gradient: LinearGradient(
+                    colors: gradient,
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                   borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: gradient.first.withValues(alpha: 0.25),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
-                child: Icon(icon, size: 24, color: color),
+                child: Icon(icon, color: Colors.white, size: 22),
               ),
-              const SizedBox(height: 12),
+              const Spacer(),
               Text(
-                label,
+                title,
                 style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
                   color: Color(0xFF1A1A1A),
+                  letterSpacing: -0.2,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Text(
-                description,
+                subtitle,
                 style: TextStyle(
-                  fontSize: 11,
+                  fontSize: 11.5,
                   color: Colors.grey[600],
-                  height: 1.3,
+                  height: 1.25,
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -328,20 +426,56 @@ class HomePage extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildBottomAction(
-    BuildContext context, {
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
+class _SecondaryRow extends StatelessWidget {
+  final AppLocalizations loc;
+  const _SecondaryRow({required this.loc});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: _PillButton(
+            icon: Icons.history_rounded,
+            label: loc.history2,
+            onTap: () => context.push('/history'),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _PillButton(
+            icon: Icons.info_outline_rounded,
+            label: loc.aboutApp,
+            onTap: () => context.push('/settings'),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _PillButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _PillButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(14),
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: const EdgeInsets.symmetric(vertical: 14),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(14),
@@ -350,14 +484,14 @@ class HomePage extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 20, color: Colors.grey[700]),
+              Icon(icon, size: 18, color: const Color(0xFF2E7D32)),
               const SizedBox(width: 8),
               Text(
                 label,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey[700],
+                style: const TextStyle(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF1A1A1A),
                 ),
               ),
             ],

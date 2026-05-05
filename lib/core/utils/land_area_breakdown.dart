@@ -1,3 +1,7 @@
+import 'land_unit_system.dart';
+
+/// Legacy data shapes kept for back-compat with drawing/resize pages.
+/// New code should use [LandUnitSystem] directly.
 class LandUnitDef {
   final String id;
   final String name;
@@ -14,7 +18,7 @@ class LandUnitDef {
 
 class LandAreaResult {
   final List<String> breakdown;
-  final Map<String, int> unitValues; // Map of unit ID to integer count
+  final Map<String, int> unitValues;
   final double remainderSqFt;
   final String? lastUnitDecimal;
 
@@ -26,43 +30,71 @@ class LandAreaResult {
   });
 }
 
+/// Thin wrapper that delegates conversion math to [LandUnitSystem] so every
+/// caller (calculator, drawing, resize) shares the same canonical factors.
 class LandAreaCalculator {
+  static LandUnitDef _def(LandUnitId id, String name, {bool enabled = true}) {
+    return LandUnitDef(
+      id: _legacyId(id),
+      name: name,
+      sqftFactor: LandUnitSystem.sqftFactor(id),
+      isEnabled: enabled,
+    );
+  }
+
+  static String _legacyId(LandUnitId id) {
+    switch (id) {
+      case LandUnitId.bighaMymensingh:
+        return 'bighaMymensingh';
+      case LandUnitId.kathaMymensingh:
+        return 'kathaMymensingh';
+      case LandUnitId.acre:
+        return 'acre';
+      case LandUnitId.bigha:
+        return 'bigha';
+      case LandUnitId.katha:
+        return 'katha';
+      case LandUnitId.shatak:
+        return 'shatak';
+      case LandUnitId.chotak:
+        return 'chotak';
+      case LandUnitId.squareMeter:
+        return 'squareMeters';
+      case LandUnitId.squareFeet:
+        return 'squareFeet';
+      case LandUnitId.hectare:
+        return 'hectares';
+    }
+  }
+
   static List<LandUnitDef> getDefaultUnits() {
     return [
-      LandUnitDef(
-        id: 'bighaMymensingh',
-        name: 'Bigha (Mymensingh)',
-        sqftFactor: 56628.0,
-        isEnabled: false,
-      ),
-      LandUnitDef(id: 'acre', name: 'Acre', sqftFactor: 43560.0),
-      LandUnitDef(id: 'bigha', name: 'Bigha (Standard)', sqftFactor: 14520.0),
-      LandUnitDef(
-        id: 'kathaMymensingh',
-        name: 'Katha (Mymensingh)',
-        sqftFactor: 2831.4,
-        isEnabled: false,
-      ),
-      LandUnitDef(id: 'katha', name: 'Katha (Standard)', sqftFactor: 721.46),
-      LandUnitDef(id: 'shatak', name: 'Shatak', sqftFactor: 435.6),
-      LandUnitDef(id: 'chotak', name: 'Chotak', sqftFactor: 45.09),
+      _def(LandUnitId.bighaMymensingh, 'Bigha (Mymensingh)', enabled: false),
+      _def(LandUnitId.acre, 'Acre'),
+      _def(LandUnitId.bigha, 'Bigha (Standard)'),
+      _def(LandUnitId.kathaMymensingh, 'Katha (Mymensingh)', enabled: false),
+      _def(LandUnitId.katha, 'Katha (Standard)'),
+      _def(LandUnitId.shatak, 'Shatak'),
+      _def(LandUnitId.chotak, 'Chotak'),
     ];
   }
 
   static LandAreaResult calculate(double totalSqFt, List<LandUnitDef> units) {
-    List<String> results = [];
-    Map<String, int> unitValues = {};
+    const epsilon = 1e-6;
+    final results = <String>[];
+    final unitValues = <String, int>{};
     double currentArea = totalSqFt;
     LandUnitDef? lastUsedUnit;
     int lastUsedUnitCount = 0;
 
-    for (var unit in units) {
-      if (unit.isEnabled && currentArea >= unit.sqftFactor) {
-        int count = (currentArea / unit.sqftFactor).floor();
+    for (final unit in units) {
+      if (unit.isEnabled && currentArea + epsilon >= unit.sqftFactor) {
+        final count = ((currentArea + epsilon) / unit.sqftFactor).floor();
         if (count > 0) {
           results.add('$count ${unit.name}');
           unitValues[unit.id] = count;
           currentArea -= count * unit.sqftFactor;
+          if (currentArea < 0) currentArea = 0;
           lastUsedUnit = unit;
           lastUsedUnitCount = count;
         }
@@ -71,15 +103,15 @@ class LandAreaCalculator {
 
     String? decimalStr;
     if (lastUsedUnit != null && currentArea > 0.01) {
-      double decimalPart = currentArea / lastUsedUnit.sqftFactor;
-      double totalDecimal = lastUsedUnitCount + decimalPart;
+      final decimalPart = currentArea / lastUsedUnit.sqftFactor;
+      final totalDecimal = lastUsedUnitCount + decimalPart;
       decimalStr = '${totalDecimal.toStringAsFixed(2)} ${lastUsedUnit.name}';
     } else if (results.isEmpty && currentArea > 0.01) {
       try {
         final smallestUnit = units.lastWhere((u) => u.isEnabled);
-        double val = totalSqFt / smallestUnit.sqftFactor;
+        final val = totalSqFt / smallestUnit.sqftFactor;
         decimalStr = '${val.toStringAsFixed(2)} ${smallestUnit.name}';
-      } catch (e) {
+      } catch (_) {
         // No units enabled
       }
     }
