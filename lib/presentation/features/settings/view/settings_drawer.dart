@@ -13,6 +13,12 @@ class SettingsDrawer extends StatelessWidget {
 
   static const _items = <_MenuItem>[
     _MenuItem(
+      icon: Icons.pie_chart_outline,
+      label: 'Khotiyan',
+      sub: 'Calculate share by Ana, Gonda, Kora',
+      route: AppRoutes.khotiyan,
+    ),
+    _MenuItem(
       icon: Icons.settings_outlined,
       label: 'Settings',
       sub: 'Theme, units, grid style',

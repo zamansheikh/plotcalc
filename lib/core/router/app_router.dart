@@ -11,6 +11,7 @@ import '../../presentation/features/home/view/home_screen.dart';
 import '../../presentation/features/info/data/articles.dart';
 import '../../presentation/features/info/view/article_screen.dart';
 import '../../presentation/features/info/view/info_screen.dart';
+import '../../presentation/features/khotiyan/view/khotiyan_screen.dart';
 import '../../presentation/features/picker/view/picker_screen.dart';
 import '../../presentation/features/result/view/result_screen.dart';
 import '../../presentation/features/settings/view/settings_screen.dart';
@@ -33,6 +34,7 @@ class AppRoutes {
   static const adjust = '/adjust';
   static const compare = '/compare';
   static const converter = '/converter';
+  static const khotiyan = '/khotiyan';
   static const article = '/article';
   static const settings = '/settings';
   static const about = '/about';
@@ -135,6 +137,10 @@ GoRouter buildRouter() {
       GoRoute(
         path: AppRoutes.converter,
         builder: (_, _) => const ConverterScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.khotiyan,
+        builder: (_, _) => const KhotiyanScreen(),
       ),
       GoRoute(
         path: AppRoutes.article,
