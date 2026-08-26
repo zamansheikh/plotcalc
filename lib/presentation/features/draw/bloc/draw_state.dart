@@ -20,6 +20,10 @@ class DrawState extends Equatable {
   /// uses this to know it should prompt for dimensions on entry.
   final bool awaitingTypeInput;
 
+  /// Set when the shape being drawn is a circle. Any edit to the outline
+  /// clears it, because a dragged vertex is no longer a circle.
+  final double? circleRadiusM;
+
   const DrawState({
     this.vertices = const [],
     this.selectedIndex = 0,
@@ -29,6 +33,7 @@ class DrawState extends Equatable {
     this.inputMethod = InputMethod.draw,
     this.isPlacingTaps = false,
     this.awaitingTypeInput = false,
+    this.circleRadiusM,
   });
 
   DrawState copyWith({
@@ -40,6 +45,10 @@ class DrawState extends Equatable {
     InputMethod? inputMethod,
     bool? isPlacingTaps,
     bool? awaitingTypeInput,
+    double? circleRadiusM,
+
+    /// Any outline edit calls this: the shape stops being a circle.
+    bool clearCircle = false,
   }) =>
       DrawState(
         vertices: vertices ?? this.vertices,
@@ -50,6 +59,9 @@ class DrawState extends Equatable {
         inputMethod: inputMethod ?? this.inputMethod,
         isPlacingTaps: isPlacingTaps ?? this.isPlacingTaps,
         awaitingTypeInput: awaitingTypeInput ?? this.awaitingTypeInput,
+        circleRadiusM: clearCircle
+            ? null
+            : (circleRadiusM ?? this.circleRadiusM),
       );
 
   @override
@@ -62,5 +74,6 @@ class DrawState extends Equatable {
         inputMethod,
         isPlacingTaps,
         awaitingTypeInput,
+        circleRadiusM,
       ];
 }

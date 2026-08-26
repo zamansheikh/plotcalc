@@ -54,7 +54,11 @@ class DrawBloc extends Bloc<DrawEvent, DrawState> {
       if (state.isPlacingTaps) return;
       final next = List<Vertex>.from(state.vertices);
       next[e.index] = e.position;
-      emit(state.copyWith(vertices: next, selectedIndex: e.index));
+      emit(state.copyWith(
+        vertices: next,
+        selectedIndex: e.index,
+        clearCircle: true,
+      ));
     });
 
     on<VertexInserted>((e, emit) {
@@ -71,6 +75,7 @@ class DrawBloc extends Bloc<DrawEvent, DrawState> {
         vertices: next,
         selectedIndex: i + 1,
         history: hist,
+        clearCircle: true,
       ));
     });
 
@@ -82,6 +87,7 @@ class DrawBloc extends Bloc<DrawEvent, DrawState> {
         vertices: next,
         selectedIndex: 0,
         history: hist,
+        clearCircle: true,
       ));
     });
 
@@ -129,6 +135,7 @@ class DrawBloc extends Bloc<DrawEvent, DrawState> {
         vertices: next,
         history: hist,
         selectedIndex: movingIdx,
+        clearCircle: true,
       ));
     });
 
@@ -153,6 +160,8 @@ class DrawBloc extends Bloc<DrawEvent, DrawState> {
         isPlacingTaps: false,
         awaitingTypeInput: false,
         history: const [],
+        circleRadiusM: e.circleRadiusM,
+        clearCircle: e.circleRadiusM == null,
       ));
     });
 

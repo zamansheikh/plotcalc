@@ -296,5 +296,10 @@
   "plotDisplayUnit": "প্রদর্শনের একক",
   "plotUnitFollowsSettings": "অ্যাপের সেটিং অনুসরণ করুন",
   "plotUnitTitle": "এই প্লট যে এককে দেখাবে",
-  "plotUnitSaved": "“{name}” এখন {unit}-এ দেখাবে"
+  "plotUnitSaved": "“{name}” এখন {unit}-এ দেখাবে",
+  "presetCircle": "বৃত্ত",
+  "typeRadius": "ব্যাসার্ধ",
+  "typeCircleSubtitle": "বৃত্ত",
+  "drawRadius": "ব্যাসার্ধ",
+  "plotCircleMeta": "বৃত্ত · ব্যাসার্ধ {radius}"
 }

@@ -877,5 +877,21 @@
         "type": "String"
       }
     }
+  },
+  "presetCircle": "Circle",
+  "@presetCircle": {},
+  "typeRadius": "Radius",
+  "@typeRadius": {},
+  "typeCircleSubtitle": "Circle",
+  "@typeCircleSubtitle": {},
+  "drawRadius": "RADIUS",
+  "@drawRadius": {},
+  "plotCircleMeta": "circle · r {radius}",
+  "@plotCircleMeta": {
+    "placeholders": {
+      "radius": {
+        "type": "String"
+      }
+    }
   }
 }

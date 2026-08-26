@@ -1069,4 +1069,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String plotUnitSaved(String name, String unit) {
     return '“$name” now reads in $unit';
   }
+
+  @override
+  String get presetCircle => 'Circle';
+
+  @override
+  String get typeRadius => 'Radius';
+
+  @override
+  String get typeCircleSubtitle => 'Circle';
+
+  @override
+  String get drawRadius => 'RADIUS';
+
+  @override
+  String plotCircleMeta(String radius) {
+    return 'circle · r $radius';
+  }
 }

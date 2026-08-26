@@ -90,6 +90,7 @@ extension ShapePresetL10n on ShapePreset {
     ShapePreset.triangle => t.presetTriangle,
     ShapePreset.trapezoid => t.presetTrapezoid,
     ShapePreset.pentagon => t.presetPentagon,
+    ShapePreset.circle => t.presetCircle,
     ShapePreset.freeform => t.presetFreeform,
   };
 }

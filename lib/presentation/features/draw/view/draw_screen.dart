@@ -7,6 +7,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/geometry/geometry.dart';
+import '../../../../core/geometry/presets.dart';
 import '../../../../core/geometry/vertex.dart';
 import '../../../../core/input_method.dart';
 import '../../../../core/router/app_router.dart';
@@ -67,7 +68,14 @@ class _DrawViewState extends State<_DrawView> {
     _typeSheetInFlight = false;
     if (!mounted) return;
     if (result != null) {
-      context.read<DrawBloc>().add(TypeShapeGenerated(result));
+      // circleVertices() is centred on the origin, so any vertex's distance
+      // from it is the radius the user typed.
+      final radius = widget.args.preset == ShapePreset.circle && result.isNotEmpty
+          ? Geometry.sideLength(const Vertex(0, 0), result.first)
+          : null;
+      context
+          .read<DrawBloc>()
+          .add(TypeShapeGenerated(result, circleRadiusM: radius));
     } else {
       context.read<DrawBloc>().add(const TypeInputAcknowledged());
     }
@@ -86,8 +94,14 @@ class _DrawViewState extends State<_DrawView> {
             if (state.awaitingTypeInput) _maybeShowTypeSheet();
           },
           builder: (context, state) {
-            final areaSqm = Geometry.polygonArea(state.vertices);
-            final perimM = Geometry.polygonPerimeter(state.vertices);
+            // A circle reports exact figures; the 72-gon is only what's drawn.
+            final r = state.circleRadiusM;
+            final areaSqm = r != null
+                ? Geometry.circleArea(r)
+                : Geometry.polygonArea(state.vertices);
+            final perimM = r != null
+                ? Geometry.circleCircumference(r)
+                : Geometry.polygonPerimeter(state.vertices);
             return Column(
               children: [
                 const SizedBox(height: 8),
@@ -96,6 +110,7 @@ class _DrawViewState extends State<_DrawView> {
                   areaSqm: areaSqm,
                   perimM: perimM,
                   sides: state.vertices.length,
+                  circleRadiusM: r,
                   areaUnit: settings.areaUnit,
                   lengthUnit: settings.lengthUnit,
                   accent: settings.accent,
@@ -176,6 +191,7 @@ class _ReadoutRow extends StatelessWidget {
   final double areaSqm;
   final double perimM;
   final int sides;
+  final double? circleRadiusM;
   final AreaUnit areaUnit;
   final LengthUnit lengthUnit;
   final Color accent;
@@ -187,6 +203,7 @@ class _ReadoutRow extends StatelessWidget {
     required this.areaUnit,
     required this.lengthUnit,
     required this.accent,
+    this.circleRadiusM,
   });
 
   @override
@@ -214,12 +231,21 @@ class _ReadoutRow extends StatelessWidget {
           ),
           const SizedBox(width: 6),
           Expanded(
-            child: _ReadoutTile(
-              label: context.l10n.drawSides,
-              value: '$sides',
-              unit: '',
-              valueColor: AppColors.text,
-            ),
+            // "72 sides" is meaningless for a circle; its radius is the
+            // number the user actually gave and cares about.
+            child: circleRadiusM != null
+                ? _ReadoutTile(
+                    label: context.l10n.drawRadius,
+                    value: lengthUnit.format(circleRadiusM!),
+                    unit: lengthUnit.labelOf(context.l10n),
+                    valueColor: AppColors.text,
+                  )
+                : _ReadoutTile(
+                    label: context.l10n.drawSides,
+                    value: '$sides',
+                    unit: '',
+                    valueColor: AppColors.text,
+                  ),
           ),
         ],
       ),
@@ -1288,6 +1314,7 @@ class _BottomActions extends StatelessWidget {
       tag: result.tag,
       createdAt: DateTime.now(),
       colorValue: accent.toARGB32(),
+      circleRadiusM: state.circleRadiusM,
     );
     await repo(plot);
     if (!context.mounted) return;

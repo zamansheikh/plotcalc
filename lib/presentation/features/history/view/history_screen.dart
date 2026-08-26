@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/di/injection.dart';
-import '../../../../core/geometry/geometry.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
@@ -47,7 +46,7 @@ class _HistoryView extends StatelessWidget {
           final visible = state.visible;
           final totalSqm = state.plots.fold<double>(
             0,
-            (acc, p) => acc + Geometry.polygonArea(p.vertices),
+            (acc, p) => acc + p.areaSqm,
           );
           return Column(
             children: [
@@ -412,7 +411,7 @@ class _Tile extends StatelessWidget {
   Widget build(BuildContext context) {
     final accent = context.watch<SettingsBloc>().state.accent;
     final color = Color(plot.colorValue);
-    final areaSqm = Geometry.polygonArea(plot.vertices);
+    final areaSqm = plot.areaSqm;
     final unit =
         plot.preferredUnit ?? context.watch<SettingsBloc>().state.areaUnit;
     return InkWell(

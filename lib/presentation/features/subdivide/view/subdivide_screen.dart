@@ -283,7 +283,7 @@ class _PlotPickerTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = Color(plot.colorValue);
-    final areaSqm = Geometry.polygonArea(plot.vertices);
+    final areaSqm = plot.areaSqm;
     return Material(
       color: Colors.transparent,
       child: InkWell(

@@ -67,4 +67,16 @@ class Geometry {
     }
     return (minX, minY, maxX, maxY);
   }
+
+  /// Exact area of a circle, used instead of the polygon approximation when
+  /// a plot knows its radius.
+  static double circleArea(double radius) => math.pi * radius * radius;
+
+  /// Exact circumference, likewise.
+  static double circleCircumference(double radius) => 2 * math.pi * radius;
+
+  /// Radius of the circle with the given area — how a typed area becomes a
+  /// drawable circle.
+  static double radiusForArea(double areaSqm) =>
+      areaSqm <= 0 ? 0 : math.sqrt(areaSqm / math.pi);
 }
