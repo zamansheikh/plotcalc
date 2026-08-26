@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -16,12 +17,12 @@ import '../../../shared/settings/settings_state.dart';
 import '../../../shared/widgets/grid_background.dart';
 import '../../../shared/widgets/plot_thumbnail.dart';
 import '../../../shared/widgets/polygon_painter.dart';
+import '../../../../l10n/l10n.dart';
 
 class _Lot {
-  final String name;
   double pct;
   final Color color;
-  _Lot({required this.name, required this.pct, required this.color});
+  _Lot({required this.pct, required this.color});
 }
 
 class SubdivideScreen extends StatefulWidget {
@@ -34,9 +35,9 @@ class SubdivideScreen extends StatefulWidget {
 class _SubdivideScreenState extends State<SubdivideScreen> {
   Plot? _plot;
   late final List<_Lot> _lots = [
-    _Lot(name: 'Lot 1', pct: 0.35, color: AppColors.lime),
-    _Lot(name: 'Lot 2', pct: 0.40, color: AppColors.soil),
-    _Lot(name: 'Lot 3', pct: 0.25, color: AppColors.sky),
+    _Lot(pct: 0.35, color: AppColors.lime),
+    _Lot(pct: 0.40, color: AppColors.soil),
+    _Lot(pct: 0.25, color: AppColors.sky),
   ];
 
   void _adjust(int index, double delta) {
@@ -69,9 +70,9 @@ class _SubdivideScreenState extends State<SubdivideScreen> {
         child: Column(
           children: [
             const SizedBox(height: 8),
-            const _Header(
-              title: 'Subdivide',
-              subtitle: 'Pick a saved plot to split into lots',
+            _Header(
+              title: context.l10n.subdivideTitle,
+              subtitle: context.l10n.subdivideSubtitle,
             ),
             Expanded(
               child: _PlotPicker(
@@ -105,6 +106,7 @@ class _SubdivideScreenState extends State<SubdivideScreen> {
               itemBuilder: (_, i) {
                 return _LotTile(
                   lot: _lots[i],
+                  name: context.l10n.subdivideLot(i + 1),
                   totalSqm: totalSqm,
                   areaUnit: settings.areaUnit,
                   onMinus: () => _adjust(i, -0.05),
@@ -122,7 +124,7 @@ class _SubdivideScreenState extends State<SubdivideScreen> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                        'Subdivision saved for "${_plot!.name}"',
+                        context.l10n.subdivideSaved(_plot!.name),
                       ),
                     ),
                   );
@@ -136,7 +138,7 @@ class _SubdivideScreenState extends State<SubdivideScreen> {
                   ),
                 ),
                 child: Text(
-                  'Save subdivision',
+                  context.l10n.subdivideSaveAction,
                   style: AppTypography.sans(
                     size: 14,
                     weight: FontWeight.w600,
@@ -197,10 +199,10 @@ class _SelectedHeader extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Subdivide', style: AppTypography.heroTitle),
+                Text(context.l10n.subdivideTitle, style: AppTypography.heroTitle),
                 const SizedBox(height: 2),
                 Text(
-                  '${plot.name} · $lotCount lots · 100%',
+                  context.l10n.subdivideSummary(plot.name, lotCount),
                   style: AppTypography.mono(
                     size: 11,
                     color: AppColors.textDim,
@@ -215,7 +217,7 @@ class _SelectedHeader extends StatelessWidget {
             onPressed: onChange,
             icon: const Icon(Icons.swap_horiz, size: 14),
             label: Text(
-              'Change',
+              context.l10n.actionChange,
               style: AppTypography.sans(size: 12, weight: FontWeight.w500),
             ),
             style: OutlinedButton.styleFrom(
@@ -322,7 +324,7 @@ class _PlotPickerTile extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${AreaUnit.sqft.format(areaSqm)} sq ft · ${plot.vertices.length} sides',
+                      context.l10n.subdivideMeta(AreaUnit.sqft.format(areaSqm), AreaUnit.sqft.labelOf(context.l10n), plot.vertices.length),
                       style: AppTypography.mono(
                         size: 10,
                         color: AppColors.textDim,
@@ -339,7 +341,7 @@ class _PlotPickerTile extends StatelessWidget {
                         borderRadius: BorderRadius.circular(3),
                       ),
                       child: Text(
-                        plot.tag.label.toUpperCase(),
+                        plot.tag.labelOf(context.l10n).toUpperCase(),
                         style: AppTypography.mono(
                           size: 9,
                           color: AppColors.textDim,
@@ -385,12 +387,12 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 18),
             Text(
-              'No saved plots yet',
+              context.l10n.subdivideEmpty,
               style: AppTypography.sans(size: 16, weight: FontWeight.w600),
             ),
             const SizedBox(height: 6),
             Text(
-              'Measure a plot first, then come back here to split it into lots.',
+              context.l10n.subdivideEmptyBody,
               textAlign: TextAlign.center,
               style: AppTypography.bodyDim,
             ),
@@ -409,7 +411,7 @@ class _EmptyState extends StatelessWidget {
                 ),
               ),
               child: Text(
-                'Go to Home',
+                context.l10n.subdivideGoHome,
                 style: AppTypography.sans(
                   size: 13,
                   weight: FontWeight.w600,
@@ -472,6 +474,10 @@ class _Canvas extends StatelessWidget {
                         painter: _DivisionPainter(
                           verts: verts,
                           lots: lots,
+                          names: [
+                            for (var i = 0; i < lots.length; i++)
+                              context.l10n.subdivideLot(i + 1),
+                          ],
                           scale: scale,
                           center: Offset(cx, cy),
                         ),
@@ -500,6 +506,9 @@ class _Canvas extends StatelessWidget {
 }
 
 class _DivisionPainter extends CustomPainter {
+  /// Localized lot labels, parallel to [lots] — a painter has no
+  /// BuildContext of its own to look them up with.
+  final List<String> names;
   final List<Vertex> verts;
   final List<_Lot> lots;
   final double scale;
@@ -507,6 +516,7 @@ class _DivisionPainter extends CustomPainter {
   _DivisionPainter({
     required this.verts,
     required this.lots,
+    required this.names,
     required this.scale,
     required this.center,
   });
@@ -552,7 +562,7 @@ class _DivisionPainter extends CustomPainter {
       final px = center.dx + cx * scale;
       final tp = TextPainter(
         text: TextSpan(
-          text: lots[i].name.toUpperCase(),
+          text: names[i].toUpperCase(),
           style: AppTypography.mono(
             size: 11,
             weight: FontWeight.w600,
@@ -598,17 +608,22 @@ class _DivisionPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _DivisionPainter old) =>
-      old.lots != lots || old.scale != scale || old.verts != verts;
+      old.lots != lots ||
+      !listEquals(old.names, names) ||
+      old.scale != scale ||
+      old.verts != verts;
 }
 
 class _LotTile extends StatelessWidget {
   final _Lot lot;
+  final String name;
   final double totalSqm;
   final AreaUnit areaUnit;
   final VoidCallback onMinus;
   final VoidCallback onPlus;
   const _LotTile({
     required this.lot,
+    required this.name,
     required this.totalSqm,
     required this.areaUnit,
     required this.onMinus,
@@ -640,7 +655,7 @@ class _LotTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  lot.name,
+                  name,
                   style: AppTypography.sans(
                     size: 13,
                     weight: FontWeight.w500,
@@ -648,7 +663,7 @@ class _LotTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 1),
                 Text(
-                  '${(lot.pct * 100).toStringAsFixed(0)}% · ${areaUnit.format(totalSqm * lot.pct)} ${areaUnit.label}',
+                  '${(lot.pct * 100).toStringAsFixed(0)}% · ${areaUnit.format(totalSqm * lot.pct)} ${areaUnit.labelOf(context.l10n)}',
                   style: AppTypography.mono(
                     size: 10,
                     color: AppColors.textDim,

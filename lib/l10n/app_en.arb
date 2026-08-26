@@ -1,0 +1,781 @@
+{
+  "@@locale": "en",
+  "actionCancel": "Cancel",
+  "@actionCancel": {},
+  "actionSave": "Save",
+  "@actionSave": {},
+  "actionDelete": "Delete",
+  "@actionDelete": {},
+  "actionDone": "Done",
+  "@actionDone": {},
+  "actionApply": "Apply",
+  "@actionApply": {},
+  "actionReset": "Reset",
+  "@actionReset": {},
+  "actionClose": "Close",
+  "@actionClose": {},
+  "actionClear": "Clear",
+  "@actionClear": {},
+  "actionRename": "Rename",
+  "@actionRename": {},
+  "actionChange": "Change",
+  "@actionChange": {},
+  "actionUndo": "UNDO",
+  "@actionUndo": {},
+  "actionRemove": "REMOVE",
+  "@actionRemove": {},
+  "actionCalculate": "Calculate",
+  "@actionCalculate": {},
+  "actionGenerate": "Generate",
+  "@actionGenerate": {},
+  "labelAll": "All",
+  "@labelAll": {},
+  "labelOr": "OR",
+  "@labelOr": {},
+  "appName": "PlotCalc",
+  "@appName": {},
+  "tabPlots": "Plots",
+  "@tabPlots": {},
+  "tabHistory": "History",
+  "@tabHistory": {},
+  "tabSubdivide": "Subdivide",
+  "@tabSubdivide": {},
+  "tabInfo": "Info",
+  "@tabInfo": {},
+  "routeNotFound": "Route not found: {uri}",
+  "@routeNotFound": {
+    "placeholders": {
+      "uri": {
+        "type": "String"
+      }
+    }
+  },
+  "defaultPlotLabel": "Plot",
+  "@defaultPlotLabel": {},
+  "unitSqftLabel": "sq ft",
+  "@unitSqftLabel": {},
+  "unitSqftName": "Square feet",
+  "@unitSqftName": {},
+  "unitSqmLabel": "m²",
+  "@unitSqmLabel": {},
+  "unitSqmName": "Square meters",
+  "@unitSqmName": {},
+  "unitAcreLabel": "acre",
+  "@unitAcreLabel": {},
+  "unitAcreName": "Acres",
+  "@unitAcreName": {},
+  "unitHectareLabel": "hectare",
+  "@unitHectareLabel": {},
+  "unitHectareName": "Hectares",
+  "@unitHectareName": {},
+  "unitBighaLabel": "bigha",
+  "@unitBighaLabel": {},
+  "unitBighaName": "Bigha",
+  "@unitBighaName": {},
+  "unitKathaLabel": "katha",
+  "@unitKathaLabel": {},
+  "unitKathaName": "Katha",
+  "@unitKathaName": {},
+  "unitChatakLabel": "chatak",
+  "@unitChatakLabel": {},
+  "unitChatakName": "Chatak",
+  "@unitChatakName": {},
+  "unitShotokLabel": "shotok",
+  "@unitShotokLabel": {},
+  "unitShotokName": "Shotok",
+  "@unitShotokName": {},
+  "unitMeters": "Meters",
+  "@unitMeters": {},
+  "unitFeet": "Feet",
+  "@unitFeet": {},
+  "unitMeterShort": "m",
+  "@unitMeterShort": {},
+  "unitFeetShort": "ft",
+  "@unitFeetShort": {},
+  "tagAgricultural": "Agricultural",
+  "@tagAgricultural": {},
+  "tagResidential": "Residential",
+  "@tagResidential": {},
+  "tagCommercial": "Commercial",
+  "@tagCommercial": {},
+  "tagForest": "Forest",
+  "@tagForest": {},
+  "tagOther": "Other",
+  "@tagOther": {},
+  "presetRectangle": "Rectangle",
+  "@presetRectangle": {},
+  "presetSquare": "Square",
+  "@presetSquare": {},
+  "presetTriangle": "Triangle",
+  "@presetTriangle": {},
+  "presetTrapezoid": "Trapezoid",
+  "@presetTrapezoid": {},
+  "presetPentagon": "Pentagon",
+  "@presetPentagon": {},
+  "presetFreeform": "Free-form",
+  "@presetFreeform": {},
+  "methodDraw": "Draw",
+  "@methodDraw": {},
+  "methodTap": "Tap",
+  "@methodTap": {},
+  "methodType": "Type",
+  "@methodType": {},
+  "methodDrawSub": "Tap & drag",
+  "@methodDrawSub": {},
+  "methodTapSub": "Place vertices",
+  "@methodTapSub": {},
+  "methodTypeSub": "Sides + angles",
+  "@methodTypeSub": {},
+  "homeTitle": "Plots",
+  "@homeTitle": {},
+  "homeBuildBy": "Build By · Zaman Sheikh",
+  "@homeBuildBy": {},
+  "homeThisMonth": "THIS MONTH · MEASURED",
+  "@homeThisMonth": {},
+  "homePlusPlots": "+{count} plots",
+  "@homePlusPlots": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "homeMeasurePlot": "Measure plot",
+  "@homeMeasurePlot": {},
+  "homeMeasureSub": "Draw or type sides",
+  "@homeMeasureSub": {},
+  "homeBadgeNew": "NEW",
+  "@homeBadgeNew": {},
+  "homeToolLabel": "TOOL",
+  "@homeToolLabel": {},
+  "homeAllUnits": "All units",
+  "@homeAllUnits": {},
+  "homeRecent": "RECENT · {count}",
+  "@homeRecent": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "homeSeeAll": "See all",
+  "@homeSeeAll": {},
+  "pickerStep": "STEP 1 / 3",
+  "@pickerStep": {},
+  "pickerQuestion": "How do you want to start?",
+  "@pickerQuestion": {},
+  "pickerSubtitle": "Pick a method, then a shape.",
+  "@pickerSubtitle": {},
+  "pickerShapePresets": "SHAPE PRESETS",
+  "@pickerShapePresets": {},
+  "pickerStartDrawing": "Start drawing",
+  "@pickerStartDrawing": {},
+  "pickerPlaceVertices": "Place vertices",
+  "@pickerPlaceVertices": {},
+  "pickerEnterDimensions": "Enter dimensions",
+  "@pickerEnterDimensions": {},
+  "pickerSidesN": "{count}–N sides",
+  "@pickerSidesN": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "pickerTapEachCorner": "Tap each corner on the canvas",
+  "@pickerTapEachCorner": {},
+  "drawTitle": "Draw plot",
+  "@drawTitle": {},
+  "drawTitleTap": "Tap to place vertices",
+  "@drawTitleTap": {},
+  "drawTitleEdit": "Edit plot",
+  "@drawTitleEdit": {},
+  "drawVerticesUnsaved": "{count} VERTICES · UNSAVED",
+  "@drawVerticesUnsaved": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "drawArea": "AREA",
+  "@drawArea": {},
+  "drawPerimeter": "PERIMETER",
+  "@drawPerimeter": {},
+  "drawSides": "SIDES",
+  "@drawSides": {},
+  "drawDiag": "DIAG",
+  "@drawDiag": {},
+  "drawHintDone": "Tap “Done” or keep adding vertices",
+  "@drawHintDone": {},
+  "drawHintMin": "Place at least 3 vertices",
+  "@drawHintMin": {},
+  "drawHintPlaced": "{count} placed · tap canvas to add more",
+  "@drawHintPlaced": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "drawVertexOf": "Vertex {index} of {total}",
+  "@drawVertexOf": {
+    "placeholders": {
+      "index": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "total": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "drawVertexInfo": "x: {x}m · y: {y}m · ∠ {angle}°",
+  "@drawVertexInfo": {
+    "placeholders": {
+      "x": {
+        "type": "String"
+      },
+      "y": {
+        "type": "String"
+      },
+      "angle": {
+        "type": "String"
+      }
+    }
+  },
+  "drawSavedToast": "Saved “{name}” · {tag}",
+  "@drawSavedToast": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "tag": {
+        "type": "String"
+      }
+    }
+  },
+  "drawDefaultName": "Plot · {time}",
+  "@drawDefaultName": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "edgeAdjustDiagonal": "Adjust diagonal",
+  "@edgeAdjustDiagonal": {},
+  "edgeAdjustSide": "Adjust side",
+  "@edgeAdjustSide": {},
+  "edgeNowLength": "now {value} {unit}",
+  "@edgeNowLength": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "edgeNewLength": "NEW LENGTH",
+  "@edgeNewLength": {},
+  "edgeWhichEndpoint": "WHICH ENDPOINT MOVES?",
+  "@edgeWhichEndpoint": {},
+  "edgeMoveEndpoint": "Move {label}",
+  "@edgeMoveEndpoint": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "edgeInsertMidpoint": "Insert vertex at midpoint",
+  "@edgeInsertMidpoint": {},
+  "saveSheetTitle": "Save plot",
+  "@saveSheetTitle": {},
+  "saveSheetName": "NAME",
+  "@saveSheetName": {},
+  "saveSheetNameHint": "Plot name",
+  "@saveSheetNameHint": {},
+  "saveSheetCategory": "CATEGORY",
+  "@saveSheetCategory": {},
+  "typeTitle": "Enter dimensions",
+  "@typeTitle": {},
+  "typeSubtitle": "{shape} · values in {unit}",
+  "@typeSubtitle": {
+    "placeholders": {
+      "shape": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "typeWidth": "Width",
+  "@typeWidth": {},
+  "typeHeight": "Height",
+  "@typeHeight": {},
+  "typeSide": "Side",
+  "@typeSide": {},
+  "typeSideA": "Side A",
+  "@typeSideA": {},
+  "typeSideB": "Side B",
+  "@typeSideB": {},
+  "typeSideC": "Side C",
+  "@typeSideC": {},
+  "typeTop": "Top",
+  "@typeTop": {},
+  "typeBottom": "Bottom",
+  "@typeBottom": {},
+  "typeSideLength": "Side length",
+  "@typeSideLength": {},
+  "typeSidesCount": "Sides",
+  "@typeSidesCount": {},
+  "typeTriangle3": "Triangle (3 sides)",
+  "@typeTriangle3": {},
+  "typeRegularPentagon": "Regular pentagon",
+  "@typeRegularPentagon": {},
+  "typeRegularPolygon": "Regular polygon",
+  "@typeRegularPolygon": {},
+  "typeErrPositive": "Each value must be a positive number.",
+  "@typeErrPositive": {},
+  "typeErrTriangle": "Sides do not form a triangle (each pair must sum > third).",
+  "@typeErrTriangle": {},
+  "typeErrMinSides": "A polygon needs at least 3 sides.",
+  "@typeErrMinSides": {},
+  "historyTitle": "History",
+  "@historyTitle": {},
+  "historySubtitle": "{count} plots · {area} acre total",
+  "@historySubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "area": {
+        "type": "String"
+      }
+    }
+  },
+  "historySearch": "Search plots…",
+  "@historySearch": {},
+  "historyFilter": "Filter",
+  "@historyFilter": {},
+  "historyChip": "{label} · {count}",
+  "@historyChip": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "historySelected": "{count} SELECTED FOR COMPARE",
+  "@historySelected": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "historyEmpty": "No plots yet — measure one from Home.",
+  "@historyEmpty": {},
+  "historyPlotMeta": " · {sides} sides · {when}",
+  "@historyPlotMeta": {
+    "placeholders": {
+      "sides": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "historyToday": "Today · {time}",
+  "@historyToday": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "historyYesterday": "Yesterday",
+  "@historyYesterday": {},
+  "historyCompare2": "Compare 2 plots",
+  "@historyCompare2": {},
+  "filterTitle": "Filter by category",
+  "@filterTitle": {},
+  "filterAllPlots": "All plots",
+  "@filterAllPlots": {},
+  "plotTagSides": "{tag} · {sides} sides",
+  "@plotTagSides": {
+    "placeholders": {
+      "tag": {
+        "type": "String"
+      },
+      "sides": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "plotRenameTitle": "Rename plot",
+  "@plotRenameTitle": {},
+  "plotDeleteTitle": "Delete plot?",
+  "@plotDeleteTitle": {},
+  "plotDeleteBody": "“{name}” will be removed permanently.",
+  "@plotDeleteBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "plotClearAllTitle": "Clear all history?",
+  "@plotClearAllTitle": {},
+  "plotClearAllBody": "{count, plural, =1{All 1 saved plot will be removed. This can’t be undone.} other{All {count} saved plots will be removed. This can’t be undone.}}",
+  "@plotClearAllBody": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "plotClearAll": "Clear all",
+  "@plotClearAll": {},
+  "compareTitle": "Compare",
+  "@compareTitle": {},
+  "comparePlotA": "PLOT A",
+  "@comparePlotA": {},
+  "comparePlotB": "PLOT B",
+  "@comparePlotB": {},
+  "compareNameA": "Plot A",
+  "@compareNameA": {},
+  "compareNameB": "Plot B",
+  "@compareNameB": {},
+  "compareDemoPlot": "Demo plot",
+  "@compareDemoPlot": {},
+  "compareOverlay": "OVERLAY · CENTERED",
+  "@compareOverlay": {},
+  "compareRatio": "A ÷ B",
+  "@compareRatio": {},
+  "compareDelta": "A − B",
+  "@compareDelta": {},
+  "compareTotal": "TOTAL",
+  "@compareTotal": {},
+  "compareRelative": "RELATIVE SIZE",
+  "@compareRelative": {},
+  "compareUnitSides": "{unit} · {sides} sides",
+  "@compareUnitSides": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      },
+      "sides": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "adjustTitle": "Adjust to size",
+  "@adjustTitle": {},
+  "adjustTargetArea": "TARGET AREA",
+  "@adjustTargetArea": {},
+  "adjustPctFromBase": "{pct}% FROM BASE",
+  "@adjustPctFromBase": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "adjustBaseValue": "Base · {value} {unit}",
+  "@adjustBaseValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "adjustBase": "BASE",
+  "@adjustBase": {},
+  "adjustAdjusted": "ADJUSTED",
+  "@adjustAdjusted": {},
+  "adjustAnchor": "ANCHOR",
+  "@adjustAnchor": {},
+  "adjustUniform": "Uniform",
+  "@adjustUniform": {},
+  "adjustWidth": "Width",
+  "@adjustWidth": {},
+  "adjustHeight": "Height",
+  "@adjustHeight": {},
+  "adjustExpandDirection": "EXPAND DIRECTION",
+  "@adjustExpandDirection": {},
+  "adjustAnchorFrom": "ANCHOR FROM",
+  "@adjustAnchorFrom": {},
+  "adjustApply": "Apply adjustment",
+  "@adjustApply": {},
+  "converterTitle": "Converter",
+  "@converterTitle": {},
+  "converterSubtitle": "Type a number, pick a unit",
+  "@converterSubtitle": {},
+  "converterValue": "VALUE",
+  "@converterValue": {},
+  "converterConvertsTo": "CONVERTS TO",
+  "@converterConvertsTo": {},
+  "resultTitle": "Plot Summary",
+  "@resultTitle": {},
+  "resultTotalArea": "TOTAL AREA · {unit}",
+  "@resultTotalArea": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "resultSaved": "SAVED",
+  "@resultSaved": {},
+  "resultEquivalent": "EQUIVALENT IN",
+  "@resultEquivalent": {},
+  "resultValuation": "VALUATION",
+  "@resultValuation": {},
+  "resultRatePer": "RATE / {unit}",
+  "@resultRatePer": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "resultCurrency": "Tk",
+  "@resultCurrency": {},
+  "resultEstValue": "EST. VALUE",
+  "@resultEstValue": {},
+  "resultExportPdf": "Export PDF",
+  "@resultExportPdf": {},
+  "resultShareImage": "Share image",
+  "@resultShareImage": {},
+  "resultAdjust": "Adjust",
+  "@resultAdjust": {},
+  "subdivideTitle": "Subdivide",
+  "@subdivideTitle": {},
+  "subdivideSubtitle": "Pick a saved plot to split into lots",
+  "@subdivideSubtitle": {},
+  "subdivideSaved": "Subdivision saved for “{name}”",
+  "@subdivideSaved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "subdivideSaveAction": "Save subdivision",
+  "@subdivideSaveAction": {},
+  "subdivideSummary": "{name} · {lots} lots · 100%",
+  "@subdivideSummary": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "lots": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "subdivideMeta": "{area} {unit} · {sides} sides",
+  "@subdivideMeta": {
+    "placeholders": {
+      "area": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      },
+      "sides": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "subdivideEmpty": "No saved plots yet",
+  "@subdivideEmpty": {},
+  "subdivideEmptyBody": "Measure a plot first, then come back here to split it into lots.",
+  "@subdivideEmptyBody": {},
+  "subdivideGoHome": "Go to Home",
+  "@subdivideGoHome": {},
+  "subdivideLot": "Lot {n}",
+  "@subdivideLot": {
+    "placeholders": {
+      "n": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "khotiyanTitle": "Khotiyan",
+  "@khotiyanTitle": {},
+  "khotiyanSubtitle": "Share calculator · Ana · Gonda · Kora",
+  "@khotiyanSubtitle": {},
+  "khotiyanHissya": "HISSYA",
+  "@khotiyanHissya": {},
+  "khotiyanTilFraction": "{selected} / {total} til",
+  "@khotiyanTilFraction": {
+    "placeholders": {
+      "selected": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "khotiyanSelectUnits": "SELECT UNITS",
+  "@khotiyanSelectUnits": {},
+  "khotiyanAna": "Ana",
+  "@khotiyanAna": {},
+  "khotiyanGonda": "Gonda",
+  "@khotiyanGonda": {},
+  "khotiyanKora": "Kora",
+  "@khotiyanKora": {},
+  "khotiyanKranti": "Kranti",
+  "@khotiyanKranti": {},
+  "khotiyanTil": "Til",
+  "@khotiyanTil": {},
+  "khotiyanTotalLand": "TOTAL LAND",
+  "@khotiyanTotalLand": {},
+  "khotiyanYourLand": "YOUR LAND",
+  "@khotiyanYourLand": {},
+  "infoTitle": "Land 101",
+  "@infoTitle": {},
+  "infoSubtitle": "Units, measurement, surveying — and Bangladeshi land records",
+  "@infoSubtitle": {},
+  "infoArticle": "Article",
+  "@infoArticle": {},
+  "settingsTitle": "Settings",
+  "@settingsTitle": {},
+  "settingsSubtitle": "Tweak the look, feel, and units",
+  "@settingsSubtitle": {},
+  "settingsLanguage": "LANGUAGE",
+  "@settingsLanguage": {},
+  "settingsLanguageEnglish": "English",
+  "@settingsLanguageEnglish": {},
+  "settingsLanguageBengali": "বাংলা",
+  "@settingsLanguageBengali": {},
+  "settingsTheme": "THEME",
+  "@settingsTheme": {},
+  "settingsAccent": "Accent color",
+  "@settingsAccent": {},
+  "settingsGridStyle": "GRID STYLE",
+  "@settingsGridStyle": {},
+  "settingsGridDots": "Dots",
+  "@settingsGridDots": {},
+  "settingsGridLines": "Lines",
+  "@settingsGridLines": {},
+  "settingsGridBlueprint": "Blueprint",
+  "@settingsGridBlueprint": {},
+  "settingsAreaUnit": "AREA UNIT",
+  "@settingsAreaUnit": {},
+  "settingsLengthUnit": "LENGTH UNIT",
+  "@settingsLengthUnit": {},
+  "settingsUnderlay": "UNDERLAY",
+  "@settingsUnderlay": {},
+  "settingsMapUnderlay": "Map underlay",
+  "@settingsMapUnderlay": {},
+  "settingsMapUnderlaySub": "Show road & parcel hints behind the canvas",
+  "@settingsMapUnderlaySub": {},
+  "drawerMenu": "Menu",
+  "@drawerMenu": {},
+  "drawerMenuSub": "Settings, info, and more",
+  "@drawerMenuSub": {},
+  "drawerKhotiyanSub": "Calculate share by Ana, Gonda, Kora",
+  "@drawerKhotiyanSub": {},
+  "drawerSettingsSub": "Theme, units, grid style",
+  "@drawerSettingsSub": {},
+  "drawerAboutSub": "Version, credits, what PlotCalc does",
+  "@drawerAboutSub": {},
+  "drawerVersion": "PlotCalc · v{version}",
+  "@drawerVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "aboutTitle": "About",
+  "@aboutTitle": {},
+  "aboutTagline": "Offline land measurement, your way",
+  "@aboutTagline": {},
+  "aboutWhatItDoes": "WHAT IT DOES",
+  "@aboutWhatItDoes": {},
+  "aboutDraw": "Draw plots by tapping vertices, dragging a template, or typing exact measurements.",
+  "@aboutDraw": {},
+  "aboutConvert": "Convert between 8 area units (sq ft, m², acre, hectare, bigha, katha, chatak, shotok).",
+  "@aboutConvert": {},
+  "aboutAdjust": "Adjust a polygon to hit a target area while keeping its shape.",
+  "@aboutAdjust": {},
+  "aboutCompare": "Compare two saved plots side-by-side.",
+  "@aboutCompare": {},
+  "aboutSubdivide": "Subdivide a plot into proportional lots.",
+  "@aboutSubdivide": {},
+  "aboutOffline": "WORKS OFFLINE",
+  "@aboutOffline": {},
+  "aboutOfflineBody": "Every measurement, conversion, and saved plot lives on your device. No accounts, no internet required.",
+  "@aboutOfflineBody": {},
+  "aboutBuild": "BUILD",
+  "@aboutBuild": {},
+  "aboutVersion": "Version",
+  "@aboutVersion": {},
+  "aboutBuildLabel": "Build",
+  "@aboutBuildLabel": {},
+  "aboutPlatform": "Platform",
+  "@aboutPlatform": {},
+  "aboutPlatformValue": "Android · iOS",
+  "@aboutPlatformValue": {},
+  "aboutCredits": "CREDITS",
+  "@aboutCredits": {},
+  "aboutCreditsBody": "Built by Zaman Sheikh.\nDesigned with the PlotCalc handoff bundle from Claude Design.",
+  "@aboutCreditsBody": {},
+  "pickerQuestionAccent": "start",
+  "@pickerQuestionAccent": {},
+  "historyEmptyFiltered": "No plots match this filter.\nTap “All” to clear.",
+  "@historyEmptyFiltered": {},
+  "adjustAnchorN": "N",
+  "@adjustAnchorN": {},
+  "adjustAnchorE": "E",
+  "@adjustAnchorE": {},
+  "adjustAnchorW": "W",
+  "@adjustAnchorW": {},
+  "adjustAnchorS": "S",
+  "@adjustAnchorS": {},
+  "homeSides": " · {sides} sides",
+  "@homeSides": {
+    "placeholders": {
+      "sides": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "drawFirstVertexHint": "Tap anywhere on the canvas\nto drop your first vertex",
+  "@drawFirstVertexHint": {},
+  "drawCompassN": "N",
+  "@drawCompassN": {}
+}

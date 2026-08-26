@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../domain/entities/plot.dart';
+import '../../../../l10n/l10n.dart';
 
 class FilterSheetResult {
   final PlotTag? tag; // null = "All"
@@ -61,12 +62,12 @@ class _FilterSheet extends StatelessWidget {
             ),
             const SizedBox(height: 14),
             Text(
-              'Filter by category',
+              context.l10n.filterTitle,
               style: AppTypography.sans(size: 18, weight: FontWeight.w600),
             ),
             const SizedBox(height: 14),
             _Row(
-              label: 'All plots',
+              label: context.l10n.filterAllPlots,
               count: counts[null] ?? 0,
               active: current == null,
               accent: accent,
@@ -76,7 +77,7 @@ class _FilterSheet extends StatelessWidget {
             const Divider(height: 1, color: AppColors.line),
             for (var i = 0; i < PlotTag.values.length; i++) ...[
               _Row(
-                label: PlotTag.values[i].label,
+                label: PlotTag.values[i].labelOf(context.l10n),
                 count: counts[PlotTag.values[i]] ?? 0,
                 active: PlotTag.values[i] == current,
                 accent: accent,

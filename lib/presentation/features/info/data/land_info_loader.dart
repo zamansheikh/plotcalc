@@ -22,6 +22,16 @@ class InfoContent {
   /// then the imported Bengali land-record topics.
   static List<Article> get all => [...articles, ..._imported];
 
+  /// Same catalogue, but articles written in the reader's language come
+  /// first. Article bodies are content, not UI strings, so they aren't
+  /// translated — ordering is what makes the list useful in either language.
+  static List<Article> forLocale(Locale locale) {
+    final wantsBengali = locale.languageCode == 'bn';
+    final matching = all.where((a) => a.isBengali == wantsBengali);
+    final rest = all.where((a) => a.isBengali != wantsBengali);
+    return [...matching, ...rest];
+  }
+
   static Future<void> load() async {
     try {
       final raw = await rootBundle.loadString(_asset);

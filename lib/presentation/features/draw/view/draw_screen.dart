@@ -28,6 +28,7 @@ import '../../result/view/result_screen.dart';
 import 'edge_edit_dialog.dart';
 import 'save_plot_sheet.dart';
 import 'type_input_sheet.dart';
+import '../../../../l10n/l10n.dart';
 
 class DrawScreen extends StatelessWidget {
   final DrawArgs args;
@@ -140,18 +141,18 @@ class _TopBar extends StatelessWidget {
               children: [
                 Text(
                   switch (state.inputMethod) {
-                    InputMethod.draw => 'Draw plot',
+                    InputMethod.draw => context.l10n.drawTitle,
                     InputMethod.tap =>
                       state.isPlacingTaps
-                          ? 'Tap to place vertices'
-                          : 'Edit plot',
-                    InputMethod.type => 'Edit plot',
+                          ? context.l10n.drawTitleTap
+                          : context.l10n.drawTitleEdit,
+                    InputMethod.type => context.l10n.drawTitleEdit,
                   },
                   style: AppTypography.sans(size: 14, weight: FontWeight.w600),
                 ),
                 const SizedBox(height: 1),
                 Text(
-                  '${state.vertices.length} VERTICES · UNSAVED',
+                  context.l10n.drawVerticesUnsaved(state.vertices.length),
                   style: AppTypography.mono(
                     size: 10,
                     color: AppColors.textFaint,
@@ -196,25 +197,25 @@ class _ReadoutRow extends StatelessWidget {
         children: [
           Expanded(
             child: _ReadoutTile(
-              label: 'AREA',
+              label: context.l10n.drawArea,
               value: areaUnit.format(areaSqm),
-              unit: areaUnit.label,
+              unit: areaUnit.labelOf(context.l10n),
               valueColor: accent,
             ),
           ),
           const SizedBox(width: 6),
           Expanded(
             child: _ReadoutTile(
-              label: 'PERIMETER',
+              label: context.l10n.drawPerimeter,
               value: lengthUnit.format(perimM),
-              unit: lengthUnit.label,
+              unit: lengthUnit.labelOf(context.l10n),
               valueColor: AppColors.text,
             ),
           ),
           const SizedBox(width: 6),
           Expanded(
             child: _ReadoutTile(
-              label: 'SIDES',
+              label: context.l10n.drawSides,
               value: '$sides',
               unit: '',
               valueColor: AppColors.text,
@@ -462,6 +463,9 @@ class _CanvasState extends State<_Canvas> {
                           center: Offset(cx, cy),
                           areaUnit: widget.settings.areaUnit,
                           lengthUnit: widget.settings.lengthUnit,
+                          lengthLabel: widget.settings.lengthUnit.labelOf(
+                            context.l10n,
+                          ),
                           isPlacing: widget.state.isPlacingTaps,
                         ),
                       ),
@@ -502,7 +506,7 @@ class _CanvasState extends State<_Canvas> {
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 32),
                             child: Text(
-                              'Tap anywhere on the canvas\nto drop your first vertex',
+                              context.l10n.drawFirstVertexHint,
                               textAlign: TextAlign.center,
                               style: AppTypography.mono(
                                 size: 12,
@@ -648,6 +652,9 @@ Iterable<(int, int)> _diagonalPairs(int n) sync* {
 }
 
 class _DrawCanvasPainter extends CustomPainter {
+  /// Pre-resolved unit label: a painter has no BuildContext to translate with.
+  final String lengthLabel;
+
   final List<Vertex> vertices;
   final int selectedIndex;
   final bool showAngles;
@@ -669,6 +676,7 @@ class _DrawCanvasPainter extends CustomPainter {
     required this.center,
     required this.areaUnit,
     required this.lengthUnit,
+    required this.lengthLabel,
     this.isPlacing = false,
   });
 
@@ -730,7 +738,7 @@ class _DrawCanvasPainter extends CustomPainter {
       final len = Geometry.sideLength(a, b);
       final tp = TextPainter(
         text: TextSpan(
-          text: '${lengthUnit.format(len)} ${lengthUnit.label}',
+          text: '${lengthUnit.format(len)} $lengthLabel',
           style: AppTypography.mono(
             size: 10,
             weight: FontWeight.w500,
@@ -797,6 +805,7 @@ class _DrawCanvasPainter extends CustomPainter {
       old.scale != scale ||
       old.center != center ||
       old.accent != accent ||
+      old.lengthLabel != lengthLabel ||
       old.isPlacing != isPlacing;
 
   void _paintDiagonals(Canvas canvas) {
@@ -830,7 +839,7 @@ class _DrawCanvasPainter extends CustomPainter {
       final len = Geometry.sideLength(a, b);
       final tp = TextPainter(
         text: TextSpan(
-          text: '${lengthUnit.format(len)} ${lengthUnit.label}',
+          text: '${lengthUnit.format(len)} $lengthLabel',
           style: AppTypography.mono(
             size: 9,
             color: accent.withValues(alpha: 0.85),
@@ -985,7 +994,7 @@ class _DiagonalsToggle extends StatelessWidget {
               ),
               const SizedBox(width: 6),
               Text(
-                'DIAG',
+                context.l10n.drawDiag,
                 style: AppTypography.mono(
                   size: 10,
                   weight: FontWeight.w600,
@@ -1126,8 +1135,8 @@ class _TapHint extends StatelessWidget {
                 children: [
                   Text(
                     canFinish
-                        ? 'Tap "Done" or keep adding vertices'
-                        : 'Place at least 3 vertices',
+                        ? context.l10n.drawHintDone
+                        : context.l10n.drawHintMin,
                     style: AppTypography.sans(
                       size: 12,
                       weight: FontWeight.w500,
@@ -1135,7 +1144,7 @@ class _TapHint extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '$n placed · tap canvas to add more',
+                    context.l10n.drawHintPlaced(n),
                     style: AppTypography.mono(
                       size: 10,
                       color: AppColors.textDim,
@@ -1159,7 +1168,7 @@ class _TapHint extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: Text('UNDO', style: AppTypography.mono(size: 10)),
+                child: Text(context.l10n.actionUndo, style: AppTypography.mono(size: 10)),
               ),
           ],
         ),
@@ -1175,6 +1184,7 @@ class _VertexInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final mLabel = context.l10n.unitMeterShort;
     final i = state.selectedIndex.clamp(0, state.vertices.length - 1);
     final v = state.vertices[i];
     final ang = Geometry.interiorAngle(state.vertices, i);
@@ -1213,7 +1223,7 @@ class _VertexInfo extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Vertex ${i + 1} of ${state.vertices.length}',
+                    context.l10n.drawVertexOf(i + 1, state.vertices.length),
                     style: AppTypography.sans(
                       size: 12,
                       weight: FontWeight.w500,
@@ -1221,7 +1231,7 @@ class _VertexInfo extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'x: ${v.x.toStringAsFixed(1)}m · y: ${v.y.toStringAsFixed(1)}m · ∠ ${ang.round()}°',
+                    'x: ${v.x.toStringAsFixed(1)}$mLabel · y: ${v.y.toStringAsFixed(1)}$mLabel · ∠ ${ang.round()}°',
                     style: AppTypography.mono(
                       size: 10,
                       color: AppColors.textDim,
@@ -1243,7 +1253,7 @@ class _VertexInfo extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              child: Text('REMOVE', style: AppTypography.mono(size: 10)),
+              child: Text(context.l10n.actionRemove, style: AppTypography.mono(size: 10)),
             ),
           ],
         ),
@@ -1266,7 +1276,7 @@ class _BottomActions extends StatelessWidget {
     final hhmm = DateTime.now().toIso8601String().substring(11, 16);
     final result = await showSavePlotSheet(
       context,
-      defaultName: 'Plot · $hhmm',
+      defaultName: context.l10n.drawDefaultName(hhmm),
       accent: accent,
     );
     if (result == null) return;
@@ -1282,7 +1292,11 @@ class _BottomActions extends StatelessWidget {
     await repo(plot);
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Saved "${result.name}" · ${result.tag.label}')),
+      SnackBar(
+        content: Text(
+          context.l10n.drawSavedToast(result.name, result.tag.labelOf(context.l10n)),
+        ),
+      ),
     );
   }
 
@@ -1312,7 +1326,7 @@ class _BottomActions extends StatelessWidget {
                 ),
               ),
               child: Text(
-                'Save plot',
+                context.l10n.saveSheetTitle,
                 style: AppTypography.sans(
                   size: 13,
                   weight: FontWeight.w500,
@@ -1332,7 +1346,7 @@ class _BottomActions extends StatelessWidget {
                       context.push(
                         AppRoutes.result,
                         extra: ResultArgs(
-                          name: 'Plot',
+                          name: context.l10n.defaultPlotLabel,
                           vertices: state.vertices,
                         ),
                       );
@@ -1352,7 +1366,7 @@ class _BottomActions extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'Calculate',
+                    context.l10n.actionCalculate,
                     style: AppTypography.sans(
                       size: 13,
                       weight: FontWeight.w600,
@@ -1405,7 +1419,7 @@ class _PlacingActions extends StatelessWidget {
                 ),
               ),
               child: Text(
-                'Cancel',
+                context.l10n.actionCancel,
                 style: AppTypography.sans(
                   size: 13,
                   weight: FontWeight.w500,
@@ -1437,7 +1451,7 @@ class _PlacingActions extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'Done',
+                    context.l10n.actionDone,
                     style: AppTypography.sans(
                       size: 13,
                       weight: FontWeight.w600,

@@ -12,14 +12,7 @@ enum ShapePreset {
 }
 
 extension ShapePresetX on ShapePreset {
-  String get label => switch (this) {
-        ShapePreset.rectangle => 'Rectangle',
-        ShapePreset.square => 'Square',
-        ShapePreset.triangle => 'Triangle',
-        ShapePreset.trapezoid => 'Trapezoid',
-        ShapePreset.pentagon => 'Pentagon',
-        ShapePreset.freeform => 'Free-form',
-      };
+  // Display names are locale-dependent — see ShapePresetL10n.labelOf.
 
   /// Vertex preset in meters, centered at origin.
   List<Vertex> get vertices => switch (this) {

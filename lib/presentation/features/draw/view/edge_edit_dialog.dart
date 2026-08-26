@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/units/length_unit.dart';
+import '../../../../l10n/l10n.dart';
 
 sealed class EdgeEditResult {
   const EdgeEditResult();
@@ -106,7 +107,7 @@ class _EdgeEditDialogState extends State<_EdgeEditDialog> {
       backgroundColor: AppColors.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       title: Text(
-        widget.isDiagonal ? 'Adjust diagonal' : 'Adjust side',
+        widget.isDiagonal ? context.l10n.edgeAdjustDiagonal : context.l10n.edgeAdjustSide,
         style: AppTypography.sans(size: 16, weight: FontWeight.w600),
       ),
       content: Column(
@@ -124,7 +125,7 @@ class _EdgeEditDialogState extends State<_EdgeEditDialog> {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  'now ${widget.lengthUnit.format(widget.currentLengthMeters)} ${widget.lengthUnit.label}',
+                  context.l10n.edgeNowLength(widget.lengthUnit.format(widget.currentLengthMeters), widget.lengthUnit.labelOf(context.l10n)),
                   style: AppTypography.mono(
                     size: 11,
                     color: AppColors.textDim,
@@ -136,7 +137,7 @@ class _EdgeEditDialogState extends State<_EdgeEditDialog> {
           ),
           const SizedBox(height: 14),
           Text(
-            'NEW LENGTH',
+            context.l10n.edgeNewLength,
             style: AppTypography.mono(
               size: 10,
               color: AppColors.textFaint,
@@ -178,7 +179,7 @@ class _EdgeEditDialogState extends State<_EdgeEditDialog> {
                   ),
                 ),
                 Text(
-                  widget.lengthUnit.label,
+                  widget.lengthUnit.labelOf(context.l10n),
                   style: AppTypography.mono(
                     size: 11,
                     color: AppColors.textDim,
@@ -189,7 +190,7 @@ class _EdgeEditDialogState extends State<_EdgeEditDialog> {
           ),
           const SizedBox(height: 14),
           Text(
-            'WHICH ENDPOINT MOVES?',
+            context.l10n.edgeWhichEndpoint,
             style: AppTypography.mono(
               size: 10,
               color: AppColors.textFaint,
@@ -201,7 +202,7 @@ class _EdgeEditDialogState extends State<_EdgeEditDialog> {
             children: [
               Expanded(
                 child: _MoveOption(
-                  label: 'Move $fromLabel',
+                  label: context.l10n.edgeMoveEndpoint(fromLabel),
                   active: !_moveTo,
                   accent: widget.accent,
                   onTap: () => setState(() => _moveTo = false),
@@ -210,7 +211,7 @@ class _EdgeEditDialogState extends State<_EdgeEditDialog> {
               const SizedBox(width: 6),
               Expanded(
                 child: _MoveOption(
-                  label: 'Move $toLabel',
+                  label: context.l10n.edgeMoveEndpoint(toLabel),
                   active: _moveTo,
                   accent: widget.accent,
                   onTap: () => setState(() => _moveTo = true),
@@ -231,7 +232,7 @@ class _EdgeEditDialogState extends State<_EdgeEditDialog> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   child: Text(
-                    'OR',
+                    context.l10n.labelOr,
                     style: AppTypography.mono(
                       size: 10,
                       color: AppColors.textFaint,
@@ -265,7 +266,7 @@ class _EdgeEditDialogState extends State<_EdgeEditDialog> {
                 ),
                 icon: const Icon(Icons.add, size: 16),
                 label: Text(
-                  'Insert vertex at midpoint',
+                  context.l10n.edgeInsertMidpoint,
                   style: AppTypography.sans(
                     size: 12,
                     weight: FontWeight.w500,
@@ -280,7 +281,7 @@ class _EdgeEditDialogState extends State<_EdgeEditDialog> {
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
           child: Text(
-            'Cancel',
+            context.l10n.actionCancel,
             style: AppTypography.sans(size: 13, color: AppColors.textDim),
           ),
         ),
@@ -291,7 +292,7 @@ class _EdgeEditDialogState extends State<_EdgeEditDialog> {
             foregroundColor: AppColors.ink,
           ),
           child: Text(
-            'Apply',
+            context.l10n.actionApply,
             style: AppTypography.sans(
               size: 13,
               weight: FontWeight.w600,

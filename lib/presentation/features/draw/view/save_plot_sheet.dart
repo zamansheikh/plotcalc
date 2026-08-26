@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../domain/entities/plot.dart';
+import '../../../../l10n/l10n.dart';
 
 class SavePlotResult {
   final String name;
@@ -71,12 +72,12 @@ class _SavePlotSheetState extends State<_SavePlotSheet> {
           ),
           const SizedBox(height: 14),
           Text(
-            'Save plot',
+            context.l10n.saveSheetTitle,
             style: AppTypography.sans(size: 18, weight: FontWeight.w600),
           ),
           const SizedBox(height: 14),
           Text(
-            'NAME',
+            context.l10n.saveSheetName,
             style: AppTypography.mono(
               size: 10,
               color: AppColors.textFaint,
@@ -97,18 +98,18 @@ class _SavePlotSheetState extends State<_SavePlotSheet> {
               cursorColor: widget.accent,
               textAlignVertical: TextAlignVertical.center,
               style: AppTypography.sans(size: 14),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 isCollapsed: true,
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.zero,
-                hintText: 'Plot name',
+                hintText: context.l10n.saveSheetNameHint,
               ),
               autofocus: false,
             ),
           ),
           const SizedBox(height: 16),
           Text(
-            'CATEGORY',
+            context.l10n.saveSheetCategory,
             style: AppTypography.mono(
               size: 10,
               color: AppColors.textFaint,
@@ -146,7 +147,7 @@ class _SavePlotSheetState extends State<_SavePlotSheet> {
                     ),
                   ),
                   child: Text(
-                    'Cancel',
+                    context.l10n.actionCancel,
                     style: AppTypography.sans(
                       size: 13,
                       weight: FontWeight.w500,
@@ -175,7 +176,7 @@ class _SavePlotSheetState extends State<_SavePlotSheet> {
                     ),
                   ),
                   child: Text(
-                    'Save',
+                    context.l10n.actionSave,
                     style: AppTypography.sans(
                       size: 13,
                       weight: FontWeight.w600,
@@ -217,7 +218,7 @@ class _TagChip extends StatelessWidget {
           borderRadius: BorderRadius.circular(999),
         ),
         child: Text(
-          tag.label,
+          tag.labelOf(context.l10n),
           style: AppTypography.sans(
             size: 12,
             weight: FontWeight.w500,

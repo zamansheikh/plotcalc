@@ -13,14 +13,6 @@ enum InputMethod {
   type,
 }
 
-extension InputMethodX on InputMethod {
-  String get label => switch (this) {
-        InputMethod.draw => 'Draw',
-        InputMethod.tap => 'Tap',
-        InputMethod.type => 'Type',
-      };
-}
-
 /// Bundle passed from the picker to the draw screen.
 class DrawArgs {
   final InputMethod method;

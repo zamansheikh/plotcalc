@@ -4,36 +4,40 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../l10n/l10n.dart';
 
 /// Right-side menu drawer. Each row pushes a top-level page (Settings,
-/// About, …). New entries can be appended to [_items] without touching
+/// About, …). New entries can be appended to [_menuItems] without touching
 /// the rest of the app.
 class SettingsDrawer extends StatelessWidget {
   const SettingsDrawer({super.key});
 
-  static const _items = <_MenuItem>[
+  /// Built per-call rather than held in a `const` field: every label has
+  /// to follow the active locale.
+  static List<_MenuItem> _menuItems(AppLocalizations t) => <_MenuItem>[
     _MenuItem(
       icon: Icons.pie_chart_outline,
-      label: 'Khotiyan',
-      sub: 'Calculate share by Ana, Gonda, Kora',
+      label: t.khotiyanTitle,
+      sub: t.drawerKhotiyanSub,
       route: AppRoutes.khotiyan,
     ),
     _MenuItem(
       icon: Icons.settings_outlined,
-      label: 'Settings',
-      sub: 'Theme, units, grid style',
+      label: t.settingsTitle,
+      sub: t.drawerSettingsSub,
       route: AppRoutes.settings,
     ),
     _MenuItem(
       icon: Icons.info_outline,
-      label: 'About',
-      sub: 'Version, credits, what PlotCalc does',
+      label: t.aboutTitle,
+      sub: t.drawerAboutSub,
       route: AppRoutes.about,
     ),
   ];
 
   @override
   Widget build(BuildContext context) {
+    final items = _menuItems(context.l10n);
     final size = MediaQuery.of(context).size;
     return Drawer(
       backgroundColor: AppColors.ink,
@@ -51,9 +55,9 @@ class SettingsDrawer extends StatelessWidget {
                   horizontal: 16,
                   vertical: 4,
                 ),
-                itemCount: _items.length,
+                itemCount: items.length,
                 separatorBuilder: (_, _) => const SizedBox(height: 8),
-                itemBuilder: (_, i) => _Tile(item: _items[i]),
+                itemBuilder: (_, i) => _Tile(item: items[i]),
               ),
             ),
             const _Footer(),
@@ -89,10 +93,10 @@ class _Header extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Menu', style: AppTypography.heroTitle),
+                Text(context.l10n.drawerMenu, style: AppTypography.heroTitle),
                 const SizedBox(height: 2),
                 Text(
-                  'Settings, info, and more',
+                  context.l10n.drawerMenuSub,
                   style: AppTypography.mono(
                     size: 11,
                     color: AppColors.textDim,
@@ -108,7 +112,7 @@ class _Header extends StatelessWidget {
               color: AppColors.text,
             ),
             onPressed: () => Navigator.of(context).pop(),
-            tooltip: 'Close',
+            tooltip: context.l10n.actionClose,
           ),
         ],
       ),
@@ -198,7 +202,7 @@ class _Footer extends StatelessWidget {
           const Icon(Icons.terrain, size: 14, color: AppColors.textFaint),
           const SizedBox(width: 6),
           Text(
-            'PlotCalc · v1.0.0',
+            context.l10n.drawerVersion('1.0.0'),
             style: AppTypography.mono(
               size: 10,
               color: AppColors.textFaint,

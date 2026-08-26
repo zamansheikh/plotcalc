@@ -9,6 +9,7 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../../core/units/area_unit.dart';
 import '../../../shared/settings/settings_bloc.dart';
 import '../../../shared/widgets/phone_chrome.dart';
+import '../../../../l10n/l10n.dart';
 
 class ConverterScreen extends StatefulWidget {
   const ConverterScreen({super.key});
@@ -49,11 +50,11 @@ class _ConverterScreenState extends State<ConverterScreen> {
               onUnitChanged: (u) => setState(() => _from = u),
             ),
             const SizedBox(height: 8),
-            const Padding(
+            Padding(
               padding: EdgeInsets.fromLTRB(20, 8, 20, 6),
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: _Label('CONVERTS TO'),
+                child: _Label(context.l10n.converterConvertsTo),
               ),
             ),
             Expanded(
@@ -96,10 +97,10 @@ class _Header extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Converter', style: AppTypography.heroTitle),
+                Text(context.l10n.converterTitle, style: AppTypography.heroTitle),
                 const SizedBox(height: 2),
                 Text(
-                  'Type a number, pick a unit',
+                  context.l10n.converterSubtitle,
                   style: AppTypography.mono(
                     size: 11,
                     color: AppColors.textDim,
@@ -144,7 +145,7 @@ class _InputCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'VALUE',
+              context.l10n.converterValue,
               style: AppTypography.mono(
                 size: 10,
                 color: AppColors.textFaint,
@@ -184,7 +185,7 @@ class _InputCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  from.label,
+                  from.labelOf(context.l10n),
                   style: AppTypography.mono(
                     size: 14,
                     color: AppColors.textDim,
@@ -238,7 +239,7 @@ class _UnitChip extends StatelessWidget {
           borderRadius: BorderRadius.circular(999),
         ),
         child: Text(
-          unit.label,
+          unit.labelOf(context.l10n),
           style: AppTypography.mono(
             size: 11,
             color: active ? AppColors.ink : AppColors.text,
@@ -284,7 +285,7 @@ class _Conversions extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      u.displayName.toUpperCase(),
+                      u.nameOf(context.l10n).toUpperCase(),
                       style: AppTypography.mono(
                         size: 9,
                         color: AppColors.textFaint,
@@ -293,7 +294,7 @@ class _Conversions extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      u.label,
+                      u.labelOf(context.l10n),
                       style: AppTypography.mono(
                         size: 10,
                         color: AppColors.textDim,

@@ -19,6 +19,7 @@ import '../../../shared/widgets/plot_thumbnail.dart';
 import '../../result/view/result_screen.dart' show ResultArgs;
 import '../bloc/home_bloc.dart';
 import '../bloc/home_state.dart';
+import '../../../../l10n/l10n.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -86,7 +87,7 @@ class _Header extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Build By · Zaman Sheikh',
+                  context.l10n.homeBuildBy,
                   style: AppTypography.mono(
                     size: 11,
                     color: AppColors.textFaint,
@@ -94,7 +95,7 @@ class _Header extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text('Plots', style: AppTypography.heroTitle),
+                Text(context.l10n.homeTitle, style: AppTypography.heroTitle),
               ],
             ),
           ),
@@ -169,7 +170,7 @@ class _HeroCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'THIS MONTH · MEASURED',
+                    context.l10n.homeThisMonth,
                     style: AppTypography.mono(
                       size: 10,
                       color: AppColors.textFaint,
@@ -209,7 +210,7 @@ class _HeroCard extends StatelessWidget {
                       ),
                       const _Dot(),
                       Text(
-                        '$bigha bigha',
+                        '$bigha ${AreaUnit.bigha.labelOf(context.l10n)}',
                         style: AppTypography.mono(
                           size: 11,
                           color: AppColors.textDim,
@@ -217,7 +218,7 @@ class _HeroCard extends StatelessWidget {
                       ),
                       const _Dot(),
                       Text(
-                        '$sqm m²',
+                        '$sqm ${AreaUnit.sqm.labelOf(context.l10n)}',
                         style: AppTypography.mono(
                           size: 11,
                           color: AppColors.textDim,
@@ -314,9 +315,9 @@ class _QuickActions extends StatelessWidget {
           Expanded(
             child: _ActionTile(
               icon: Icons.add,
-              label: 'Measure plot',
-              sub: 'Draw or type sides',
-              tag: 'NEW',
+              label: context.l10n.homeMeasurePlot,
+              sub: context.l10n.homeMeasureSub,
+              tag: context.l10n.homeBadgeNew,
               filled: true,
               accent: accent,
               onTap: () => context.push(AppRoutes.picker),
@@ -326,9 +327,9 @@ class _QuickActions extends StatelessWidget {
           Expanded(
             child: _ActionTile(
               icon: Icons.swap_horiz,
-              label: 'Converter',
-              sub: 'All units',
-              tag: 'TOOL',
+              label: context.l10n.converterTitle,
+              sub: context.l10n.homeAllUnits,
+              tag: context.l10n.homeToolLabel,
               filled: false,
               accent: accent,
               onTap: () => context.push(AppRoutes.converter),
@@ -430,11 +431,11 @@ class _RecentHeader extends StatelessWidget {
         textBaseline: TextBaseline.alphabetic,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text('RECENT · $count', style: AppTypography.monoCaption),
+          Text(context.l10n.homeRecent(count), style: AppTypography.monoCaption),
           GestureDetector(
             onTap: () => context.goTab(TabKind.history),
             child: Text(
-              'See all',
+              context.l10n.homeSeeAll,
               style: AppTypography.sans(
                 size: 12,
                 weight: FontWeight.w500,
@@ -510,11 +511,11 @@ class _RecentList extends StatelessWidget {
                         Row(
                           children: [
                             Text(
-                              '${AreaUnit.acre.format(areaSqm)} acre',
+                              '${AreaUnit.acre.format(areaSqm)} ${AreaUnit.acre.labelOf(context.l10n)}',
                               style: AppTypography.mono(size: 11, color: color),
                             ),
                             Text(
-                              ' · ${p.vertices.length} sides',
+                              context.l10n.homeSides(p.vertices.length),
                               style: AppTypography.mono(
                                 size: 11,
                                 color: AppColors.textDim,
@@ -535,7 +536,7 @@ class _RecentList extends StatelessWidget {
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
-                      p.tag.label.toUpperCase(),
+                      p.tag.labelOf(context.l10n).toUpperCase(),
                       style: AppTypography.mono(
                         size: 9,
                         color: AppColors.textDim,

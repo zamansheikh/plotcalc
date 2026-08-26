@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../domain/entities/plot.dart';
+import '../../../../l10n/l10n.dart';
 
 enum PlotAction { rename, delete }
 
@@ -54,7 +55,7 @@ class _ActionsSheet extends StatelessWidget {
             ),
             const SizedBox(height: 2),
             Text(
-              '${plot.tag.label} · ${plot.vertices.length} sides',
+              context.l10n.plotTagSides(plot.tag.labelOf(context.l10n), plot.vertices.length),
               style: AppTypography.mono(
                 size: 11,
                 color: AppColors.textDim,
@@ -63,14 +64,14 @@ class _ActionsSheet extends StatelessWidget {
             const SizedBox(height: 14),
             _ActionRow(
               icon: Icons.drive_file_rename_outline,
-              label: 'Rename',
+              label: context.l10n.actionRename,
               color: AppColors.text,
               onTap: () => Navigator.of(context).pop(PlotAction.rename),
             ),
             const Divider(height: 1, color: AppColors.line),
             _ActionRow(
               icon: Icons.delete_outline,
-              label: 'Delete',
+              label: context.l10n.actionDelete,
               color: AppColors.danger,
               onTap: () => Navigator.of(context).pop(PlotAction.delete),
             ),
@@ -132,7 +133,7 @@ Future<String?> showRenameDialog(
         borderRadius: BorderRadius.circular(18),
       ),
       title: Text(
-        'Rename plot',
+        context.l10n.plotRenameTitle,
         style: AppTypography.sans(size: 16, weight: FontWeight.w600),
       ),
       content: Container(
@@ -164,7 +165,7 @@ Future<String?> showRenameDialog(
         TextButton(
           onPressed: () => Navigator.of(dialogContext).pop(),
           child: Text(
-            'Cancel',
+            context.l10n.actionCancel,
             style: AppTypography.sans(size: 13, color: AppColors.textDim),
           ),
         ),
@@ -178,7 +179,7 @@ Future<String?> showRenameDialog(
             foregroundColor: AppColors.ink,
           ),
           child: Text(
-            'Save',
+            context.l10n.actionSave,
             style: AppTypography.sans(
               size: 13,
               weight: FontWeight.w600,
@@ -203,18 +204,18 @@ Future<bool> showDeleteConfirm(
         borderRadius: BorderRadius.circular(18),
       ),
       title: Text(
-        'Delete plot?',
+        context.l10n.plotDeleteTitle,
         style: AppTypography.sans(size: 16, weight: FontWeight.w600),
       ),
       content: Text(
-        '"$name" will be removed permanently.',
+        context.l10n.plotDeleteBody(name),
         style: AppTypography.sans(size: 13, color: AppColors.textDim),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(dialogContext).pop(false),
           child: Text(
-            'Cancel',
+            context.l10n.actionCancel,
             style: AppTypography.sans(size: 13, color: AppColors.textDim),
           ),
         ),
@@ -225,7 +226,7 @@ Future<bool> showDeleteConfirm(
             foregroundColor: AppColors.text,
           ),
           child: Text(
-            'Delete',
+            context.l10n.actionDelete,
             style: AppTypography.sans(
               size: 13,
               weight: FontWeight.w600,
@@ -251,12 +252,11 @@ Future<bool> showClearAllConfirm(
         borderRadius: BorderRadius.circular(18),
       ),
       title: Text(
-        'Clear all history?',
+        context.l10n.plotClearAllTitle,
         style: AppTypography.sans(size: 16, weight: FontWeight.w600),
       ),
       content: Text(
-        'All $count saved plot${count == 1 ? '' : 's'} will be removed '
-        'permanently. This can\'t be undone.',
+        context.l10n.plotClearAllBody(count),
         style: AppTypography.sans(
           size: 13,
           color: AppColors.textDim,
@@ -267,7 +267,7 @@ Future<bool> showClearAllConfirm(
         TextButton(
           onPressed: () => Navigator.of(dialogContext).pop(false),
           child: Text(
-            'Cancel',
+            context.l10n.actionCancel,
             style: AppTypography.sans(size: 13, color: AppColors.textDim),
           ),
         ),
@@ -278,7 +278,7 @@ Future<bool> showClearAllConfirm(
             foregroundColor: AppColors.text,
           ),
           child: Text(
-            'Clear all',
+            context.l10n.plotClearAll,
             style: AppTypography.sans(
               size: 13,
               weight: FontWeight.w600,

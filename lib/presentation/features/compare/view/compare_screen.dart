@@ -15,6 +15,7 @@ import '../../../shared/settings/settings_state.dart';
 import '../../../shared/widgets/grid_background.dart';
 import '../../../shared/widgets/phone_chrome.dart';
 import '../../../shared/widgets/polygon_painter.dart';
+import '../../../../l10n/l10n.dart';
 
 class CompareScreen extends StatefulWidget {
   const CompareScreen({super.key});
@@ -34,6 +35,10 @@ class _CompareScreenState extends State<CompareScreen> {
   }
 
   Future<void> _load() async {
+    // Resolved before the await: the placeholder names are only needed when
+    // there aren't two saved plots, and reaching for `context` after an
+    // async gap isn't safe.
+    final t = context.l10n;
     final all = await sl<GetPlots>()();
     if (all.length >= 2) {
       _a = all[0];
@@ -42,7 +47,7 @@ class _CompareScreenState extends State<CompareScreen> {
       _a = all[0];
       _b = Plot(
         id: 'demo-b',
-        name: 'Demo plot',
+        name: t.compareDemoPlot,
         vertices: ShapePreset.rectangle.vertices,
         tag: PlotTag.other,
         createdAt: DateTime.now(),
@@ -51,7 +56,7 @@ class _CompareScreenState extends State<CompareScreen> {
     } else {
       _a = Plot(
         id: 'demo-a',
-        name: 'Plot A',
+        name: t.compareNameA,
         vertices: ShapePreset.freeform.vertices,
         tag: PlotTag.other,
         createdAt: DateTime.now(),
@@ -59,7 +64,7 @@ class _CompareScreenState extends State<CompareScreen> {
       );
       _b = Plot(
         id: 'demo-b',
-        name: 'Plot B',
+        name: t.compareNameB,
         vertices: ShapePreset.rectangle.vertices,
         tag: PlotTag.other,
         createdAt: DateTime.now(),
@@ -105,7 +110,7 @@ class _CompareScreenState extends State<CompareScreen> {
                         children: [
                           Expanded(
                             child: _PlotCard(
-                              tag: 'PLOT A',
+                              tag: context.l10n.comparePlotA,
                               tagColor: accent,
                               plot: _a!,
                               area: aArea,
@@ -118,7 +123,7 @@ class _CompareScreenState extends State<CompareScreen> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: _PlotCard(
-                              tag: 'PLOT B',
+                              tag: context.l10n.comparePlotB,
                               tagColor: AppColors.soil,
                               plot: _b!,
                               area: bArea,
@@ -137,7 +142,7 @@ class _CompareScreenState extends State<CompareScreen> {
                       child: Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          'OVERLAY · CENTERED',
+                          context.l10n.compareOverlay,
                           style: AppTypography.mono(
                             size: 11,
                             color: AppColors.textFaint,
@@ -208,14 +213,14 @@ class _CompareScreenState extends State<CompareScreen> {
                         children: [
                           Expanded(
                             child: _StatTile(
-                              label: 'A ÷ B',
+                              label: context.l10n.compareRatio,
                               value: '${ratio.toStringAsFixed(2)}×',
                             ),
                           ),
                           const SizedBox(width: 6),
                           Expanded(
                             child: _StatTile(
-                              label: 'A − B',
+                              label: context.l10n.compareDelta,
                               value:
                                   '${delta >= 0 ? '+' : ''}${areaUnit.format(delta.abs())}',
                             ),
@@ -223,7 +228,7 @@ class _CompareScreenState extends State<CompareScreen> {
                           const SizedBox(width: 6),
                           Expanded(
                             child: _StatTile(
-                              label: 'TOTAL',
+                              label: context.l10n.compareTotal,
                               value: areaUnit.format(aArea + bArea),
                             ),
                           ),
@@ -245,7 +250,7 @@ class _CompareScreenState extends State<CompareScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'RELATIVE SIZE',
+                              context.l10n.compareRelative,
                               style: AppTypography.mono(
                                 size: 10,
                                 color: AppColors.textFaint,
@@ -307,7 +312,7 @@ class _TopBar extends StatelessWidget {
             onTap: () => context.pop(),
           ),
           Text(
-            'Compare',
+            context.l10n.compareTitle,
             style: AppTypography.sans(size: 14, weight: FontWeight.w600),
           ),
           SmallIconButton(
@@ -404,7 +409,7 @@ class _PlotCard extends StatelessWidget {
           ),
         ),
         Text(
-          '${areaUnit.label} · ${plot.vertices.length} sides',
+          context.l10n.compareUnitSides(areaUnit.labelOf(context.l10n), plot.vertices.length),
           style: AppTypography.mono(
             size: 10,
             color: AppColors.textDim,
@@ -540,7 +545,7 @@ class _Bar extends StatelessWidget {
               style: AppTypography.mono(size: 10, color: color),
             ),
             Text(
-              '${areaUnit.format(area)} ${areaUnit.label}',
+              '${areaUnit.format(area)} ${areaUnit.labelOf(context.l10n)}',
               style: AppTypography.mono(
                 size: 10,
                 color: AppColors.textDim,

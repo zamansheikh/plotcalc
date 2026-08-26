@@ -9,6 +9,7 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../../core/units/area_unit.dart';
 import '../../../shared/settings/settings_bloc.dart';
 import '../../../shared/widgets/phone_chrome.dart';
+import '../../../../l10n/l10n.dart';
 
 /// Khotiyan share calculator. The user picks a fractional share in the
 /// traditional Bengali land hierarchy (Ana / Gonda / Kora / Kranti / Til),
@@ -171,10 +172,10 @@ class _Header extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Khotiyan', style: AppTypography.heroTitle),
+                Text(context.l10n.khotiyanTitle, style: AppTypography.heroTitle),
                 const SizedBox(height: 2),
                 Text(
-                  'Share calculator · Ana · Gonda · Kora',
+                  context.l10n.khotiyanSubtitle,
                   style: AppTypography.mono(
                     size: 11,
                     color: AppColors.textDim,
@@ -236,7 +237,7 @@ class _ShareCard extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               Text(
-                'HISSYA',
+                context.l10n.khotiyanHissya,
                 style: AppTypography.mono(
                   size: 10,
                   color: AppColors.textFaint,
@@ -283,7 +284,7 @@ class _ShareCard extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(
-            '$selectedTil / $totalTil til',
+            context.l10n.khotiyanTilFraction('$selectedTil', '$totalTil'),
             style: AppTypography.mono(
               size: 11,
               color: AppColors.textDim,
@@ -335,7 +336,7 @@ class _SelectorCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            'SELECT UNITS',
+            context.l10n.khotiyanSelectUnits,
             style: AppTypography.mono(
               size: 10,
               color: AppColors.textFaint,
@@ -344,7 +345,7 @@ class _SelectorCard extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           _StepperRow(
-            label: 'Ana',
+            label: context.l10n.khotiyanAna,
             sub: '/16',
             value: ana,
             max: 16,
@@ -352,7 +353,7 @@ class _SelectorCard extends StatelessWidget {
             onChanged: onAna,
           ),
           _StepperRow(
-            label: 'Gonda',
+            label: context.l10n.khotiyanGonda,
             sub: '/20',
             value: gonda,
             max: 19,
@@ -360,7 +361,7 @@ class _SelectorCard extends StatelessWidget {
             onChanged: onGonda,
           ),
           _StepperRow(
-            label: 'Kora',
+            label: context.l10n.khotiyanKora,
             sub: '/4',
             value: kora,
             max: 3,
@@ -368,7 +369,7 @@ class _SelectorCard extends StatelessWidget {
             onChanged: onKora,
           ),
           _StepperRow(
-            label: 'Kranti',
+            label: context.l10n.khotiyanKranti,
             sub: '/3',
             value: kranti,
             max: 2,
@@ -376,7 +377,7 @@ class _SelectorCard extends StatelessWidget {
             onChanged: onKranti,
           ),
           _StepperRow(
-            label: 'Til',
+            label: context.l10n.khotiyanTil,
             sub: '/20',
             value: til,
             max: 19,
@@ -539,7 +540,7 @@ class _TotalLandCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'TOTAL LAND',
+            context.l10n.khotiyanTotalLand,
             style: AppTypography.mono(
               size: 10,
               color: AppColors.textFaint,
@@ -582,7 +583,7 @@ class _TotalLandCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                unit.label,
+                unit.labelOf(context.l10n),
                 style: AppTypography.mono(
                   size: 14,
                   color: AppColors.textDim,
@@ -636,7 +637,7 @@ class _UnitChip extends StatelessWidget {
           borderRadius: BorderRadius.circular(999),
         ),
         child: Text(
-          unit.label,
+          unit.labelOf(context.l10n),
           style: AppTypography.mono(
             size: 11,
             color: active ? AppColors.ink : AppColors.text,
@@ -662,7 +663,7 @@ class _ResultsCard extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(left: 4, bottom: 8),
           child: Text(
-            'YOUR LAND',
+            context.l10n.khotiyanYourLand,
             style: AppTypography.mono(
               size: 10,
               color: AppColors.textFaint,
@@ -698,7 +699,7 @@ class _ResultsCard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              units[i].displayName.toUpperCase(),
+                              units[i].nameOf(context.l10n).toUpperCase(),
                               style: AppTypography.mono(
                                 size: 9,
                                 color: AppColors.textFaint,
@@ -707,7 +708,7 @@ class _ResultsCard extends StatelessWidget {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              units[i].label,
+                              units[i].labelOf(context.l10n),
                               style: AppTypography.mono(
                                 size: 10,
                                 color: AppColors.textDim,

@@ -45,3 +45,10 @@ class MapUnderlayToggled extends SettingsEvent {
   @override
   List<Object?> get props => [enabled];
 }
+
+class LocaleChanged extends SettingsEvent {
+  final Locale locale;
+  const LocaleChanged(this.locale);
+  @override
+  List<Object?> get props => [locale];
+}

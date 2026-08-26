@@ -8,6 +8,11 @@ import '../../../../core/geometry/vertex.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/units/length_unit.dart';
+import '../../../../l10n/l10n.dart';
+
+const _errPositive = 'err.positive';
+const _errTriangle = 'err.triangle';
+const _errMinSides = 'err.minSides';
 
 Future<List<Vertex>?> showTypeInputSheet(
   BuildContext context, {
@@ -102,6 +107,15 @@ class _TypeInputSheetState extends State<_TypeInputSheet> {
     };
   }
 
+  /// The geometry helpers below are static and have no BuildContext, so they
+  /// throw one of these stable codes and [_errorText] translates it.
+  static String _errorText(BuildContext context, String code) => switch (code) {
+    _errPositive => context.l10n.typeErrPositive,
+    _errTriangle => context.l10n.typeErrTriangle,
+    _errMinSides => context.l10n.typeErrMinSides,
+    _ => code,
+  };
+
   /// Read all controller values, convert to meters, return as a map.
   Map<String, double> _readMeters() {
     final out = <String, double>{};
@@ -109,7 +123,7 @@ class _TypeInputSheetState extends State<_TypeInputSheet> {
       final raw = entry.value.text.replaceAll(',', '').trim();
       final v = double.tryParse(raw);
       if (v == null || v <= 0) {
-        throw const FormatException('Each value must be a positive number.');
+        throw const FormatException(_errPositive);
       }
       out[entry.key] = widget.lengthUnit.toMeters(v);
     }
@@ -132,7 +146,7 @@ class _TypeInputSheetState extends State<_TypeInputSheet> {
       };
       Navigator.of(context).pop(verts);
     } on FormatException catch (e) {
-      setState(() => _error = e.message);
+      setState(() => _error = _errorText(context, e.message));
     } catch (e) {
       setState(() => _error = e.toString());
     }
@@ -159,12 +173,12 @@ class _TypeInputSheetState extends State<_TypeInputSheet> {
           ),
           const SizedBox(height: 14),
           Text(
-            'Enter dimensions',
+            context.l10n.typeTitle,
             style: AppTypography.sans(size: 18, weight: FontWeight.w600),
           ),
           const SizedBox(height: 2),
           Text(
-            '${_subtitle(widget.preset)} · values in ${widget.lengthUnit.label}',
+            context.l10n.typeSubtitle(_subtitle(context, widget.preset), widget.lengthUnit.labelOf(context.l10n)),
             style: AppTypography.mono(
               size: 11,
               color: AppColors.textDim,
@@ -181,10 +195,10 @@ class _TypeInputSheetState extends State<_TypeInputSheet> {
           ],
           for (final entry in _ctrls.entries) ...[
             _NumberField(
-              label: entry.key,
+              label: _fieldLabel(context, entry.key),
               controller: entry.value,
               accent: accent,
-              suffix: widget.lengthUnit.label,
+              suffix: widget.lengthUnit.labelOf(context.l10n),
             ),
             const SizedBox(height: 10),
           ],
@@ -229,7 +243,7 @@ class _TypeInputSheetState extends State<_TypeInputSheet> {
                     ),
                   ),
                   child: Text(
-                    'Cancel',
+                    context.l10n.actionCancel,
                     style: AppTypography.sans(
                       size: 13,
                       weight: FontWeight.w500,
@@ -252,7 +266,7 @@ class _TypeInputSheetState extends State<_TypeInputSheet> {
                     ),
                   ),
                   child: Text(
-                    'Generate',
+                    context.l10n.actionGenerate,
                     style: AppTypography.sans(
                       size: 13,
                       weight: FontWeight.w600,
@@ -268,14 +282,29 @@ class _TypeInputSheetState extends State<_TypeInputSheet> {
     );
   }
 
-  static String _subtitle(ShapePreset p) => switch (p) {
-        ShapePreset.rectangle => 'Rectangle',
-        ShapePreset.square => 'Square',
-        ShapePreset.triangle => 'Triangle (3 sides)',
-        ShapePreset.trapezoid => 'Trapezoid',
-        ShapePreset.pentagon => 'Regular pentagon',
-        ShapePreset.freeform => 'Regular polygon',
-      };
+  static String _subtitle(BuildContext context, ShapePreset p) => switch (p) {
+    ShapePreset.rectangle => context.l10n.presetRectangle,
+    ShapePreset.square => context.l10n.presetSquare,
+    ShapePreset.triangle => context.l10n.typeTriangle3,
+    ShapePreset.trapezoid => context.l10n.presetTrapezoid,
+    ShapePreset.pentagon => context.l10n.typeRegularPentagon,
+    ShapePreset.freeform => context.l10n.typeRegularPolygon,
+  };
+
+  /// [_ctrls] is keyed by stable English identifiers that the geometry code
+  /// looks fields up by; only the on-screen label follows the locale.
+  static String _fieldLabel(BuildContext context, String key) => switch (key) {
+    'Width' => context.l10n.typeWidth,
+    'Height' => context.l10n.typeHeight,
+    'Side' => context.l10n.typeSide,
+    'Side A' => context.l10n.typeSideA,
+    'Side B' => context.l10n.typeSideB,
+    'Side C' => context.l10n.typeSideC,
+    'Top' => context.l10n.typeTop,
+    'Bottom' => context.l10n.typeBottom,
+    'Side length' => context.l10n.typeSideLength,
+    _ => key,
+  };
 }
 
 class _NumberField extends StatelessWidget {
@@ -370,7 +399,7 @@ class _SideCountRow extends StatelessWidget {
         SizedBox(
           width: 92,
           child: Text(
-            'Sides',
+            context.l10n.typeSidesCount,
             style: AppTypography.sans(size: 13, weight: FontWeight.w500),
           ),
         ),
@@ -450,9 +479,7 @@ List<Vertex> _square(double s) => _rectangle(s, s);
 List<Vertex> _triangle(double a, double b, double c) {
   // Triangle inequality: each pair must sum > third side.
   if (a + b <= c || a + c <= b || b + c <= a) {
-    throw const FormatException(
-      'Sides do not form a triangle (each pair must sum > third).',
-    );
+    throw const FormatException(_errTriangle);
   }
   // Place A at origin, B at (c, 0). Find C using law of cosines.
   final cosA = (b * b + c * c - a * a) / (2 * b * c);
@@ -479,7 +506,7 @@ List<Vertex> _trapezoid(double top, double bottom, double height) {
 
 List<Vertex> _regularPolygon(int n, double side) {
   if (n < 3) {
-    throw const FormatException('A polygon needs at least 3 sides.');
+    throw const FormatException(_errMinSides);
   }
   // Circumradius for a regular n-gon with given side length.
   final r = side / (2 * math.sin(math.pi / n));

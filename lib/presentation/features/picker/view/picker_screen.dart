@@ -11,6 +11,7 @@ import '../../../shared/settings/settings_bloc.dart';
 import '../../../shared/settings/settings_state.dart';
 import '../../../shared/widgets/grid_background.dart';
 import '../../../shared/widgets/phone_chrome.dart';
+import '../../../../l10n/l10n.dart';
 
 class PickerScreen extends StatefulWidget {
   const PickerScreen({super.key});
@@ -45,11 +46,11 @@ class _PickerScreenState extends State<PickerScreen> {
                 child: _TapHintCard(accent: accent),
               )
             else ...[
-              const Padding(
+              Padding(
                 padding: EdgeInsets.fromLTRB(24, 0, 24, 8),
                 child: Align(
                   alignment: Alignment.centerLeft,
-                  child: _LabelMono('SHAPE PRESETS'),
+                  child: _LabelMono(context.l10n.pickerShapePresets),
                 ),
               ),
               Expanded(
@@ -101,9 +102,9 @@ class _PickerScreenState extends State<PickerScreen> {
                     children: [
                       Text(
                         switch (_method) {
-                          InputMethod.draw => 'Start drawing',
-                          InputMethod.tap => 'Place vertices',
-                          InputMethod.type => 'Enter dimensions',
+                          InputMethod.draw => context.l10n.pickerStartDrawing,
+                          InputMethod.tap => context.l10n.pickerPlaceVertices,
+                          InputMethod.type => context.l10n.pickerEnterDimensions,
                         },
                         style: AppTypography.sans(
                           size: 14,
@@ -139,7 +140,7 @@ class _TopBar extends StatelessWidget {
             onTap: () => context.pop(),
           ),
           Text(
-            'STEP 1 / 3',
+            context.l10n.pickerStep,
             style: AppTypography.mono(
               size: 11,
               color: AppColors.textFaint,
@@ -167,19 +168,12 @@ class _Title extends StatelessWidget {
           RichText(
             text: TextSpan(
               style: AppTypography.sectionTitle,
-              children: [
-                const TextSpan(text: 'How do you want to '),
-                TextSpan(
-                  text: 'start',
-                  style: AppTypography.sectionTitle.copyWith(color: accent),
-                ),
-                const TextSpan(text: '?'),
-              ],
+              children: _headlineSpans(context, accent),
             ),
           ),
           const SizedBox(height: 4),
           Text(
-            'Pick a method, then a shape.',
+            context.l10n.pickerSubtitle,
             style: AppTypography.bodyDim,
           ),
         ],
@@ -201,11 +195,11 @@ class _Methods extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tiles = [
-      _MethodSpec(InputMethod.draw, Icons.brush_outlined, 'Draw', 'Tap & drag'),
-      _MethodSpec(InputMethod.tap, Icons.touch_app_outlined, 'Tap',
-          'Place vertices'),
-      _MethodSpec(
-          InputMethod.type, Icons.keyboard_outlined, 'Type', 'Sides + angles'),
+      _MethodSpec(InputMethod.draw, Icons.brush_outlined, context.l10n.methodDraw, context.l10n.methodDrawSub),
+      _MethodSpec(InputMethod.tap, Icons.touch_app_outlined, context.l10n.methodTap,
+          context.l10n.methodTapSub),
+      _MethodSpec(InputMethod.type, Icons.keyboard_outlined,
+          context.l10n.methodType, context.l10n.methodTypeSub),
     ];
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -356,7 +350,7 @@ class _PresetTile extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              preset.label,
+              preset.labelOf(context.l10n),
               style: AppTypography.sans(
                 size: 11,
                 weight: FontWeight.w500,
@@ -364,7 +358,7 @@ class _PresetTile extends StatelessWidget {
               ),
             ),
             Text(
-              '${preset.vertices.length}–N sides',
+              context.l10n.pickerSidesN(preset.vertices.length),
               style: AppTypography.mono(
                 size: 8,
                 color: AppColors.textFaint,
@@ -491,7 +485,7 @@ class _TapHintCard extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Tap each corner on the canvas',
+              context.l10n.pickerTapEachCorner,
               textAlign: TextAlign.center,
               style: AppTypography.sans(size: 15, weight: FontWeight.w600),
             ),
@@ -510,4 +504,22 @@ class _TapHintCard extends StatelessWidget {
       ),
     );
   }
+}
+
+/// The headline highlights one word in the accent colour. Word order differs
+/// between languages, so the emphasised word is looked up inside the
+/// translated sentence rather than assembled from fixed fragments.
+List<TextSpan> _headlineSpans(BuildContext context, Color accent) {
+  final sentence = context.l10n.pickerQuestion;
+  final word = context.l10n.pickerQuestionAccent;
+  final at = sentence.indexOf(word);
+  if (at < 0) return [TextSpan(text: sentence)];
+  return [
+    TextSpan(text: sentence.substring(0, at)),
+    TextSpan(
+      text: word,
+      style: AppTypography.sectionTitle.copyWith(color: accent),
+    ),
+    TextSpan(text: sentence.substring(at + word.length)),
+  ];
 }

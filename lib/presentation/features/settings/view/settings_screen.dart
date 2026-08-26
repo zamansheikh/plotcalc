@@ -11,6 +11,7 @@ import '../../../shared/settings/settings_bloc.dart';
 import '../../../shared/settings/settings_event.dart';
 import '../../../shared/settings/settings_state.dart';
 import '../../../shared/widgets/phone_chrome.dart';
+import '../../../../l10n/l10n.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -31,23 +32,27 @@ class SettingsScreen extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                 children: [
                   _Section(
-                    title: 'THEME',
+                    title: context.l10n.settingsLanguage,
+                    child: _LanguageRow(current: Localizations.localeOf(context)),
+                  ),
+                  _Section(
+                    title: context.l10n.settingsTheme,
                     child: _AccentRow(current: state.accent),
                   ),
                   _Section(
-                    title: 'GRID STYLE',
+                    title: context.l10n.settingsGridStyle,
                     child: _GridRow(current: state.gridStyle),
                   ),
                   _Section(
-                    title: 'AREA UNIT',
+                    title: context.l10n.settingsAreaUnit,
                     child: _AreaList(current: state.areaUnit),
                   ),
                   _Section(
-                    title: 'LENGTH UNIT',
+                    title: context.l10n.settingsLengthUnit,
                     child: _LengthRow(current: state.lengthUnit),
                   ),
                   _Section(
-                    title: 'UNDERLAY',
+                    title: context.l10n.settingsUnderlay,
                     child: _UnderlayToggle(value: state.mapUnderlay),
                   ),
                 ],
@@ -87,10 +92,10 @@ class _Header extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Settings', style: AppTypography.heroTitle),
+                Text(context.l10n.settingsTitle, style: AppTypography.heroTitle),
                 const SizedBox(height: 2),
                 Text(
-                  'Tweak the look, feel, and units',
+                  context.l10n.settingsSubtitle,
                   style: AppTypography.mono(
                     size: 11,
                     color: AppColors.textDim,
@@ -161,7 +166,7 @@ class _AccentRow extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Accent color',
+          context.l10n.settingsAccent,
           style: AppTypography.sans(size: 13, weight: FontWeight.w500),
         ),
         const SizedBox(height: 12),
@@ -206,9 +211,9 @@ class _GridRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final accent = context.watch<SettingsBloc>().state.accent;
     final options = [
-      (GridStyle.dots, 'Dots'),
-      (GridStyle.lines, 'Lines'),
-      (GridStyle.blueprint, 'Blueprint'),
+      (GridStyle.dots, context.l10n.settingsGridDots),
+      (GridStyle.lines, context.l10n.settingsGridLines),
+      (GridStyle.blueprint, context.l10n.settingsGridBlueprint),
     ];
     return Row(
       children: [
@@ -238,8 +243,8 @@ class _LengthRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final accent = context.watch<SettingsBloc>().state.accent;
     final options = [
-      (LengthUnit.ft, 'Feet'),
-      (LengthUnit.m, 'Meters'),
+      (LengthUnit.ft, context.l10n.unitFeet),
+      (LengthUnit.m, context.l10n.unitMeters),
     ];
     return Row(
       children: [
@@ -307,7 +312,7 @@ class _UnitRow extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    unit.displayName,
+                    unit.nameOf(context.l10n),
                     style: AppTypography.sans(
                       size: 13,
                       weight: FontWeight.w500,
@@ -316,7 +321,7 @@ class _UnitRow extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    unit.label,
+                    unit.labelOf(context.l10n),
                     style: AppTypography.mono(
                       size: 10,
                       color: AppColors.textDim,
@@ -353,12 +358,12 @@ class _UnderlayToggle extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Map underlay',
+                context.l10n.settingsMapUnderlay,
                 style: AppTypography.sans(size: 13, weight: FontWeight.w500),
               ),
               const SizedBox(height: 2),
               Text(
-                'Show road & parcel hints behind the canvas',
+                context.l10n.settingsMapUnderlaySub,
                 style: AppTypography.mono(
                   size: 10,
                   color: AppColors.textDim,
@@ -415,6 +420,40 @@ class _Pill extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Language picker. The active row is driven by [Localizations.localeOf]
+/// rather than the stored preference, so before the user ever chooses one
+/// it correctly highlights whichever language the device resolved to.
+class _LanguageRow extends StatelessWidget {
+  final Locale current;
+  const _LanguageRow({required this.current});
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = context.watch<SettingsBloc>().state.accent;
+    final options = [
+      (const Locale('en'), context.l10n.settingsLanguageEnglish),
+      (const Locale('bn'), context.l10n.settingsLanguageBengali),
+    ];
+    return Row(
+      children: [
+        for (var i = 0; i < options.length; i++) ...[
+          if (i > 0) const SizedBox(width: 6),
+          Expanded(
+            child: _Pill(
+              label: options[i].$2,
+              active: options[i].$1.languageCode == current.languageCode,
+              accent: accent,
+              onTap: () => context
+                  .read<SettingsBloc>()
+                  .add(LocaleChanged(options[i].$1)),
+            ),
+          ),
+        ],
+      ],
     );
   }
 }

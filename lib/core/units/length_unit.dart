@@ -1,11 +1,11 @@
 enum LengthUnit {
-  ft('ft', 3.28084),
-  m('m', 1);
+  ft(3.28084),
+  m(1);
 
-  final String label;
   final double factor;
 
-  const LengthUnit(this.label, this.factor);
+  // Unit names are locale-dependent — see LengthUnitL10n in l10n.dart.
+  const LengthUnit(this.factor);
 
   double fromMeters(double meters) => meters * factor;
 

@@ -21,6 +21,7 @@ import '../../result/view/result_screen.dart' show ResultArgs;
 import '../bloc/history_bloc.dart';
 import 'filter_sheet.dart';
 import 'plot_actions_sheet.dart';
+import '../../../../l10n/l10n.dart';
 
 class HistoryScreen extends StatelessWidget {
   const HistoryScreen({super.key});
@@ -86,10 +87,10 @@ class _Header extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('History', style: AppTypography.heroTitle),
+                Text(context.l10n.historyTitle, style: AppTypography.heroTitle),
                 const SizedBox(height: 2),
                 Text(
-                  '$count plots · ${AreaUnit.acre.format(totalSqm)} acre total',
+                  context.l10n.historySubtitle(count, AreaUnit.acre.format(totalSqm)),
                   style: AppTypography.mono(size: 11, color: AppColors.textDim),
                 ),
               ],
@@ -166,7 +167,7 @@ class _Search extends StatelessWidget {
                         cursorColor: accent,
                         textAlignVertical: TextAlignVertical.center,
                         decoration: InputDecoration(
-                          hintText: 'Search plots…',
+                          hintText: context.l10n.historySearch,
                           hintStyle: AppTypography.sans(
                             size: 14,
                             color: AppColors.textDim,
@@ -203,7 +204,7 @@ class _Search extends StatelessWidget {
                       Icon(Icons.tune, size: 18, color: accent),
                       const SizedBox(width: 8),
                       Text(
-                        'Filter',
+                        context.l10n.historyFilter,
                         style: AppTypography.sans(
                           size: 14,
                           weight: FontWeight.w500,
@@ -246,7 +247,7 @@ class _FilterChips extends StatelessWidget {
             itemBuilder: (context, i) {
               final tag = tags[i];
               final active = tag == filter;
-              final label = tag == null ? 'All' : tag.label;
+              final label = tag == null ? context.l10n.labelAll : tag.labelOf(context.l10n);
               return InkWell(
                 onTap: () =>
                     context.read<HistoryBloc>().add(HistoryFilterChanged(tag)),
@@ -262,7 +263,7 @@ class _FilterChips extends StatelessWidget {
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
-                    '$label · ${counts[tag]}',
+                    context.l10n.historyChip(label, counts[tag] ?? 0),
                     style: AppTypography.mono(
                       size: 11,
                       color: active ? AppColors.ink : AppColors.textDim,
@@ -291,7 +292,7 @@ class _SelectionRow extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            '$count SELECTED FOR COMPARE',
+            context.l10n.historySelected(count),
             style: AppTypography.mono(
               size: 10,
               color: AppColors.textFaint,
@@ -303,7 +304,7 @@ class _SelectionRow extends StatelessWidget {
               const HistorySelectionCleared(),
             ),
             child: Text(
-              'CLEAR',
+              context.l10n.actionClear,
               style: AppTypography.mono(
                 size: 10,
                 color: accent,
@@ -331,8 +332,8 @@ class _List extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 32),
           child: Text(
             filtered
-                ? 'No plots match this filter.\nTap "All" to clear.'
-                : 'No plots yet — measure one from Home.',
+                ? context.l10n.historyEmptyFiltered
+                : context.l10n.historyEmpty,
             textAlign: TextAlign.center,
             style: AppTypography.bodyDim,
           ),
@@ -468,13 +469,13 @@ class _Tile extends StatelessWidget {
                     children: [
                       Flexible(
                         child: Text(
-                          '${AreaUnit.sqft.format(areaSqm)} sq ft',
+                          '${AreaUnit.sqft.format(areaSqm)} ${AreaUnit.sqft.labelOf(context.l10n)}',
                           overflow: TextOverflow.ellipsis,
                           style: AppTypography.mono(size: 10, color: color),
                         ),
                       ),
                       Text(
-                        ' · ${plot.vertices.length} sides · ${_when(plot.createdAt)}',
+                        context.l10n.historyPlotMeta(plot.vertices.length, _when(context, plot.createdAt)),
                         style: AppTypography.mono(
                           size: 10,
                           color: AppColors.textDim,
@@ -493,7 +494,7 @@ class _Tile extends StatelessWidget {
                       borderRadius: BorderRadius.circular(3),
                     ),
                     child: Text(
-                      plot.tag.label.toUpperCase(),
+                      plot.tag.labelOf(context.l10n).toUpperCase(),
                       style: AppTypography.mono(
                         size: 9,
                         color: AppColors.textDim,
@@ -521,17 +522,20 @@ class _Tile extends StatelessWidget {
     );
   }
 
-  static String _when(DateTime t) {
+  /// Relative day label. Takes a context so both the words and the date
+  /// pattern follow the active locale.
+  static String _when(BuildContext context, DateTime t) {
+    final lang = Localizations.localeOf(context).toLanguageTag();
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final created = DateTime(t.year, t.month, t.day);
     final diff = today.difference(created).inDays;
     if (diff == 0) {
-      return 'Today · ${DateFormat('HH:mm').format(t)}';
+      return context.l10n.historyToday(DateFormat('HH:mm', lang).format(t));
     }
-    if (diff == 1) return 'Yesterday';
-    if (diff < 7) return DateFormat('EEE').format(t);
-    return DateFormat('MMM d').format(t);
+    if (diff == 1) return context.l10n.historyYesterday;
+    if (diff < 7) return DateFormat('EEE', lang).format(t);
+    return DateFormat('MMM d', lang).format(t);
   }
 }
 
@@ -568,7 +572,7 @@ class _CompareCta extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                'Compare 2 plots',
+                context.l10n.historyCompare2,
                 style: AppTypography.sans(
                   size: 14,
                   weight: FontWeight.w600,

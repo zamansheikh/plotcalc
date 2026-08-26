@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../settings/settings_bloc.dart';
+import '../../../l10n/l10n.dart';
 
 enum TabKind { plots, history, subdivide, info }
 
@@ -37,10 +38,10 @@ class BottomTabBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final accent = context.watch<SettingsBloc>().state.accent;
     final items = <_Item>[
-      _Item(TabKind.plots, Icons.layers_outlined, 'Plots'),
-      _Item(TabKind.history, Icons.history, 'History'),
-      _Item(TabKind.subdivide, Icons.call_split, 'Subdivide'),
-      _Item(TabKind.info, Icons.info_outline, 'Info'),
+      _Item(TabKind.plots, Icons.layers_outlined, context.l10n.tabPlots),
+      _Item(TabKind.history, Icons.history, context.l10n.tabHistory),
+      _Item(TabKind.subdivide, Icons.call_split, context.l10n.tabSubdivide),
+      _Item(TabKind.info, Icons.info_outline, context.l10n.tabInfo),
     ];
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),

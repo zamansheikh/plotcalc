@@ -8,6 +8,7 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../shared/settings/settings_bloc.dart';
 import '../../../shared/widgets/phone_chrome.dart';
 import '../data/articles.dart';
+import '../../../../l10n/l10n.dart';
 
 class ArticleScreen extends StatelessWidget {
   final Article article;
@@ -68,7 +69,7 @@ class _TopBar extends StatelessWidget {
             },
           ),
           Text(
-            'Article',
+            context.l10n.infoArticle,
             style: AppTypography.sans(size: 14, weight: FontWeight.w600),
           ),
           const SizedBox(width: 36),

@@ -5,13 +5,7 @@ import '../../core/geometry/vertex.dart';
 enum PlotTag { agricultural, residential, commercial, forest, other }
 
 extension PlotTagX on PlotTag {
-  String get label => switch (this) {
-        PlotTag.agricultural => 'Agricultural',
-        PlotTag.residential => 'Residential',
-        PlotTag.commercial => 'Commercial',
-        PlotTag.forest => 'Forest',
-        PlotTag.other => 'Other',
-      };
+  // Display names are locale-dependent — see PlotTagL10n.labelOf in l10n.dart.
 
   static PlotTag fromKey(String key) {
     return PlotTag.values.firstWhere(

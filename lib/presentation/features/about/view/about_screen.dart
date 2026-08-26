@@ -7,6 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../shared/settings/settings_bloc.dart';
 import '../../../shared/widgets/phone_chrome.dart';
+import '../../../../l10n/l10n.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -29,20 +30,20 @@ class AboutScreen extends StatelessWidget {
                   _HeroCard(accent: accent),
                   const SizedBox(height: 14),
                   _Section(
-                    title: 'WHAT IT DOES',
-                    child: _BulletList(items: const [
-                      'Draw plots by tapping vertices, dragging a template, or typing exact measurements.',
-                      'Convert between 8 area units (sq ft, m², acre, hectare, bigha, katha, chatak, shotok).',
-                      'Adjust a polygon to hit a target area while keeping its shape.',
-                      'Compare two saved plots side-by-side.',
-                      'Subdivide a plot into proportional lots.',
+                    title: context.l10n.aboutWhatItDoes,
+                    child: _BulletList(items: [
+                      context.l10n.aboutDraw,
+                      context.l10n.aboutConvert,
+                      context.l10n.aboutAdjust,
+                      context.l10n.aboutCompare,
+                      context.l10n.aboutSubdivide,
                     ]),
                   ),
                   const SizedBox(height: 12),
                   _Section(
-                    title: 'WORKS OFFLINE',
+                    title: context.l10n.aboutOffline,
                     child: Text(
-                      'Every measurement, conversion, and saved plot lives on your device. No accounts, no internet required.',
+                      context.l10n.aboutOfflineBody,
                       style: AppTypography.sans(
                         size: 13,
                         color: AppColors.textDim,
@@ -52,22 +53,22 @@ class AboutScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   _Section(
-                    title: 'BUILD',
+                    title: context.l10n.aboutBuild,
                     child: Column(
                       children: [
-                        _Row(label: 'Version', value: '1.0.0'),
+                        _Row(label: context.l10n.aboutVersion, value: '1.0.0'),
                         _Divider(),
-                        _Row(label: 'Build', value: '1'),
+                        _Row(label: context.l10n.aboutBuildLabel, value: '1'),
                         _Divider(),
-                        _Row(label: 'Platform', value: 'Android · iOS'),
+                        _Row(label: context.l10n.aboutPlatform, value: context.l10n.aboutPlatformValue),
                       ],
                     ),
                   ),
                   const SizedBox(height: 12),
                   _Section(
-                    title: 'CREDITS',
+                    title: context.l10n.aboutCredits,
                     child: Text(
-                      'Built by Zaman Sheikh.\nDesigned with the PlotCalc handoff bundle from Claude Design.',
+                      context.l10n.aboutCreditsBody,
                       style: AppTypography.sans(
                         size: 13,
                         color: AppColors.textDim,
@@ -112,10 +113,10 @@ class _Header extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('About', style: AppTypography.heroTitle),
+                Text(context.l10n.aboutTitle, style: AppTypography.heroTitle),
                 const SizedBox(height: 2),
                 Text(
-                  'Offline land measurement, your way',
+                  context.l10n.aboutTagline,
                   style:
                       AppTypography.mono(size: 11, color: AppColors.textDim),
                 ),
@@ -160,7 +161,7 @@ class _HeroCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'PlotCalc',
+                  context.l10n.appName,
                   style: AppTypography.sans(size: 20, weight: FontWeight.w600),
                 ),
                 const SizedBox(height: 2),

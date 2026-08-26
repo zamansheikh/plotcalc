@@ -16,6 +16,7 @@ import '../../../shared/settings/settings_state.dart';
 import '../../../shared/widgets/grid_background.dart';
 import '../../../shared/widgets/phone_chrome.dart';
 import '../../adjust/view/adjust_screen.dart' show AdjustArgs;
+import '../../../../l10n/l10n.dart';
 
 class ResultArgs {
   final String name;
@@ -112,7 +113,7 @@ class _TopBar extends StatelessWidget {
         children: [
           SmallIconButton(icon: Icons.chevron_left, onTap: () => context.pop()),
           Text(
-            'Plot Summary',
+            context.l10n.resultTitle,
             style: AppTypography.sans(size: 14, weight: FontWeight.w600),
           ),
           SmallIconButton(icon: Icons.ios_share, onTap: () {}),
@@ -160,7 +161,7 @@ class _HeroArea extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'TOTAL AREA · ${areaUnit.label.toUpperCase()}',
+                        context.l10n.resultTotalArea(areaUnit.labelOf(context.l10n).toUpperCase()),
                         style: AppTypography.mono(
                           size: 10,
                           color: AppColors.textFaint,
@@ -177,7 +178,7 @@ class _HeroArea extends StatelessWidget {
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
-                          'SAVED',
+                          context.l10n.resultSaved,
                           style: AppTypography.mono(size: 9, color: accent),
                         ),
                       ),
@@ -202,7 +203,7 @@ class _HeroArea extends StatelessWidget {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        areaUnit.label,
+                        areaUnit.labelOf(context.l10n),
                         style: AppTypography.mono(
                           size: 14,
                           color: AppColors.textDim,
@@ -283,11 +284,11 @@ class _MiniPolyPainter extends CustomPainter {
 class _ConversionsHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return const Padding(
+    return Padding(
       padding: EdgeInsets.fromLTRB(16, 0, 16, 0),
       child: Align(
         alignment: Alignment.centerLeft,
-        child: _Label('EQUIVALENT IN'),
+        child: _Label(context.l10n.resultEquivalent),
       ),
     );
   }
@@ -350,7 +351,7 @@ class _ConversionsGrid extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  u.displayName.toUpperCase(),
+                  u.nameOf(context.l10n).toUpperCase(),
                   style: AppTypography.mono(
                     size: 9,
                     color: AppColors.textFaint,
@@ -375,7 +376,7 @@ class _ConversionsGrid extends StatelessWidget {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      u.label,
+                      u.labelOf(context.l10n),
                       style: AppTypography.mono(
                         size: 9,
                         color: AppColors.textDim,
@@ -440,7 +441,7 @@ class _ValuationCardState extends State<_ValuationCard> {
         children: [
           Padding(
             padding: const EdgeInsets.only(bottom: 6),
-            child: _Label('VALUATION'),
+            child: _Label(context.l10n.resultValuation),
           ),
           Container(
             padding: const EdgeInsets.all(14),
@@ -461,7 +462,7 @@ class _ValuationCardState extends State<_ValuationCard> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'RATE / ${widget.areaUnit.label.toUpperCase()}',
+                            context.l10n.resultRatePer(widget.areaUnit.labelOf(context.l10n).toUpperCase()),
                             style: AppTypography.mono(
                               size: 9,
                               color: AppColors.textFaint,
@@ -484,7 +485,7 @@ class _ValuationCardState extends State<_ValuationCard> {
                               textBaseline: TextBaseline.alphabetic,
                               children: [
                                 Text(
-                                  'Tk',
+                                  context.l10n.resultCurrency,
                                   style: AppTypography.mono(
                                     size: 12,
                                     color: AppColors.textDim,
@@ -536,7 +537,7 @@ class _ValuationCardState extends State<_ValuationCard> {
                   textBaseline: TextBaseline.alphabetic,
                   children: [
                     Text(
-                      'EST. VALUE',
+                      context.l10n.resultEstValue,
                       style: AppTypography.mono(
                         size: 9,
                         color: AppColors.textFaint,
@@ -550,7 +551,7 @@ class _ValuationCardState extends State<_ValuationCard> {
                         textBaseline: TextBaseline.alphabetic,
                         children: [
                           Text(
-                            'Tk',
+                            context.l10n.resultCurrency,
                             style: AppTypography.mono(
                               size: 12,
                               color: widget.accent,
@@ -597,7 +598,7 @@ class _ResultActions extends StatelessWidget {
           Expanded(
             child: _ActionBtn(
               icon: Icons.picture_as_pdf_outlined,
-              label: 'Export PDF',
+              label: context.l10n.resultExportPdf,
               onTap: () {},
             ),
           ),
@@ -605,7 +606,7 @@ class _ResultActions extends StatelessWidget {
           Expanded(
             child: _ActionBtn(
               icon: Icons.ios_share,
-              label: 'Share image',
+              label: context.l10n.resultShareImage,
               onTap: () {},
             ),
           ),
@@ -613,7 +614,7 @@ class _ResultActions extends StatelessWidget {
           Expanded(
             child: _ActionBtn(
               icon: Icons.tune,
-              label: 'Adjust',
+              label: context.l10n.resultAdjust,
               onTap: onAdjust,
             ),
           ),

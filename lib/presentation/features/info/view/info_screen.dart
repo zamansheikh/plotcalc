@@ -8,6 +8,7 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../shared/settings/settings_bloc.dart';
 import '../data/articles.dart';
 import '../data/land_info_loader.dart';
+import '../../../../l10n/l10n.dart';
 
 class InfoScreen extends StatelessWidget {
   const InfoScreen({super.key});
@@ -15,7 +16,7 @@ class InfoScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = context.watch<SettingsBloc>().state.accent;
-    final items = InfoContent.all;
+    final items = InfoContent.forLocale(Localizations.localeOf(context));
     return SafeArea(
       child: Column(
         children: [
@@ -48,10 +49,10 @@ class _Header extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Land 101', style: AppTypography.heroTitle),
+          Text(context.l10n.infoTitle, style: AppTypography.heroTitle),
           const SizedBox(height: 2),
           Text(
-            'Units, measurement, surveying — and Bangladeshi land records',
+            context.l10n.infoSubtitle,
             style: AppTypography.mono(size: 11, color: AppColors.textDim),
           ),
         ],

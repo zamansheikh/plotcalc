@@ -17,6 +17,7 @@ import '../../presentation/features/result/view/result_screen.dart';
 import '../../presentation/features/settings/view/settings_screen.dart';
 import '../../presentation/features/subdivide/view/subdivide_screen.dart';
 import '../../presentation/shared/widgets/main_shell.dart';
+import '../../l10n/l10n.dart';
 import '../geometry/presets.dart';
 import '../input_method.dart';
 
@@ -119,12 +120,12 @@ GoRouter buildRouter() {
       ),
       GoRoute(
         path: AppRoutes.adjust,
-        builder: (_, state) {
+        builder: (context, state) {
           final args = state.extra as AdjustArgs?;
           return AdjustScreen(
             args: args ??
-                const AdjustArgs(
-                  name: 'Plot',
+                AdjustArgs(
+                  name: context.l10n.defaultPlotLabel,
                   vertices: [],
                 ),
           );
@@ -159,8 +160,8 @@ GoRouter buildRouter() {
         builder: (_, _) => const AboutScreen(),
       ),
     ],
-    errorBuilder: (_, state) => Scaffold(
-      body: Center(child: Text('Route not found: ${state.uri}')),
+    errorBuilder: (context, state) => Scaffold(
+      body: Center(child: Text(context.l10n.routeNotFound('${state.uri}'))),
     ),
   );
 }

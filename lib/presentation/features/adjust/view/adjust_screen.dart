@@ -18,6 +18,7 @@ import '../../../shared/widgets/polygon_painter.dart';
 import '../bloc/adjust_bloc.dart';
 import '../bloc/adjust_event.dart';
 import '../bloc/adjust_state.dart';
+import '../../../../l10n/l10n.dart';
 
 class AdjustArgs {
   final String name;
@@ -151,7 +152,7 @@ class _TopBar extends StatelessWidget {
             child: Column(
               children: [
                 Text(
-                  'Adjust to size',
+                  context.l10n.adjustTitle,
                   style: AppTypography.sans(size: 14, weight: FontWeight.w600),
                 ),
                 const SizedBox(height: 1),
@@ -226,7 +227,7 @@ class _TargetCard extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'TARGET AREA',
+                        context.l10n.adjustTargetArea,
                         style: AppTypography.mono(
                           size: 9,
                           color: AppColors.textFaint,
@@ -234,7 +235,7 @@ class _TargetCard extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        '${pct >= 0 ? '+' : ''}${pct.toStringAsFixed(1)}% FROM BASE',
+                        context.l10n.adjustPctFromBase('${pct >= 0 ? '+' : ''}${pct.toStringAsFixed(1)}'),
                         style: AppTypography.mono(
                           size: 9,
                           color: pct >= 0 ? accent : AppColors.rose,
@@ -270,7 +271,7 @@ class _TargetCard extends StatelessWidget {
                               ),
                               const SizedBox(width: 6),
                               Text(
-                                areaUnit.label,
+                                areaUnit.labelOf(context.l10n),
                                 style: AppTypography.mono(
                                   size: 13,
                                   color: AppColors.textDim,
@@ -308,14 +309,14 @@ class _TargetCard extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Base · ${areaUnit.format(baseSqm)} ${areaUnit.label}',
+                        context.l10n.adjustBaseValue(areaUnit.format(baseSqm), areaUnit.labelOf(context.l10n)),
                         style: AppTypography.mono(
                           size: 10,
                           color: AppColors.textDim,
                         ),
                       ),
                       Text(
-                        'Δ ${delta >= 0 ? '+' : ''}${areaUnit.format(delta.abs() * (delta < 0 ? -1 : 1))} ${areaUnit.label}',
+                        'Δ ${delta >= 0 ? '+' : ''}${areaUnit.format(delta.abs() * (delta < 0 ? -1 : 1))} ${areaUnit.labelOf(context.l10n)}',
                         style: AppTypography.mono(
                           size: 10,
                           color: delta >= 0 ? accent : AppColors.rose,
@@ -507,7 +508,7 @@ class _CanvasArea extends StatelessWidget {
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
-                            '${areaUnit.format(adjustedSqm)} ${areaUnit.label}',
+                            '${areaUnit.format(adjustedSqm)} ${areaUnit.labelOf(context.l10n)}',
                             style: AppTypography.mono(
                               size: 13,
                               weight: FontWeight.w500,
@@ -524,7 +525,7 @@ class _CanvasArea extends StatelessWidget {
                         children: [
                           _LegendItem(
                             sample: _Dashed(),
-                            label: 'BASE',
+                            label: context.l10n.adjustBase,
                           ),
                           const SizedBox(width: 12),
                           _LegendItem(
@@ -533,7 +534,7 @@ class _CanvasArea extends StatelessWidget {
                               height: 2,
                               color: accent,
                             ),
-                            label: 'ADJUSTED',
+                            label: context.l10n.adjustAdjusted,
                           ),
                           const SizedBox(width: 12),
                           _LegendItem(
@@ -546,7 +547,7 @@ class _CanvasArea extends StatelessWidget {
                                     Border.all(color: AppColors.soil),
                               ),
                             ),
-                            label: 'ANCHOR',
+                            label: context.l10n.adjustAnchor,
                           ),
                         ],
                       ),
@@ -724,9 +725,9 @@ class _ModeRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final modes = [
-      (AdjustMode.uniform, 'Uniform', Icons.crop_free),
-      (AdjustMode.horizontal, 'Width', Icons.swap_horiz),
-      (AdjustMode.vertical, 'Height', Icons.swap_vert),
+      (AdjustMode.uniform, context.l10n.adjustUniform, Icons.crop_free),
+      (AdjustMode.horizontal, context.l10n.adjustWidth, Icons.swap_horiz),
+      (AdjustMode.vertical, context.l10n.adjustHeight, Icons.swap_vert),
     ];
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
@@ -734,7 +735,7 @@ class _ModeRow extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'EXPAND DIRECTION',
+            context.l10n.adjustExpandDirection,
             style: AppTypography.mono(
               size: 10,
               color: AppColors.textFaint,
@@ -821,11 +822,11 @@ class _AnchorRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = [
-      (AdjustAnchor.north, 'N'),
-      (AdjustAnchor.east, 'E'),
+      (AdjustAnchor.north, context.l10n.adjustAnchorN),
+      (AdjustAnchor.east, context.l10n.adjustAnchorE),
       (AdjustAnchor.center, '·'),
-      (AdjustAnchor.west, 'W'),
-      (AdjustAnchor.south, 'S'),
+      (AdjustAnchor.west, context.l10n.adjustAnchorW),
+      (AdjustAnchor.south, context.l10n.adjustAnchorS),
     ];
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
@@ -833,7 +834,7 @@ class _AnchorRow extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'ANCHOR FROM',
+            context.l10n.adjustAnchorFrom,
             style: AppTypography.mono(
               size: 10,
               color: AppColors.textFaint,
@@ -923,7 +924,7 @@ class _BottomActions extends StatelessWidget {
                 ),
               ),
               child: Text(
-                'Reset',
+                context.l10n.actionReset,
                 style: AppTypography.sans(
                   size: 13,
                   weight: FontWeight.w500,
@@ -949,7 +950,7 @@ class _BottomActions extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'Apply adjustment',
+                    context.l10n.adjustApply,
                     style: AppTypography.sans(
                       size: 13,
                       weight: FontWeight.w600,
