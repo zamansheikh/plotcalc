@@ -253,7 +253,11 @@ class _ResultScreenState extends State<ResultScreen> {
         child: Column(
           children: [
             const SizedBox(height: 8),
-            _TopBar(saved: _plotId != null, onSave: _save),
+            _TopBar(
+              saved: _plotId != null,
+              onSave: _save,
+              onEdit: _openEditor,
+            ),
             Expanded(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
@@ -263,7 +267,6 @@ class _ResultScreenState extends State<ResultScreen> {
                       key: _artKey,
                       child: _HeroArea(
                         saved: _plotId != null,
-                        onEdit: _openEditor,
                         vertices: _verts,
                       areaSqm: areaSqm,
                       accent: accent,
@@ -307,7 +310,12 @@ class _ResultScreenState extends State<ResultScreen> {
 class _TopBar extends StatelessWidget {
   final bool saved;
   final VoidCallback onSave;
-  const _TopBar({required this.saved, required this.onSave});
+  final VoidCallback onEdit;
+  const _TopBar({
+    required this.saved,
+    required this.onSave,
+    required this.onEdit,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -321,14 +329,16 @@ class _TopBar extends StatelessWidget {
             context.l10n.resultTitle,
             style: AppTypography.sans(size: 14, weight: FontWeight.w600),
           ),
-          // Was a second, dead share button. Sharing already has a place in
-          // the action row; keeping the measurement did not have one at all,
-          // which is the decision you actually make once you see the numbers.
+          // One slot, one job at a time: an unsaved measurement needs
+          // keeping, a saved one needs reshaping. (It was a second, dead
+          // share button before — sharing already sits in the action row.)
           Tooltip(
-            message: context.l10n.actionSave,
+            message: saved
+                ? context.l10n.resultEditShape
+                : context.l10n.actionSave,
             child: SmallIconButton(
-              icon: saved ? Icons.bookmark : Icons.bookmark_border,
-              onTap: onSave,
+              icon: saved ? Icons.edit_outlined : Icons.bookmark_border,
+              onTap: saved ? onEdit : onSave,
             ),
           ),
         ],
@@ -339,7 +349,6 @@ class _TopBar extends StatelessWidget {
 
 class _HeroArea extends StatelessWidget {
   final bool saved;
-  final VoidCallback onEdit;
   final List<Vertex> vertices;
   final double areaSqm;
   final Color accent;
@@ -348,7 +357,6 @@ class _HeroArea extends StatelessWidget {
 
   const _HeroArea({
     required this.saved,
-    required this.onEdit,
     required this.vertices,
     required this.areaSqm,
     required this.accent,
@@ -372,13 +380,6 @@ class _HeroArea extends StatelessWidget {
           child: Stack(
             children: [
               GridBackground(style: gridStyle),
-              // Reshaping is a thing you do *to the drawing*, so the way in
-              // sits on the drawing rather than in a menu.
-              Positioned(
-                right: 0,
-                bottom: 0,
-                child: _EditChip(accent: accent, onTap: onEdit),
-              ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -961,42 +962,6 @@ class _ActionBtn extends StatelessWidget {
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _EditChip extends StatelessWidget {
-  final Color accent;
-  final VoidCallback onTap;
-  const _EditChip({required this.accent, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(999),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          decoration: BoxDecoration(
-            color: AppColors.ink.withValues(alpha: 0.85),
-            border: Border.all(color: AppColors.lineMid),
-            borderRadius: BorderRadius.circular(999),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.edit_outlined, size: 12, color: accent),
-              const SizedBox(width: 5),
-              Text(
-                context.l10n.resultEditShape,
-                style: AppTypography.mono(size: 10, color: accent),
-              ),
-            ],
-          ),
         ),
       ),
     );

@@ -51,7 +51,9 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
     }
 
-    testWidgets('an unsaved plot says so, and offers to save', (tester) async {
+    testWidgets('an unsaved plot says so, and offers only to save', (
+      tester,
+    ) async {
       // The badge used to read SAVED unconditionally, which was a lie.
       await pump(
         tester,
@@ -60,9 +62,13 @@ void main() {
       expect(find.text('NOT SAVED'), findsOneWidget);
       expect(find.text('SAVED'), findsNothing);
       expect(find.byIcon(Icons.bookmark_border), findsOneWidget);
+      expect(find.byIcon(Icons.edit_outlined), findsNothing,
+          reason: 'nothing to reshape until it has been kept');
     });
 
-    testWidgets('a plot opened from history shows as saved', (tester) async {
+    testWidgets('a saved plot shows as saved and offers to reshape', (
+      tester,
+    ) async {
       await pump(
         tester,
         const ResultArgs(
@@ -72,17 +78,24 @@ void main() {
         ),
       );
       expect(find.text('SAVED'), findsOneWidget);
-      expect(find.byIcon(Icons.bookmark), findsOneWidget);
+      expect(find.byIcon(Icons.edit_outlined), findsOneWidget);
+      expect(find.byIcon(Icons.bookmark_border), findsNothing,
+          reason: 'already kept; the slot becomes Edit');
     });
 
-    testWidgets('the shape can be reopened for editing from here', (
+    testWidgets('the drawing carries no edit affordance of its own', (
       tester,
     ) async {
       await pump(
         tester,
-        const ResultArgs(name: 'North field', vertices: square),
+        const ResultArgs(
+          name: 'North field',
+          vertices: square,
+          plotId: 'abc',
+        ),
       );
-      expect(find.text('Edit shape'), findsOneWidget);
+      expect(find.text('Edit shape'), findsNothing,
+          reason: 'the one way in is the top-right button');
     });
   });
 
