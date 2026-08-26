@@ -50,17 +50,17 @@ void main() {
   group('cuts land on area, not on width', () {
     test('half a triangle by area is not half its width', () {
       final total = Geometry.polygonArea(triangle);
-      final cut = LotDivision.cutForArea(triangle, total / 2);
+      final cut = LotDivision.offsetForArea(triangle, 0, total / 2);
       final (minX, _, maxX, _) = Geometry.bbox(triangle);
       final midWidth = (minX + maxX) / 2;
 
-      expect(LotDivision.areaLeftOf(triangle, cut), closeTo(total / 2, 1e-6));
+      expect(LotDivision.areaBefore(triangle, 0, cut), closeTo(total / 2, 1e-6));
       // The old behaviour cut at the middle of the bounding box, which on
       // this triangle hands over 75% of the land.
       expect((cut - midWidth).abs(), greaterThan(1),
           reason: 'an area cut and a width cut are different places');
       expect(
-        LotDivision.areaLeftOf(triangle, midWidth) / total,
+        LotDivision.areaBefore(triangle, 0, midWidth) / total,
         closeTo(0.75, 0.01),
         reason: 'cutting by width would have given lot 1 three quarters',
       );
@@ -68,7 +68,7 @@ void main() {
 
     test('on a rectangle the two happen to agree', () {
       final total = Geometry.polygonArea(square);
-      final cut = LotDivision.cutForArea(square, total / 2);
+      final cut = LotDivision.offsetForArea(square, 0, total / 2);
       expect(cut, closeTo(15, 1e-6));
     });
   });
@@ -156,10 +156,10 @@ void main() {
   group('dragging a boundary', () {
     test('moves land between its two neighbours only', () {
       final shares = [0.25, 0.25, 0.5];
-      final cuts = LotDivision.cuts(square, shares);
-      // Drag the first cut to the right.
-      final moved = LotDivision.sharesAfterDrag(
-        square, shares, 0, cuts[0] + 5,
+      final lines = LotDivision.cutLines(square, shares);
+      // Slide the first divider to the right.
+      final moved = LotDivision.sharesAfterMove(
+        square, shares, null, 0, Vertex(lines[0].a.x + 5, 0),
       );
       expect(moved[0], greaterThan(shares[0]));
       expect(moved[1], lessThan(shares[1]));
@@ -170,15 +170,23 @@ void main() {
 
     test('a lot cannot be dragged out of existence', () {
       final shares = [0.5, 0.5];
-      final moved = LotDivision.sharesAfterDrag(square, shares, 0, 1e6);
+      final moved = LotDivision.sharesAfterMove(
+        square, shares, null, 0, const Vertex(1e6, 0),
+      );
       expect(moved[1], greaterThan(0));
       expect(moved.fold<double>(0, (a, b) => a + b), closeTo(1, 1e-9));
     });
 
     test('dragging a cut that does not exist changes nothing', () {
       final shares = [0.5, 0.5];
-      expect(LotDivision.sharesAfterDrag(square, shares, 5, 10), shares);
-      expect(LotDivision.sharesAfterDrag(square, shares, -1, 10), shares);
+      expect(
+        LotDivision.sharesAfterMove(square, shares, null, 5, const Vertex(10, 0)),
+        shares,
+      );
+      expect(
+        LotDivision.sharesAfterMove(square, shares, null, -1, const Vertex(10, 0)),
+        shares,
+      );
     });
   });
 
@@ -216,6 +224,112 @@ void main() {
           closeTo(1, 1e-12),
         );
       }
+    });
+  });
+
+  group('a divider at any angle', () {
+    // A boundary is a chord, not a vertical line — the whole point of being
+    // able to drag one end.
+
+    test('the area holds whichever way the divider is turned', () {
+      final total = Geometry.polygonArea(square);
+      for (var deg = 0; deg < 360; deg += 15) {
+        final angle = deg * pi / 180;
+        final lots = LotDivision.divide(square, [1, 1], angles: [angle]);
+        expect(lots[0].areaSqm, closeTo(total / 2, total * 1e-6),
+            reason: 'at $deg degrees');
+        expect(lots[1].areaSqm, closeTo(total / 2, total * 1e-6),
+            reason: 'at $deg degrees');
+      }
+    });
+
+    test('an uneven split holds at an angle too', () {
+      final total = Geometry.polygonArea(triangle);
+      final lots = LotDivision.divide(
+        triangle, [3, 2], angles: [0.7],
+      );
+      expect(lots[0].areaSqm, closeTo(total * 0.6, total * 1e-6));
+      expect(lots[1].areaSqm, closeTo(total * 0.4, total * 1e-6));
+    });
+
+    test('each divider can take its own angle', () {
+      final total = Geometry.polygonArea(square);
+      final lots = LotDivision.divide(
+        square, [1, 1, 1], angles: [0.0, 1.1],
+      );
+      for (final l in lots) {
+        expect(l.areaSqm, closeTo(total / 3, total * 1e-6));
+      }
+    });
+
+    test('the divider is reported where it meets the plot', () {
+      final lines = LotDivision.cutLines(square, [1, 1]);
+      expect(lines.length, 1);
+      // A vertical cut across a 30x20 rectangle spans its full height.
+      expect(lines.single.lengthM, closeTo(20, 1e-6));
+      expect(lines.single.a.x, closeTo(15, 1e-6));
+      expect(lines.single.b.x, closeTo(15, 1e-6));
+    });
+
+    test('turning the divider makes it longer than the straight one', () {
+      final straight = LotDivision.cutLines(square, [1, 1]).single;
+      final tilted = LotDivision.cutLines(
+        square, [1, 1], angles: [0.6],
+      ).single;
+      expect(tilted.lengthM, greaterThan(straight.lengthM));
+    });
+
+    test('pivoting about one end aims the line at the dragged point', () {
+      const fixed = Vertex(0, 0);
+      // Dragging straight up should give a vertical line, i.e. angle 0
+      // in the normal-facing convention this uses.
+      final angle = LotDivision.angleAfterDrag(fixed, const Vertex(0, 10));
+      final lots = LotDivision.divide(square, [1, 1], angles: [angle]);
+      final total = Geometry.polygonArea(square);
+      expect(lots[0].areaSqm, closeTo(total / 2, total * 1e-6),
+          reason: 'the area is kept whatever the pivot did');
+    });
+
+    test('dragging both ends onto each other does not break it', () {
+      const p = Vertex(4, 4);
+      final angle = LotDivision.angleAfterDrag(p, p);
+      expect(angle, LotDivision.defaultAngle);
+      final lots = LotDivision.divide(square, [1, 1], angles: [angle]);
+      expect(lots.length, 2);
+      expect(lots.every((l) => l.areaSqm.isFinite), isTrue);
+    });
+
+    test('6k random plots at random angles keep every promise', () {
+      final rnd = Random(17);
+      final failures = <String>[];
+      for (final convex in [true, false]) {
+        for (var t = 0; t < 3000; t++) {
+          final poly = simplePolygon(rnd, convex: convex);
+          final total = Geometry.polygonArea(poly);
+          if (total <= 1) continue;
+          final n = 2 + rnd.nextInt(4);
+          final shares = List.generate(n, (_) => 0.15 + rnd.nextDouble());
+          final angles = List.generate(n - 1, (_) => rnd.nextDouble() * 2 * pi);
+          final sum = shares.fold<double>(0, (a, b) => a + b);
+          final lots = LotDivision.divide(poly, shares, angles: angles);
+
+          var accounted = 0.0;
+          for (var i = 0; i < n; i++) {
+            final want = total * shares[i] / sum;
+            accounted += lots[i].areaSqm;
+            if ((lots[i].areaSqm - want).abs() / total > 1e-6) {
+              failures.add('lot $i');
+            }
+          }
+          if ((accounted - total).abs() / total > 1e-6) failures.add('drift');
+          for (final line in LotDivision.cutLines(
+            poly, shares, angles: angles,
+          )) {
+            if (line.lengthM <= 0) failures.add('zero-length divider');
+          }
+        }
+      }
+      expect(failures, isEmpty, reason: failures.take(5).join('\n'));
     });
   });
 }

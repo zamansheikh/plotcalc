@@ -23,6 +23,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../../../core/geometry/lot_division.dart';
 import '../../../../domain/usecases/save_plot.dart';
+import '../../../../core/units/length_unit.dart';
 
 /// How the lots are being sized.
 enum _SplitMode { equal, percent, area }
@@ -50,12 +51,20 @@ class _SubdivideScreenState extends State<SubdivideScreen> {
   /// Shares of the parent plot, normalised to 1. Percent and area entry are
   /// both just different ways of writing a share down.
   List<double> _shares = LotDivision.equalShares(2);
+
+  /// One angle per divider. A divider is a chord, not a vertical line —
+  /// dragging either end pivots it about the other.
+  List<double> _angles = [LotDivision.defaultAngle];
   _SplitMode _mode = _SplitMode.equal;
 
   List<Vertex> get _verts => _plot?.vertices ?? const [];
   double get _totalSqm => Geometry.polygonArea(_verts);
 
-  List<Lot> get _lots => LotDivision.divide(_verts, _shares);
+  List<Lot> get _lots =>
+      LotDivision.divide(_verts, _shares, angles: _angles);
+
+  List<CutLine> get _cutLines =>
+      LotDivision.cutLines(_verts, _shares, angles: _angles);
 
   Color _colourFor(int i) => _lotColours[i % _lotColours.length];
 
@@ -68,6 +77,7 @@ class _SubdivideScreenState extends State<SubdivideScreen> {
   void _addLot() {
     // The new lot takes an even share and everyone gives up a little.
     final next = [..._shares, 1 / (_shares.length + 1)];
+    setState(() => _angles = [..._angles, LotDivision.defaultAngle]);
     _setShares(next);
     setState(() => _mode = _SplitMode.percent);
   }
@@ -75,6 +85,9 @@ class _SubdivideScreenState extends State<SubdivideScreen> {
   void _removeLot(int index) {
     if (_shares.length <= 2) return;
     final next = [..._shares]..removeAt(index);
+    setState(() {
+      if (index < _angles.length) _angles = [..._angles]..removeAt(index);
+    });
     _setShares(next);
   }
 
@@ -84,6 +97,10 @@ class _SubdivideScreenState extends State<SubdivideScreen> {
       _shares = LotDivision.equalShares(_shares.length);
     });
   }
+
+  void _resetAngles() => setState(
+    () => _angles = List.filled(_shares.length, LotDivision.defaultAngle),
+  );
 
   /// Sets one lot's share, taking the difference from the others in
   /// proportion so the plot still adds up.
@@ -105,8 +122,27 @@ class _SubdivideScreenState extends State<SubdivideScreen> {
     _setShares(next);
   }
 
-  void _dragCut(int cutIndex, double x) =>
-      _setShares(LotDivision.sharesAfterDrag(_verts, _shares, cutIndex, x));
+  /// Slides a whole divider sideways, moving land between its two lots.
+  void _moveCut(int index, Vertex to) => _setShares(
+    LotDivision.sharesAfterMove(_verts, _shares, _angles, index, to),
+  );
+
+  /// Pivots a divider about its other end. The area it was promised is kept
+  /// — the line re-solves its position, so only the direction changes.
+  void _pivotCut(int index, bool draggingA, Vertex to) {
+    final lines = _cutLines;
+    if (index < 0 || index >= lines.length) return;
+    final fixed = draggingA ? lines[index].b : lines[index].a;
+    final angle = LotDivision.angleAfterDrag(fixed, to);
+    setState(() {
+      final next = List<double>.of(_angles);
+      while (next.length <= index) {
+        next.add(LotDivision.defaultAngle);
+      }
+      next[index] = angle;
+      _angles = next;
+    });
+  }
 
   /// Saves each lot as its own plot, named after the parent.
   Future<void> _saveLots() async {
@@ -178,9 +214,12 @@ class _SubdivideScreenState extends State<SubdivideScreen> {
             verts: verts,
             lots: lots,
             colours: [for (var i = 0; i < lots.length; i++) _colourFor(i)],
-            cuts: LotDivision.cuts(verts, _shares),
+            cutLines: _cutLines,
             accent: accent,
-            onDragCut: _dragCut,
+            lengthUnit: settings.lengthUnit,
+            onMoveCut: _moveCut,
+            onPivotCut: _pivotCut,
+            onResetAngles: _resetAngles,
           ),
           const SizedBox(height: 10),
           _ModeRow(
@@ -483,25 +522,49 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
-class _Canvas extends StatelessWidget {
+class _Canvas extends StatefulWidget {
   final List<Vertex> verts;
   final List<Lot> lots;
   final List<Color> colours;
-  final List<double> cuts;
+  final List<CutLine> cutLines;
   final Color accent;
-  final void Function(int cutIndex, double x) onDragCut;
+  final LengthUnit lengthUnit;
+  final void Function(int index, Vertex to) onMoveCut;
+  final void Function(int index, bool draggingA, Vertex to) onPivotCut;
+  final VoidCallback onResetAngles;
 
   const _Canvas({
     required this.verts,
     required this.lots,
     required this.colours,
-    required this.cuts,
+    required this.cutLines,
     required this.accent,
-    required this.onDragCut,
+    required this.lengthUnit,
+    required this.onMoveCut,
+    required this.onPivotCut,
+    required this.onResetAngles,
   });
 
   @override
+  State<_Canvas> createState() => _CanvasState();
+}
+
+class _CanvasState extends State<_Canvas> {
+  /// Which divider end is being dragged, if any: (index, isFirstEnd).
+  (int, bool)? _grabbed;
+
+  /// Which divider is being slid whole.
+  int? _sliding;
+
+  @override
   Widget build(BuildContext context) {
+    final verts = widget.verts;
+    final lots = widget.lots;
+    final colours = widget.colours;
+    final cutLines = widget.cutLines;
+    final lengthUnit = widget.lengthUnit;
+    final onMoveCut = widget.onMoveCut;
+    final onPivotCut = widget.onPivotCut;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: ClipRRect(
@@ -519,24 +582,65 @@ class _Canvas extends StatelessWidget {
                 final w = c.maxWidth, h = c.maxHeight;
                 final cx = w / 2, cy = h / 2;
                 final scale = _scaleFor(verts, w, h);
-                double toWorldX(double px) => (px - cx) / scale;
+
+                Vertex toWorld(Offset p) =>
+                    Vertex((p.dx - cx) / scale, (p.dy - cy) / scale);
+                Offset toScreen(Vertex v) =>
+                    Offset(cx + v.x * scale, cy + v.y * scale);
 
                 return GestureDetector(
                   behavior: HitTestBehavior.opaque,
-                  onPanUpdate: (d) {
-                    if (cuts.isEmpty) return;
-                    // Drag whichever boundary line is nearest the finger.
+                  onPanStart: (d) {
+                    // Grabbing an end pivots the divider; grabbing anywhere
+                    // else slides the whole line.
+                    _grabbed = null;
+                    var best = 30.0;
+                    for (var i = 0; i < cutLines.length; i++) {
+                      for (final isA in [true, false]) {
+                        final end = isA ? cutLines[i].a : cutLines[i].b;
+                        final dist = (toScreen(end) - d.localPosition).distance;
+                        if (dist < best) {
+                          best = dist;
+                          _grabbed = (i, isA);
+                        }
+                      }
+                    }
+                    if (_grabbed != null) return;
                     var nearest = 0;
-                    var best = double.infinity;
-                    for (var i = 0; i < cuts.length; i++) {
-                      final px = cx + cuts[i] * scale;
-                      final dist = (px - d.localPosition.dx).abs();
-                      if (dist < best) {
-                        best = dist;
+                    var nearestDist = double.infinity;
+                    for (var i = 0; i < cutLines.length; i++) {
+                      final mid = toScreen(
+                        Vertex(
+                          (cutLines[i].a.x + cutLines[i].b.x) / 2,
+                          (cutLines[i].a.y + cutLines[i].b.y) / 2,
+                        ),
+                      );
+                      final dist = (mid - d.localPosition).distance;
+                      if (dist < nearestDist) {
+                        nearestDist = dist;
                         nearest = i;
                       }
                     }
-                    onDragCut(nearest, toWorldX(d.localPosition.dx));
+                    _sliding = cutLines.isEmpty ? null : nearest;
+                  },
+                  onPanUpdate: (d) {
+                    final grabbed = _grabbed;
+                    if (grabbed != null) {
+                      onPivotCut(
+                        grabbed.$1,
+                        grabbed.$2,
+                        toWorld(d.localPosition),
+                      );
+                      return;
+                    }
+                    final sliding = _sliding;
+                    if (sliding != null) {
+                      onMoveCut(sliding, toWorld(d.localPosition));
+                    }
+                  },
+                  onPanEnd: (_) {
+                    _grabbed = null;
+                    _sliding = null;
                   },
                   child: Stack(
                     children: [
@@ -549,7 +653,9 @@ class _Canvas extends StatelessWidget {
                             verts: verts,
                             lots: lots,
                             colours: colours,
-                            cuts: cuts,
+                            cutLines: cutLines,
+                            lengthUnit: lengthUnit,
+                            lengthLabel: lengthUnit.labelOf(context.l10n),
                             names: [
                               for (var i = 0; i < lots.length; i++)
                                 context.l10n.subdivideLot(i + 1),
@@ -585,12 +691,19 @@ class _Canvas extends StatelessWidget {
 ///
 /// The lots are the polygons the division actually produced, so what is
 /// shaded here is exactly the land the figures below describe.
+/// Fills each lot with its own colour, marks the draggable dividers, and
+/// writes the length of every boundary onto it.
+///
+/// The lots are the polygons the division actually produced, so what is
+/// shaded here is exactly the land the figures below describe.
 class _DivisionPainter extends CustomPainter {
   final List<Vertex> verts;
   final List<Lot> lots;
   final List<Color> colours;
-  final List<double> cuts;
+  final List<CutLine> cutLines;
   final List<String> names;
+  final LengthUnit lengthUnit;
+  final String lengthLabel;
   final double scale;
   final Offset center;
 
@@ -598,8 +711,10 @@ class _DivisionPainter extends CustomPainter {
     required this.verts,
     required this.lots,
     required this.colours,
-    required this.cuts,
+    required this.cutLines,
     required this.names,
+    required this.lengthUnit,
+    required this.lengthLabel,
     required this.scale,
     required this.center,
   });
@@ -616,6 +731,33 @@ class _DivisionPainter extends CustomPainter {
     }
     path.close();
     return path;
+  }
+
+  void _label(Canvas canvas, Offset at, String text, Color colour) {
+    final tp = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: AppTypography.mono(
+          size: 9,
+          weight: FontWeight.w500,
+          color: AppColors.ink,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    final rect = Rect.fromCenter(
+      center: at,
+      width: tp.width + 8,
+      height: 14,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(rect, const Radius.circular(3)),
+      Paint()..color = colour,
+    );
+    tp.paint(
+      canvas,
+      Offset(rect.center.dx - tp.width / 2, rect.center.dy - tp.height / 2),
+    );
   }
 
   @override
@@ -635,7 +777,6 @@ class _DivisionPainter extends CustomPainter {
       );
     }
 
-    // Parent outline on top, so the whole plot stays legible.
     canvas.drawPath(
       _path(verts),
       Paint()
@@ -644,24 +785,45 @@ class _DivisionPainter extends CustomPainter {
         ..color = AppColors.text.withValues(alpha: 0.5),
     );
 
-    // Boundary handles.
-    final (_, minY, _, maxY) = Geometry.bbox(verts);
-    for (final cut in cuts) {
-      final x = center.dx + cut * scale;
-      final top = center.dy + minY * scale;
-      final bottom = center.dy + maxY * scale;
+    // Every side of the parent plot, measured.
+    for (var i = 0; i < verts.length; i++) {
+      final a = verts[i];
+      final b = verts[(i + 1) % verts.length];
+      final mid = _at(Vertex((a.x + b.x) / 2, (a.y + b.y) / 2));
+      final len = Geometry.sideLength(a, b);
+      // Nudge the label outward so it does not sit on the line.
+      final ang = math.atan2(b.y - a.y, b.x - a.x);
+      final off = Offset(-math.sin(ang) * 11, math.cos(ang) * 11);
+      _label(
+        canvas,
+        mid + off,
+        '${lengthUnit.format(len)} $lengthLabel',
+        AppColors.text.withValues(alpha: 0.75),
+      );
+    }
+
+    // Dividers, with their own length and a handle at each end.
+    for (final line in cutLines) {
+      final a = _at(line.a);
+      final b = _at(line.b);
       canvas.drawLine(
-        Offset(x, top),
-        Offset(x, bottom),
+        a,
+        b,
         Paint()
           ..strokeWidth = 2
-          ..color = AppColors.text.withValues(alpha: 0.85),
+          ..color = AppColors.text.withValues(alpha: 0.9),
       );
-      for (final y in [top, bottom]) {
-        canvas.drawCircle(Offset(x, y), 5, Paint()..color = AppColors.ink);
+      _label(
+        canvas,
+        Offset((a.dx + b.dx) / 2, (a.dy + b.dy) / 2),
+        '${lengthUnit.format(line.lengthM)} $lengthLabel',
+        AppColors.text,
+      );
+      for (final end in [a, b]) {
+        canvas.drawCircle(end, 7, Paint()..color = AppColors.ink);
         canvas.drawCircle(
-          Offset(x, y),
-          5,
+          end,
+          7,
           Paint()
             ..style = PaintingStyle.stroke
             ..strokeWidth = 2
@@ -698,7 +860,7 @@ class _DivisionPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _DivisionPainter old) =>
       old.verts != verts ||
-      old.cuts != cuts ||
+      old.cutLines != cutLines ||
       old.scale != scale ||
       old.center != center ||
       old.lots.length != lots.length;
