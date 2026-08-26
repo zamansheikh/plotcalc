@@ -101,21 +101,22 @@ void main() {
       expect(bn.l10n.plotClearAllBody(3), contains('৩টি'));
     });
 
-    testWidgets('an unsupported device locale falls back to English', (
+    testWidgets('an unsupported locale falls back to the app default', (
       tester,
     ) async {
+      // Bangla, not English: this is a Bangladeshi app and that is the
+      // language it is meant to open in.
       final ctx = await _contextFor(tester, const Locale('fr'));
-      expect(ctx.l10n.tabHistory, 'History');
+      expect(ctx.l10n.tabHistory, 'ইতিহাস');
     });
 
-    test('locale resolution prefers a language match, else English', () {
+    test('resolution honours a supported request, else the app default', () {
       const supported = [Locale('bn'), Locale('en')];
       expect(resolveAppLocale(const Locale('bn'), supported).languageCode, 'bn');
       expect(resolveAppLocale(const Locale('en'), supported).languageCode, 'en');
-      // Regression: alphabetical `supportedLocales` put Bengali first, so
-      // unmatched languages used to resolve to Bengali.
-      expect(resolveAppLocale(const Locale('fr'), supported).languageCode, 'en');
-      expect(resolveAppLocale(null, supported).languageCode, 'en');
+      expect(resolveAppLocale(const Locale('fr'), supported).languageCode, 'bn');
+      expect(resolveAppLocale(null, supported).languageCode, 'bn');
+      expect(appDefaultLocale.languageCode, 'bn');
       // A regional variant still matches its language.
       expect(
         resolveAppLocale(const Locale('bn', 'BD'), supported).languageCode,

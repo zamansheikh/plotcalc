@@ -767,7 +767,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get khotiyanYourLand => 'YOUR LAND';
 
   @override
-  String get infoTitle => 'Land 101';
+  String get infoTitle => 'Land guide';
 
   @override
   String get infoSubtitle =>

@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:plotcalc/presentation/features/info/data/articles.dart';
 import 'package:plotcalc/presentation/features/info/data/land_info_loader.dart';
@@ -24,10 +25,14 @@ void main() {
     );
   });
 
-  test('keeps the English articles ahead of the imported ones', () async {
+  test('keeps the reader\'s own articles ahead of the imported ones', () async {
     await InfoContent.load();
-    expect(InfoContent.all.length, articles.length + 6);
-    expect(InfoContent.all.take(articles.length).every((a) => !a.isBengali), isTrue);
+    expect(InfoContent.all.length, articlesEn.length + articlesBn.length + 6);
+    expect(
+      InfoContent.forLocale(const Locale('en')).take(articlesEn.length)
+          .every((a) => !a.isBengali),
+      isTrue,
+    );
   });
 
   test('every block type survives the mapping', () async {

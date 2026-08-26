@@ -37,17 +37,17 @@ void main() {
     expect((await localeUnder(tester, const Locale('bn'))).languageCode, 'bn');
   });
 
-  testWidgets('an English device opens in English', (tester) async {
-    expect((await localeUnder(tester, const Locale('en'))).languageCode, 'en');
+  testWidgets('an English device still opens in Bengali', (tester) async {
+    // The device language is deliberately not consulted: most of this app's
+    // users carry English-locale phones and want a Bengali app.
+    expect((await localeUnder(tester, const Locale('en'))).languageCode, 'bn');
   });
 
-  testWidgets('an unsupported device language falls back to English', (
+  testWidgets('any other device language opens in Bengali too', (
     tester,
   ) async {
-    // Without localeResolutionCallback this resolved to Bengali, because the
-    // generated supportedLocales list is alphabetical.
-    expect((await localeUnder(tester, const Locale('fr'))).languageCode, 'en');
-    expect((await localeUnder(tester, const Locale('hi'))).languageCode, 'en');
+    expect((await localeUnder(tester, const Locale('fr'))).languageCode, 'bn');
+    expect((await localeUnder(tester, const Locale('hi'))).languageCode, 'bn');
   });
 
   testWidgets('the app sets intl to the UI locale, so digits agree', (
@@ -57,8 +57,16 @@ void main() {
     expect(Intl.defaultLocale, startsWith('bn'));
     // Areas must use the same digits as the localized counts around them.
     expect(AreaUnit.katha.format(1337.803776), '২০.০০০');
+  });
 
-    await localeUnder(tester, const Locale('en'));
+  testWidgets('choosing English switches the whole app over', (tester) async {
+    SharedPreferences.setMockInitialValues({'plotcalc.locale.v1': 'en'});
+    await GetIt.I.reset();
+    await configureDependencies();
+    await InfoContent.load();
+
+    expect((await localeUnder(tester, const Locale('bn'))).languageCode, 'en',
+        reason: 'a saved choice beats the app default');
     expect(Intl.defaultLocale, startsWith('en'));
     expect(AreaUnit.katha.format(1337.803776), '20.000');
   });

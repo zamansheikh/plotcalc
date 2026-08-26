@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/di/injection.dart';
+import '../../../l10n/l10n.dart';
 import '../../../core/units/area_breakdown.dart';
 import '../../../core/units/area_unit.dart';
 import 'settings_event.dart';
@@ -60,11 +61,12 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     emit(state.copyWith(breakdown: config));
   }
 
-  /// Reads the saved language, if the user ever picked one. Returning `null`
-  /// leaves the app on the device language.
-  static Locale? _restoreLocale() {
+  /// Reads the saved language, or falls back to the app's own default.
+  /// The device language is deliberately not consulted — see
+  /// [appDefaultLocale].
+  static Locale _restoreLocale() {
     final code = sl<SharedPreferences>().getString(_localeKey);
-    return code == null ? null : Locale(code);
+    return code == null ? appDefaultLocale : Locale(code);
   }
 
   static BreakdownConfig _restoreBreakdown() {

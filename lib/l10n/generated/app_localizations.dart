@@ -1337,7 +1337,7 @@ abstract class AppLocalizations {
   /// No description provided for @infoTitle.
   ///
   /// In en, this message translates to:
-  /// **'Land 101'**
+  /// **'Land guide'**
   String get infoTitle;
 
   /// No description provided for @infoSubtitle.

@@ -19,9 +19,9 @@ void main() {
     );
   });
 
-  test('starts on the device language and remembers an explicit choice', () async {
-    // Nothing saved yet -> null, i.e. follow the device.
-    expect(SettingsBloc().state.locale, isNull);
+  test('starts in Bangla and remembers an explicit choice', () async {
+    // Nothing saved yet -> the app's own default, not the device's language.
+    expect(SettingsBloc().state.locale, appDefaultLocale);
 
     final bloc = SettingsBloc()..add(const LocaleChanged(Locale('bn')));
     await Future<void>.delayed(Duration.zero);
@@ -31,7 +31,7 @@ void main() {
     expect(SettingsBloc().state.locale?.languageCode, 'bn');
   });
 
-  testWidgets('switching language re-renders the UI in Bengali', (
+  testWidgets('switching language re-renders the whole UI', (
     tester,
   ) async {
     final bloc = SettingsBloc();
@@ -58,17 +58,17 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('History'), findsOneWidget);
-    expect(find.text('ইতিহাস'), findsNothing);
-
-    bloc.add(const LocaleChanged(Locale('bn')));
-    await tester.pumpAndSettle();
-
+    // Opens in Bangla with nothing saved.
     expect(find.text('ইতিহাস'), findsOneWidget);
     expect(find.text('History'), findsNothing);
 
     bloc.add(const LocaleChanged(Locale('en')));
     await tester.pumpAndSettle();
     expect(find.text('History'), findsOneWidget);
+    expect(find.text('ইতিহাস'), findsNothing);
+
+    bloc.add(const LocaleChanged(Locale('bn')));
+    await tester.pumpAndSettle();
+    expect(find.text('ইতিহাস'), findsOneWidget);
   });
 }

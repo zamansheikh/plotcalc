@@ -766,7 +766,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String get khotiyanYourLand => 'আপনার জমি';
 
   @override
-  String get infoTitle => 'ভূমি পরিচিতি';
+  String get infoTitle => 'জমির তথ্য';
 
   @override
   String get infoSubtitle => 'একক, পরিমাপ, জরিপ — এবং বাংলাদেশের ভূমি রেকর্ড';

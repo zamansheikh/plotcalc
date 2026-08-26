@@ -18,18 +18,22 @@ class InfoContent {
 
   static List<Article> _imported = const [];
 
-  /// Every article the Info tab shows: the hand-written English ones first,
-  /// then the imported Bengali land-record topics.
-  static List<Article> get all => [...articles, ..._imported];
+  /// Everything the Info tab can show, for checks that do not care about
+  /// language.
+  static List<Article> get all => [...articlesEn, ...articlesBn, ..._imported];
 
-  /// Same catalogue, but articles written in the reader's language come
-  /// first. Article bodies are content, not UI strings, so they aren't
-  /// translated — ordering is what makes the list useful in either language.
+  /// The catalogue as this reader should see it.
+  ///
+  /// The five hand-written articles exist in both languages, so the reader
+  /// gets theirs and not both. The land-record topics are Bengali only —
+  /// they are the source material and there is no English equivalent — so
+  /// they follow on regardless.
   static List<Article> forLocale(Locale locale) {
-    final wantsBengali = locale.languageCode == 'bn';
-    final matching = all.where((a) => a.isBengali == wantsBengali);
-    final rest = all.where((a) => a.isBengali != wantsBengali);
-    return [...matching, ...rest];
+    final bengali = locale.languageCode == 'bn';
+    return [
+      ...(bengali ? articlesBn : articlesEn),
+      ..._imported,
+    ];
   }
 
   static Future<void> load() async {

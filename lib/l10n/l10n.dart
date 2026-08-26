@@ -9,18 +9,24 @@ import 'generated/app_localizations.dart';
 
 export 'generated/app_localizations.dart';
 
+/// The language the app opens in before anyone chooses one.
+///
+/// This is a Bangladeshi land app: its reference material is Bengali and so
+/// are its users, most of whom carry English-locale phones. Following the
+/// device would hand them an English UI they did not ask for.
+const appDefaultLocale = Locale('bn');
+
 /// Picks the locale the app runs in.
 ///
-/// Generated [AppLocalizations.supportedLocales] is alphabetical, so Bengali
-/// sits first and Flutter's default resolution would hand a French or Hindi
-/// phone a Bengali UI. Match on language code, otherwise fall back to English.
+/// Only an explicit choice moves it off [appDefaultLocale] — the device's
+/// own language is deliberately not consulted.
 Locale resolveAppLocale(Locale? device, Iterable<Locale> supported) {
   if (device != null) {
     for (final locale in supported) {
       if (locale.languageCode == device.languageCode) return locale;
     }
   }
-  return const Locale('en');
+  return appDefaultLocale;
 }
 
 extension L10nContext on BuildContext {
