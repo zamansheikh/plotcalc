@@ -785,21 +785,28 @@ class _DivisionPainter extends CustomPainter {
         ..color = AppColors.text.withValues(alpha: 0.5),
     );
 
-    // Every side of the parent plot, measured.
+    // Every side of the plot, measured — split where a divider lands on it,
+    // so a boundary cut in the middle reads as its two real pieces.
+    final divideEnds = [
+      for (final line in cutLines) ...[line.a, line.b],
+    ];
     for (var i = 0; i < verts.length; i++) {
       final a = verts[i];
       final b = verts[(i + 1) % verts.length];
-      final mid = _at(Vertex((a.x + b.x) / 2, (a.y + b.y) / 2));
-      final len = Geometry.sideLength(a, b);
-      // Nudge the label outward so it does not sit on the line.
-      final ang = math.atan2(b.y - a.y, b.x - a.x);
-      final off = Offset(-math.sin(ang) * 11, math.cos(ang) * 11);
-      _label(
-        canvas,
-        mid + off,
-        '${lengthUnit.format(len)} $lengthLabel',
-        AppColors.text.withValues(alpha: 0.75),
-      );
+      for (final (p, q) in LotDivision.splitEdge(a, b, divideEnds)) {
+        final pa = _at(p);
+        final qa = _at(q);
+        // Too short to letter without the labels colliding.
+        if ((qa - pa).distance < 26) continue;
+        final ang = math.atan2(q.y - p.y, q.x - p.x);
+        final off = Offset(-math.sin(ang) * 11, math.cos(ang) * 11);
+        _label(
+          canvas,
+          Offset((pa.dx + qa.dx) / 2, (pa.dy + qa.dy) / 2) + off,
+          '${lengthUnit.format(Geometry.sideLength(p, q))} $lengthLabel',
+          AppColors.text.withValues(alpha: 0.75),
+        );
+      }
     }
 
     // Dividers, with their own length and a handle at each end.

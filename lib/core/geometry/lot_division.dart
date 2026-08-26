@@ -277,6 +277,49 @@ class LotDivision {
     return next;
   }
 
+  /// Splits the side `a -> b` wherever one of [points] sits on it.
+  ///
+  /// A divider landing halfway along a 25 ft boundary makes it two 12.5 ft
+  /// boundaries. Quoting the original 25 would describe a line that no lot
+  /// actually has.
+  static List<(Vertex, Vertex)> splitEdge(
+    Vertex a,
+    Vertex b,
+    Iterable<Vertex> points,
+  ) {
+    final dx = b.x - a.x;
+    final dy = b.y - a.y;
+    final len2 = dx * dx + dy * dy;
+    if (len2 <= 0) return const [];
+
+    final cuts = <double>[];
+    for (final p in points) {
+      final t = ((p.x - a.x) * dx + (p.y - a.y) * dy) / len2;
+      if (t <= 1e-9 || t >= 1 - 1e-9) continue;
+      // Only points actually on the line, not merely near its extension.
+      final px = a.x + dx * t;
+      final py = a.y + dy * t;
+      final off = (px - p.x) * (px - p.x) + (py - p.y) * (py - p.y);
+      if (off > len2 * 1e-12) continue;
+      cuts.add(t);
+    }
+    if (cuts.isEmpty) return [(a, b)];
+
+    cuts
+      ..sort()
+      ..insert(0, 0)
+      ..add(1);
+    final out = <(Vertex, Vertex)>[];
+    for (var i = 0; i < cuts.length - 1; i++) {
+      if (cuts[i + 1] - cuts[i] < 1e-9) continue;
+      out.add((
+        Vertex(a.x + dx * cuts[i], a.y + dy * cuts[i]),
+        Vertex(a.x + dx * cuts[i + 1], a.y + dy * cuts[i + 1]),
+      ));
+    }
+    return out;
+  }
+
   static List<double>? _normalise(List<double> shares) {
     final positive = shares.map((s) => s.isFinite && s > 0 ? s : 0.0).toList();
     final sum = positive.fold<double>(0, (a, b) => a + b);

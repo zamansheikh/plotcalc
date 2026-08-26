@@ -332,4 +332,80 @@ void main() {
       expect(failures, isEmpty, reason: failures.take(5).join('\n'));
     });
   });
+
+  group('a side cut by a divider reads as its pieces', () {
+    // A divider landing halfway along a 25 ft boundary makes it two 12.5 ft
+    // boundaries. Quoting the original 25 describes a line no lot has.
+
+    test('a middle divider splits a side evenly', () {
+      const a = Vertex(0, 0);
+      const b = Vertex(25, 0);
+      final parts = LotDivision.splitEdge(a, b, [const Vertex(12.5, 0)]);
+      expect(parts.length, 2);
+      expect(Geometry.sideLength(parts[0].$1, parts[0].$2), closeTo(12.5, 1e-9));
+      expect(Geometry.sideLength(parts[1].$1, parts[1].$2), closeTo(12.5, 1e-9));
+    });
+
+    test('the pieces still add up to the whole side', () {
+      const a = Vertex(0, 0);
+      const b = Vertex(30, 40); // length 50
+      final parts = LotDivision.splitEdge(
+        a, b, [const Vertex(9, 12), const Vertex(21, 28)],
+      );
+      expect(parts.length, 3);
+      final sum = parts.fold<double>(
+        0,
+        (t, p) => t + Geometry.sideLength(p.$1, p.$2),
+      );
+      expect(sum, closeTo(50, 1e-9));
+    });
+
+    test('an untouched side stays one piece', () {
+      const a = Vertex(0, 0);
+      const b = Vertex(25, 0);
+      final parts = LotDivision.splitEdge(a, b, [const Vertex(60, 0)]);
+      expect(parts.length, 1);
+      expect(Geometry.sideLength(parts.single.$1, parts.single.$2), 25);
+    });
+
+    test('a point near the line but not on it does not split it', () {
+      const a = Vertex(0, 0);
+      const b = Vertex(25, 0);
+      final parts = LotDivision.splitEdge(a, b, [const Vertex(12.5, 4)]);
+      expect(parts.length, 1, reason: 'that point is not on this side');
+    });
+
+    test('a divider landing exactly on a corner does not split', () {
+      const a = Vertex(0, 0);
+      const b = Vertex(25, 0);
+      final parts = LotDivision.splitEdge(a, b, [a, b]);
+      expect(parts.length, 1);
+    });
+
+    test('a zero-length side yields nothing rather than dividing by zero', () {
+      const a = Vertex(4, 4);
+      expect(LotDivision.splitEdge(a, a, [a]), isEmpty);
+    });
+
+    test('the real case: the divider ends land on the plot sides', () {
+      // 30x20 split down the middle: two sides get cut in half.
+      final line = LotDivision.cutLines(square, [1, 1]).single;
+      final ends = [line.a, line.b];
+      var halves = 0;
+      for (var i = 0; i < square.length; i++) {
+        final parts = LotDivision.splitEdge(
+          square[i],
+          square[(i + 1) % square.length],
+          ends,
+        );
+        if (parts.length == 2) {
+          halves++;
+          for (final p in parts) {
+            expect(Geometry.sideLength(p.$1, p.$2), closeTo(15, 1e-6));
+          }
+        }
+      }
+      expect(halves, 2, reason: 'top and bottom are each cut in half');
+    });
+  });
 }
