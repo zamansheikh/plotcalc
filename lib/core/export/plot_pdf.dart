@@ -20,10 +20,11 @@ class PlotPdf {
     Uint8List? plotImage,
   }) async {
     final doc = pw.Document(title: summary.name);
+    final needsBengali = _bengali.hasMatch(summary.asText(t));
 
     doc.addPage(
       pw.Page(
-        theme: await _theme(),
+        theme: await _theme(bengali: needsBengali),
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(36),
         build: (context) => pw.Column(
@@ -69,21 +70,46 @@ class PlotPdf {
     return doc.save();
   }
 
+  static final _bengali = RegExp(r'[\u0980-\u09FF]');
+
+  /// Themes are cached for the life of the process. Loading a TTF means
+  /// fetching it (once) and then parsing it, which is the slow part of an
+  /// export — doing that on every tap made the PDF button feel broken.
+  static final _themes = <bool, pw.ThemeData?>{};
+
   /// PDF's built-in faces are Latin-1 only: Bengali renders as nothing, and
   /// even an em-dash in a unit name is dropped. Noto covers both, but has to
-  /// be fetched (and is then cached by the printing package). Falling back to
-  /// the built-ins keeps export working offline, in English.
-  static Future<pw.ThemeData?> _theme() async {
+  /// be fetched. Falling back to the built-ins keeps export working offline,
+  /// in English.
+  ///
+  /// The Bengali face is by far the largest, so it is only loaded when the
+  /// document actually contains Bengali.
+  static Future<pw.ThemeData?> _theme({required bool bengali}) async {
+    if (_themes.containsKey(bengali)) return _themes[bengali];
     try {
-      return pw.ThemeData.withFont(
-        base: await PdfGoogleFonts.notoSansRegular(),
-        bold: await PdfGoogleFonts.notoSansBold(),
-        fontFallback: [await PdfGoogleFonts.notoSansBengaliRegular()],
+      // Fetched together rather than in sequence.
+      final fonts = await Future.wait([
+        PdfGoogleFonts.notoSansRegular(),
+        PdfGoogleFonts.notoSansBold(),
+        if (bengali) PdfGoogleFonts.notoSansBengaliRegular(),
+      ]);
+      final theme = pw.ThemeData.withFont(
+        base: fonts[0],
+        bold: fonts[1],
+        fontFallback: bengali ? [fonts[2]] : const [],
       );
+      _themes[bengali] = theme;
+      return theme;
     } catch (_) {
+      // Cache the failure too: offline, retrying on every export just adds
+      // another timeout to the wait.
+      _themes[bengali] = null;
       return null;
     }
   }
+
+  /// Test seam: lets a suite start from a clean cache.
+  static void resetFontCacheForTest() => _themes.clear();
 
   static pw.Widget _header(PlotSummary s, AppLocalizations t) => pw.Column(
     crossAxisAlignment: pw.CrossAxisAlignment.start,

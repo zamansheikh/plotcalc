@@ -666,7 +666,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String get resultEstValue => 'আনুমানিক মূল্য';
 
   @override
-  String get resultExportPdf => 'পিডিএফ রপ্তানি';
+  String get resultExportPdf => 'পিডিএফ';
 
   @override
   String get resultShareImage => 'ছবি শেয়ার';
@@ -1053,4 +1053,18 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get exportFailed => 'রপ্তানি করা যায়নি। আবার চেষ্টা করুন।';
+
+  @override
+  String get plotDisplayUnit => 'প্রদর্শনের একক';
+
+  @override
+  String get plotUnitFollowsSettings => 'অ্যাপের সেটিং অনুসরণ করুন';
+
+  @override
+  String get plotUnitTitle => 'এই প্লট যে এককে দেখাবে';
+
+  @override
+  String plotUnitSaved(String name, String unit) {
+    return '“$name” এখন $unit-এ দেখাবে';
+  }
 }

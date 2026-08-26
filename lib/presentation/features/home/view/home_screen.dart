@@ -465,13 +465,19 @@ class _RecentList extends StatelessWidget {
         final p = visible[i];
         final color = Color(p.colorValue);
         final areaSqm = Geometry.polygonArea(p.vertices);
+        final unit =
+            p.preferredUnit ?? context.watch<SettingsBloc>().state.areaUnit;
         return Material(
           color: Colors.transparent,
           child: InkWell(
             borderRadius: BorderRadius.circular(14),
             onTap: () => context.push(
               AppRoutes.result,
-              extra: ResultArgs(name: p.name, vertices: p.vertices),
+              extra: ResultArgs(
+                name: p.name,
+                vertices: p.vertices,
+                unit: p.preferredUnit,
+              ),
             ),
             child: Container(
               padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
@@ -511,7 +517,7 @@ class _RecentList extends StatelessWidget {
                         Row(
                           children: [
                             Text(
-                              '${AreaUnit.acre.format(areaSqm)} ${AreaUnit.acre.labelOf(context.l10n)}',
+                              '${unit.format(areaSqm)} ${unit.labelOf(context.l10n)}',
                               style: AppTypography.mono(size: 11, color: color),
                             ),
                             Text(

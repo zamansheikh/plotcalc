@@ -181,7 +181,7 @@
   "resultRatePer": "দর / {unit}",
   "resultCurrency": "টাকা",
   "resultEstValue": "আনুমানিক মূল্য",
-  "resultExportPdf": "পিডিএফ রপ্তানি",
+  "resultExportPdf": "পিডিএফ",
   "resultShareImage": "ছবি শেয়ার",
   "resultAdjust": "সমন্বয়",
   "subdivideTitle": "বিভাজন",
@@ -292,5 +292,9 @@
   "actionCopy": "কপি",
   "copiedToClipboard": "ক্লিপবোর্ডে কপি হয়েছে",
   "resultShare": "শেয়ার",
-  "exportFailed": "রপ্তানি করা যায়নি। আবার চেষ্টা করুন।"
+  "exportFailed": "রপ্তানি করা যায়নি। আবার চেষ্টা করুন।",
+  "plotDisplayUnit": "প্রদর্শনের একক",
+  "plotUnitFollowsSettings": "অ্যাপের সেটিং অনুসরণ করুন",
+  "plotUnitTitle": "এই প্লট যে এককে দেখাবে",
+  "plotUnitSaved": "“{name}” এখন {unit}-এ দেখাবে"
 }

@@ -667,7 +667,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get resultEstValue => 'EST. VALUE';
 
   @override
-  String get resultExportPdf => 'Export PDF';
+  String get resultExportPdf => 'PDF';
 
   @override
   String get resultShareImage => 'Share image';
@@ -1055,4 +1055,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exportFailed => 'Could not export. Please try again.';
+
+  @override
+  String get plotDisplayUnit => 'Display unit';
+
+  @override
+  String get plotUnitFollowsSettings => 'Follow app setting';
+
+  @override
+  String get plotUnitTitle => 'Read this plot in';
+
+  @override
+  String plotUnitSaved(String name, String unit) {
+    return '“$name” now reads in $unit';
+  }
 }

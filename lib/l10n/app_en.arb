@@ -568,7 +568,7 @@
   "@resultCurrency": {},
   "resultEstValue": "EST. VALUE",
   "@resultEstValue": {},
-  "resultExportPdf": "Export PDF",
+  "resultExportPdf": "PDF",
   "@resultExportPdf": {},
   "resultShareImage": "Share image",
   "@resultShareImage": {},
@@ -860,5 +860,22 @@
   "resultShare": "Share",
   "@resultShare": {},
   "exportFailed": "Could not export. Please try again.",
-  "@exportFailed": {}
+  "@exportFailed": {},
+  "plotDisplayUnit": "Display unit",
+  "@plotDisplayUnit": {},
+  "plotUnitFollowsSettings": "Follow app setting",
+  "@plotUnitFollowsSettings": {},
+  "plotUnitTitle": "Read this plot in",
+  "@plotUnitTitle": {},
+  "plotUnitSaved": "“{name}” now reads in {unit}",
+  "@plotUnitSaved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  }
 }

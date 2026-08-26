@@ -50,3 +50,5 @@ lib/l10n/untranslated.json
 
 # Local scratch renders
 .shot/
+.agents/
+skills-lock.json

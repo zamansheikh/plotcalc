@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import '../../core/geometry/vertex.dart';
+import '../../core/units/area_unit.dart';
 
 enum PlotTag { agricultural, residential, commercial, forest, other }
 
@@ -23,6 +24,10 @@ class Plot extends Equatable {
   final DateTime createdAt;
   final int colorValue; // ARGB
 
+  /// Unit this plot is read in. `null` means "follow the app setting" —
+  /// which is what every plot saved before this field existed does.
+  final AreaUnit? preferredUnit;
+
   const Plot({
     required this.id,
     required this.name,
@@ -30,6 +35,7 @@ class Plot extends Equatable {
     required this.tag,
     required this.createdAt,
     required this.colorValue,
+    this.preferredUnit,
   });
 
   Plot copyWith({
@@ -39,6 +45,11 @@ class Plot extends Equatable {
     PlotTag? tag,
     DateTime? createdAt,
     int? colorValue,
+    AreaUnit? preferredUnit,
+
+    /// Explicitly drop the override and go back to the app setting;
+    /// passing `preferredUnit: null` can't express that on its own.
+    bool clearPreferredUnit = false,
   }) =>
       Plot(
         id: id ?? this.id,
@@ -47,6 +58,9 @@ class Plot extends Equatable {
         tag: tag ?? this.tag,
         createdAt: createdAt ?? this.createdAt,
         colorValue: colorValue ?? this.colorValue,
+        preferredUnit: clearPreferredUnit
+            ? null
+            : (preferredUnit ?? this.preferredUnit),
       );
 
   Map<String, dynamic> toJson() => {
@@ -56,6 +70,9 @@ class Plot extends Equatable {
         'tag': tag.name,
         'createdAt': createdAt.toIso8601String(),
         'colorValue': colorValue,
+        // Omitted entirely when unset, so the stored shape is unchanged for
+        // plots that follow the app setting.
+        if (preferredUnit != null) 'preferredUnit': preferredUnit!.name,
       };
 
   factory Plot.fromJson(Map<String, dynamic> j) => Plot(
@@ -67,8 +84,27 @@ class Plot extends Equatable {
         tag: PlotTagX.fromKey(j['tag'] as String),
         createdAt: DateTime.parse(j['createdAt'] as String),
         colorValue: j['colorValue'] as int,
+        preferredUnit: _unitOrNull(j['preferredUnit']),
       );
 
+  /// Unlike [AreaUnit.fromKey] this does not fall back to a real unit: an
+  /// unreadable value must mean "follow the app setting", not "square feet".
+  static AreaUnit? _unitOrNull(Object? key) {
+    if (key is! String) return null;
+    for (final u in AreaUnit.values) {
+      if (u.name == key) return u;
+    }
+    return null;
+  }
+
   @override
-  List<Object?> get props => [id, name, vertices, tag, createdAt, colorValue];
+  List<Object?> get props => [
+    id,
+    name,
+    vertices,
+    tag,
+    createdAt,
+    colorValue,
+    preferredUnit,
+  ];
 }

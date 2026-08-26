@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../domain/entities/plot.dart';
+import '../../../../core/units/area_unit.dart';
 import '../../../../l10n/l10n.dart';
 
-enum PlotAction { rename, delete }
+enum PlotAction { rename, unit, delete }
 
 Future<PlotAction?> showPlotActionsSheet(
   BuildContext context, {
@@ -70,6 +71,16 @@ class _ActionsSheet extends StatelessWidget {
             ),
             const Divider(height: 1, color: AppColors.line),
             _ActionRow(
+              icon: Icons.straighten,
+              label: context.l10n.plotDisplayUnit,
+              color: AppColors.text,
+              // Shows the override, or the app setting it currently follows.
+              trailing: plot.preferredUnit?.labelOf(context.l10n) ??
+                  context.l10n.plotUnitFollowsSettings,
+              onTap: () => Navigator.of(context).pop(PlotAction.unit),
+            ),
+            const Divider(height: 1, color: AppColors.line),
+            _ActionRow(
               icon: Icons.delete_outline,
               label: context.l10n.actionDelete,
               color: AppColors.danger,
@@ -86,12 +97,14 @@ class _ActionRow extends StatelessWidget {
   final IconData icon;
   final String label;
   final Color color;
+  final String? trailing;
   final VoidCallback onTap;
   const _ActionRow({
     required this.icon,
     required this.label,
     required this.color,
     required this.onTap,
+    this.trailing,
   });
 
   @override
@@ -104,14 +117,134 @@ class _ActionRow extends StatelessWidget {
           children: [
             Icon(icon, size: 18, color: color),
             const SizedBox(width: 12),
-            Text(
-              label,
-              style: AppTypography.sans(
-                size: 14,
-                weight: FontWeight.w500,
-                color: color,
+            Expanded(
+              child: Text(
+                label,
+                style: AppTypography.sans(
+                  size: 14,
+                  weight: FontWeight.w500,
+                  color: color,
+                ),
               ),
             ),
+            if (trailing != null)
+              Text(
+                trailing!,
+                style: AppTypography.mono(
+                  size: 11,
+                  color: AppColors.textDim,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Picks the unit a saved plot is read in. `null` restores "follow the app
+/// setting", which is what plots use until someone chooses otherwise.
+Future<AreaUnit?> showPlotUnitSheet(
+  BuildContext context, {
+  required Plot plot,
+  required Color accent,
+}) {
+  return showModalBottomSheet<AreaUnit?>(
+    context: context,
+    backgroundColor: AppColors.surface,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (sheetContext) => SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.line,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              sheetContext.l10n.plotUnitTitle,
+              style: AppTypography.sans(size: 16, weight: FontWeight.w600),
+            ),
+            const SizedBox(height: 14),
+            _UnitOption(
+              label: sheetContext.l10n.plotUnitFollowsSettings,
+              active: plot.preferredUnit == null,
+              accent: accent,
+              onTap: () => Navigator.of(sheetContext).pop(),
+            ),
+            const Divider(height: 1, color: AppColors.line),
+            for (final u in AreaUnit.values) ...[
+              _UnitOption(
+                label: u.nameOf(sheetContext.l10n),
+                trailing: u.labelOf(sheetContext.l10n),
+                active: plot.preferredUnit == u,
+                accent: accent,
+                onTap: () => Navigator.of(sheetContext).pop(u),
+              ),
+              if (u != AreaUnit.values.last)
+                const Divider(height: 1, color: AppColors.line),
+            ],
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+class _UnitOption extends StatelessWidget {
+  final String label;
+  final String? trailing;
+  final bool active;
+  final Color accent;
+  final VoidCallback onTap;
+  const _UnitOption({
+    required this.label,
+    required this.active,
+    required this.accent,
+    required this.onTap,
+    this.trailing,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Row(
+          children: [
+            Icon(
+              active ? Icons.radio_button_checked : Icons.radio_button_off,
+              size: 16,
+              color: active ? accent : AppColors.textFaint,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                label,
+                style: AppTypography.sans(
+                  size: 13,
+                  color: active ? AppColors.text : AppColors.textDim,
+                ),
+              ),
+            ),
+            if (trailing != null)
+              Text(
+                trailing!,
+                style: AppTypography.mono(size: 11, color: AppColors.textFaint),
+              ),
           ],
         ),
       ),

@@ -375,6 +375,32 @@ class _Tile extends StatelessWidget {
           await sl<SavePlot>()(plot.copyWith(name: newName));
         }
         break;
+      case PlotAction.unit:
+        final messenger = ScaffoldMessenger.of(context);
+        final t = context.l10n;
+        final picked = await showPlotUnitSheet(
+          context,
+          plot: plot,
+          accent: accent,
+        );
+        // A null result means "follow the app setting", which is a real
+        // choice here rather than a cancellation.
+        await sl<SavePlot>()(
+          picked == null
+              ? plot.copyWith(clearPreferredUnit: true)
+              : plot.copyWith(preferredUnit: picked),
+        );
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(
+              t.plotUnitSaved(
+                plot.name,
+                picked?.nameOf(t) ?? t.plotUnitFollowsSettings,
+              ),
+            ),
+          ),
+        );
+        break;
       case PlotAction.delete:
         final ok = await showDeleteConfirm(context, name: plot.name);
         if (ok) await sl<DeletePlot>()(plot.id);
@@ -387,10 +413,16 @@ class _Tile extends StatelessWidget {
     final accent = context.watch<SettingsBloc>().state.accent;
     final color = Color(plot.colorValue);
     final areaSqm = Geometry.polygonArea(plot.vertices);
+    final unit =
+        plot.preferredUnit ?? context.watch<SettingsBloc>().state.areaUnit;
     return InkWell(
       onTap: () => context.push(
         AppRoutes.result,
-        extra: ResultArgs(name: plot.name, vertices: plot.vertices),
+        extra: ResultArgs(
+          name: plot.name,
+          vertices: plot.vertices,
+          unit: plot.preferredUnit,
+        ),
       ),
       onLongPress: () =>
           context.read<HistoryBloc>().add(HistorySelectionToggled(plot.id)),
@@ -469,7 +501,7 @@ class _Tile extends StatelessWidget {
                     children: [
                       Flexible(
                         child: Text(
-                          '${AreaUnit.sqft.format(areaSqm)} ${AreaUnit.sqft.labelOf(context.l10n)}',
+                          '${unit.format(areaSqm)} ${unit.labelOf(context.l10n)}',
                           overflow: TextOverflow.ellipsis,
                           style: AppTypography.mono(size: 10, color: color),
                         ),

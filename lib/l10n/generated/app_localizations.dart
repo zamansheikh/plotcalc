@@ -1187,7 +1187,7 @@ abstract class AppLocalizations {
   /// No description provided for @resultExportPdf.
   ///
   /// In en, this message translates to:
-  /// **'Export PDF'**
+  /// **'PDF'**
   String get resultExportPdf;
 
   /// No description provided for @resultShareImage.
@@ -1855,6 +1855,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not export. Please try again.'**
   String get exportFailed;
+
+  /// No description provided for @plotDisplayUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'Display unit'**
+  String get plotDisplayUnit;
+
+  /// No description provided for @plotUnitFollowsSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow app setting'**
+  String get plotUnitFollowsSettings;
+
+  /// No description provided for @plotUnitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Read this plot in'**
+  String get plotUnitTitle;
+
+  /// No description provided for @plotUnitSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'“{name}” now reads in {unit}'**
+  String plotUnitSaved(String name, String unit);
 }
 
 class _AppLocalizationsDelegate

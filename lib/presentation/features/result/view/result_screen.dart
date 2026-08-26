@@ -29,10 +29,15 @@ import '../../../../core/units/area_breakdown.dart';
 class ResultArgs {
   final String name;
   final List<Vertex> vertices;
-  const ResultArgs({required this.name, required this.vertices});
+
+  /// Unit this plot is read in; `null` follows the app setting.
+  final AreaUnit? unit;
+
+  const ResultArgs({required this.name, required this.vertices, this.unit});
 
   const ResultArgs.demo()
-    : name = 'Kothrud — Field 04',
+    : unit = null,
+      name = 'Kothrud — Field 04',
       vertices = const [
         Vertex(-22, -18),
         Vertex(18, -22),
@@ -53,7 +58,8 @@ class ResultScreen extends StatefulWidget {
 class _ResultScreenState extends State<ResultScreen> {
   /// Wraps the plot drawing so it can be rasterised for share/PDF.
   final _artKey = GlobalKey();
-  bool _exporting = false;
+  /// Which export is running, so the tapped button can show a spinner.
+  _Export? _running;
 
   late List<Vertex> _verts = widget.args.vertices.isEmpty
       ? ShapePreset.freeform.vertices
@@ -90,14 +96,15 @@ class _ResultScreenState extends State<ResultScreen> {
       areaSqm: areaSqm,
       perimeterM: Geometry.polygonPerimeter(_verts),
       sides: _verts.length,
-      unit: settings.areaUnit,
+      // Exports must read in the same unit as the screen they came from.
+      unit: widget.args.unit ?? settings.areaUnit,
       breakdown: AreaBreakdown.of(areaSqm, settings.breakdown),
     );
   }
 
   Future<void> _export(_Export kind) async {
-    if (_exporting) return;
-    setState(() => _exporting = true);
+    if (_running != null) return;
+    setState(() => _running = kind);
 
     final t = context.l10n;
     final summary = _summary(context.read<SettingsBloc>().state);
@@ -117,7 +124,7 @@ class _ResultScreenState extends State<ResultScreen> {
     } catch (_) {
       messenger.showSnackBar(SnackBar(content: Text(t.exportFailed)));
     } finally {
-      if (mounted) setState(() => _exporting = false);
+      if (mounted) setState(() => _running = null);
     }
   }
 
@@ -125,7 +132,7 @@ class _ResultScreenState extends State<ResultScreen> {
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsBloc>().state;
     final accent = settings.accent;
-    final areaUnit = settings.areaUnit;
+    final areaUnit = widget.args.unit ?? settings.areaUnit;
     final areaSqm = Geometry.polygonArea(_verts);
 
     return Scaffold(
@@ -166,7 +173,7 @@ class _ResultScreenState extends State<ResultScreen> {
                     const SizedBox(height: 14),
                     _ResultActions(
                       accent: accent,
-                      busy: _exporting,
+                      running: _running,
                       onAdjust: _openAdjust,
                       onShare: () => _export(_Export.share),
                       onPdf: () => _export(_Export.pdf),
@@ -240,14 +247,23 @@ class _HeroArea extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        context.l10n.resultTotalArea(areaUnit.labelOf(context.l10n).toUpperCase()),
-                        style: AppTypography.mono(
-                          size: 10,
-                          color: AppColors.textFaint,
-                          letterSpacing: 1.32,
+                      // The unit is part of this label, and the longest of
+                      // them collides with the SAVED badge on a narrow phone.
+                      Flexible(
+                        child: Text(
+                          context.l10n.resultTotalArea(
+                            areaUnit.labelOf(context.l10n).toUpperCase(),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTypography.mono(
+                            size: 10,
+                            color: AppColors.textFaint,
+                            letterSpacing: 1.32,
+                          ),
                         ),
                       ),
+                      const SizedBox(width: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 7,
@@ -413,7 +429,8 @@ class _ConversionsGrid extends StatelessWidget {
           crossAxisCount: 2,
           mainAxisSpacing: 8,
           crossAxisSpacing: 8,
-          mainAxisExtent: 56,
+          // Tall enough for a Bengali unit name, which sits higher than Latin.
+          mainAxisExtent: 62,
         ),
         itemCount: units.length,
         itemBuilder: (_, i) {
@@ -432,6 +449,11 @@ class _ConversionsGrid extends StatelessWidget {
               children: [
                 Text(
                   u.nameOf(context.l10n).toUpperCase(),
+                  // "BIGHA — MYMENSINGH" wraps on a narrow phone and pushes
+                  // the tile past its fixed height; the unit label below
+                  // already disambiguates.
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: AppTypography.mono(
                     size: 9,
                     color: AppColors.textFaint,
@@ -668,14 +690,14 @@ enum _Export { copy, share, pdf }
 
 class _ResultActions extends StatelessWidget {
   final Color accent;
-  final bool busy;
+  final _Export? running;
   final VoidCallback onAdjust;
   final VoidCallback onShare;
   final VoidCallback onPdf;
   final VoidCallback onCopy;
   const _ResultActions({
     required this.accent,
-    required this.busy,
+    required this.running,
     required this.onAdjust,
     required this.onShare,
     required this.onPdf,
@@ -684,6 +706,7 @@ class _ResultActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final busy = running != null;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       child: Row(
@@ -692,6 +715,8 @@ class _ResultActions extends StatelessWidget {
             child: _ActionBtn(
               icon: Icons.copy_all_outlined,
               label: context.l10n.actionCopy,
+              accent: accent,
+              spinning: running == _Export.copy,
               onTap: busy ? null : onCopy,
             ),
           ),
@@ -700,6 +725,8 @@ class _ResultActions extends StatelessWidget {
             child: _ActionBtn(
               icon: Icons.ios_share,
               label: context.l10n.resultShare,
+              accent: accent,
+              spinning: running == _Export.share,
               onTap: busy ? null : onShare,
             ),
           ),
@@ -708,6 +735,8 @@ class _ResultActions extends StatelessWidget {
             child: _ActionBtn(
               icon: Icons.picture_as_pdf_outlined,
               label: context.l10n.resultExportPdf,
+              accent: accent,
+              spinning: running == _Export.pdf,
               onTap: busy ? null : onPdf,
             ),
           ),
@@ -716,6 +745,7 @@ class _ResultActions extends StatelessWidget {
             child: _ActionBtn(
               icon: Icons.tune,
               label: context.l10n.resultAdjust,
+              accent: accent,
               onTap: busy ? null : onAdjust,
             ),
           ),
@@ -728,11 +758,15 @@ class _ResultActions extends StatelessWidget {
 class _ActionBtn extends StatelessWidget {
   final IconData icon;
   final String label;
+  final Color accent;
+  final bool spinning;
   final VoidCallback? onTap;
   const _ActionBtn({
     required this.icon,
     required this.label,
+    required this.accent,
     required this.onTap,
+    this.spinning = false,
   });
 
   @override
@@ -741,20 +775,45 @@ class _ActionBtn extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(14),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+        // Icon above label rather than beside it: four of these have to fit
+        // a phone width, and a side-by-side layout overflowed.
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
         decoration: BoxDecoration(
           color: AppColors.surface,
           border: Border.all(color: AppColors.line),
           borderRadius: BorderRadius.circular(14),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 14, color: AppColors.text),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: AppTypography.sans(size: 12, weight: FontWeight.w500),
+            SizedBox(
+              height: 17,
+              width: 17,
+              child: spinning
+                  ? CircularProgressIndicator(strokeWidth: 2, color: accent)
+                  : Icon(
+                      icon,
+                      size: 17,
+                      color: onTap == null
+                          ? AppColors.textFaint
+                          : AppColors.text,
+                    ),
+            ),
+            const SizedBox(height: 5),
+            // Four buttons share a phone width, and Bengali labels run
+            // longer than English; scale down rather than overflow.
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                label,
+                maxLines: 1,
+                textAlign: TextAlign.center,
+                style: AppTypography.sans(
+                  size: 11,
+                  weight: FontWeight.w500,
+                  color: onTap == null ? AppColors.textFaint : AppColors.text,
+                ),
+              ),
             ),
           ],
         ),
