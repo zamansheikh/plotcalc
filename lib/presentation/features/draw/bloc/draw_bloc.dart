@@ -12,7 +12,6 @@ class DrawBloc extends Bloc<DrawEvent, DrawState> {
     on<DrawInitialized>((e, emit) {
       switch (e.args.method) {
         case InputMethod.draw:
-          final isCircle = e.args.preset == ShapePreset.circle;
           emit(state.copyWith(
             vertices: List.of(e.args.preset.vertices),
             selectedIndex: 0,
@@ -20,8 +19,6 @@ class DrawBloc extends Bloc<DrawEvent, DrawState> {
             inputMethod: InputMethod.draw,
             isPlacingTaps: false,
             awaitingTypeInput: false,
-            circleRadiusM: isCircle ? circlePresetRadius : null,
-            clearCircle: !isCircle,
           ));
           break;
         case InputMethod.tap:
@@ -57,11 +54,7 @@ class DrawBloc extends Bloc<DrawEvent, DrawState> {
       if (state.isPlacingTaps) return;
       final next = List<Vertex>.from(state.vertices);
       next[e.index] = e.position;
-      emit(state.copyWith(
-        vertices: next,
-        selectedIndex: e.index,
-        clearCircle: true,
-      ));
+      emit(state.copyWith(vertices: next, selectedIndex: e.index));
     });
 
     on<VertexInserted>((e, emit) {
@@ -78,7 +71,6 @@ class DrawBloc extends Bloc<DrawEvent, DrawState> {
         vertices: next,
         selectedIndex: i + 1,
         history: hist,
-        clearCircle: true,
       ));
     });
 
@@ -90,7 +82,6 @@ class DrawBloc extends Bloc<DrawEvent, DrawState> {
         vertices: next,
         selectedIndex: 0,
         history: hist,
-        clearCircle: true,
       ));
     });
 
@@ -138,7 +129,6 @@ class DrawBloc extends Bloc<DrawEvent, DrawState> {
         vertices: next,
         history: hist,
         selectedIndex: movingIdx,
-        clearCircle: true,
       ));
     });
 
@@ -163,19 +153,6 @@ class DrawBloc extends Bloc<DrawEvent, DrawState> {
         isPlacingTaps: false,
         awaitingTypeInput: false,
         history: const [],
-        circleRadiusM: e.circleRadiusM,
-        clearCircle: e.circleRadiusM == null,
-      ));
-    });
-
-    on<CircleRadiusChanged>((e, emit) {
-      if (state.circleRadiusM == null) return;
-      // A sub-metre circle is almost certainly a stray drag.
-      final r = e.radiusM.clamp(0.5, 100000.0);
-      emit(state.copyWith(
-        circleRadiusM: r,
-        vertices: circleVertices(r),
-        selectedIndex: 0,
       ));
     });
 

@@ -7,7 +7,6 @@ import 'package:uuid/uuid.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/geometry/geometry.dart';
-import '../../../../core/geometry/presets.dart';
 import '../../../../core/geometry/vertex.dart';
 import '../../../../core/input_method.dart';
 import '../../../../core/router/app_router.dart';
@@ -68,14 +67,7 @@ class _DrawViewState extends State<_DrawView> {
     _typeSheetInFlight = false;
     if (!mounted) return;
     if (result != null) {
-      // circleVertices() is centred on the origin, so any vertex's distance
-      // from it is the radius the user typed.
-      final radius = widget.args.preset == ShapePreset.circle && result.isNotEmpty
-          ? Geometry.sideLength(const Vertex(0, 0), result.first)
-          : null;
-      context
-          .read<DrawBloc>()
-          .add(TypeShapeGenerated(result, circleRadiusM: radius));
+      context.read<DrawBloc>().add(TypeShapeGenerated(result));
     } else {
       context.read<DrawBloc>().add(const TypeInputAcknowledged());
     }
@@ -94,14 +86,8 @@ class _DrawViewState extends State<_DrawView> {
             if (state.awaitingTypeInput) _maybeShowTypeSheet();
           },
           builder: (context, state) {
-            // A circle reports exact figures; the 72-gon is only what's drawn.
-            final r = state.circleRadiusM;
-            final areaSqm = r != null
-                ? Geometry.circleArea(r)
-                : Geometry.polygonArea(state.vertices);
-            final perimM = r != null
-                ? Geometry.circleCircumference(r)
-                : Geometry.polygonPerimeter(state.vertices);
+            final areaSqm = Geometry.polygonArea(state.vertices);
+            final perimM = Geometry.polygonPerimeter(state.vertices);
             return Column(
               children: [
                 const SizedBox(height: 8),
@@ -110,7 +96,6 @@ class _DrawViewState extends State<_DrawView> {
                   areaSqm: areaSqm,
                   perimM: perimM,
                   sides: state.vertices.length,
-                  circleRadiusM: r,
                   areaUnit: settings.areaUnit,
                   lengthUnit: settings.lengthUnit,
                   accent: settings.accent,
@@ -120,10 +105,7 @@ class _DrawViewState extends State<_DrawView> {
                 ),
                 if (state.isPlacingTaps)
                   _TapHint(state: state, accent: settings.accent)
-                // A circle has no vertex to inspect or remove; its handle
-                // is on the canvas.
-                else if (state.vertices.isNotEmpty &&
-                    state.circleRadiusM == null)
+                else if (state.vertices.isNotEmpty)
                   _VertexInfo(state: state, accent: settings.accent)
                 else
                   const SizedBox(height: 56),
@@ -170,10 +152,7 @@ class _TopBar extends StatelessWidget {
                 ),
                 const SizedBox(height: 1),
                 Text(
-                  // A circle's 72 segments are an implementation detail.
-                  state.circleRadiusM != null
-                      ? context.l10n.drawCircleUnsaved
-                      : context.l10n.drawVerticesUnsaved(state.vertices.length),
+                  context.l10n.drawVerticesUnsaved(state.vertices.length),
                   style: AppTypography.mono(
                     size: 10,
                     color: AppColors.textFaint,
@@ -197,7 +176,6 @@ class _ReadoutRow extends StatelessWidget {
   final double areaSqm;
   final double perimM;
   final int sides;
-  final double? circleRadiusM;
   final AreaUnit areaUnit;
   final LengthUnit lengthUnit;
   final Color accent;
@@ -209,7 +187,6 @@ class _ReadoutRow extends StatelessWidget {
     required this.areaUnit,
     required this.lengthUnit,
     required this.accent,
-    this.circleRadiusM,
   });
 
   @override
@@ -237,21 +214,12 @@ class _ReadoutRow extends StatelessWidget {
           ),
           const SizedBox(width: 6),
           Expanded(
-            // "72 sides" is meaningless for a circle; its radius is the
-            // number the user actually gave and cares about.
-            child: circleRadiusM != null
-                ? _ReadoutTile(
-                    label: context.l10n.drawRadius,
-                    value: lengthUnit.format(circleRadiusM!),
-                    unit: lengthUnit.labelOf(context.l10n),
-                    valueColor: AppColors.text,
-                  )
-                : _ReadoutTile(
-                    label: context.l10n.drawSides,
-                    value: '$sides',
-                    unit: '',
-                    valueColor: AppColors.text,
-                  ),
+            child: _ReadoutTile(
+              label: context.l10n.drawSides,
+              value: '$sides',
+              unit: '',
+              valueColor: AppColors.text,
+            ),
           ),
         ],
       ),
@@ -396,11 +364,6 @@ class _CanvasState extends State<_Canvas> {
                       onPanStart: widget.state.isPlacingTaps
                           ? null
                           : (d) {
-                              // A circle drags by its rim, from anywhere.
-                              if (widget.state.circleRadiusM != null) {
-                                setState(() => _draggingIndex = -1);
-                                return;
-                              }
                               final hit = _hitTest(
                                 d.localPosition,
                                 widget.state.vertices,
@@ -420,15 +383,6 @@ class _CanvasState extends State<_Canvas> {
                               if (_draggingIndex == null) return;
                               final mx = (d.localPosition.dx - cx) / scale;
                               final my = (d.localPosition.dy - cy) / scale;
-                              if (widget.state.circleRadiusM != null) {
-                                // Distance from the centre is the new radius.
-                                context.read<DrawBloc>().add(
-                                  CircleRadiusChanged(
-                                    math.sqrt(mx * mx + my * my),
-                                  ),
-                                );
-                                return;
-                              }
                               context.read<DrawBloc>().add(
                                 VertexMoved(
                                   index: _draggingIndex!,
@@ -512,7 +466,6 @@ class _CanvasState extends State<_Canvas> {
                           lengthLabel: widget.settings.lengthUnit.labelOf(
                             context.l10n,
                           ),
-                          circleRadiusM: widget.state.circleRadiusM,
                           isPlacing: widget.state.isPlacingTaps,
                         ),
                       ),
@@ -532,9 +485,7 @@ class _CanvasState extends State<_Canvas> {
                   ),
                   // Interactive overlay — sits above the GestureDetector so
                   // its InkWell wins the hit-test in its region.
-                  // Diagonals of a 72-gon are noise, not information.
                   if (!widget.state.isPlacingTaps &&
-                      widget.state.circleRadiusM == null &&
                       widget.state.vertices.length >= 4)
                     Positioned(
                       top: 10,
@@ -715,10 +666,6 @@ class _DrawCanvasPainter extends CustomPainter {
   final LengthUnit lengthUnit;
   final bool isPlacing;
 
-  /// When set, the shape is a circle: it gets one outline and one radius
-  /// handle instead of 72 vertex dots, edge labels, angles and diagonals.
-  final double? circleRadiusM;
-
   _DrawCanvasPainter({
     required this.vertices,
     required this.selectedIndex,
@@ -731,7 +678,6 @@ class _DrawCanvasPainter extends CustomPainter {
     required this.lengthUnit,
     required this.lengthLabel,
     this.isPlacing = false,
-    this.circleRadiusM,
   });
 
   @override
@@ -744,12 +690,6 @@ class _DrawCanvasPainter extends CustomPainter {
       return;
     }
     if (vertices.length < 3) return;
-
-    if (circleRadiusM != null) {
-      _paintCircle(canvas);
-      return;
-    }
-
     // Polygon
     final poly = PolygonPainter(
       vertices: vertices,
@@ -866,7 +806,6 @@ class _DrawCanvasPainter extends CustomPainter {
       old.center != center ||
       old.accent != accent ||
       old.lengthLabel != lengthLabel ||
-      old.circleRadiusM != circleRadiusM ||
       old.isPlacing != isPlacing;
 
   void _paintDiagonals(Canvas canvas) {
@@ -927,71 +866,6 @@ class _DrawCanvasPainter extends CustomPainter {
     if (dist == 0) return Offset(midX, midY);
     const offset = 14.0;
     return Offset(midX + (-dy / dist) * offset, midY + (dx / dist) * offset);
-  }
-
-  /// A circle needs one line and one handle. Drawing it as 72 labelled
-  /// edges buried the shape under its own annotations.
-  void _paintCircle(Canvas canvas) {
-    final r = circleRadiusM! * scale;
-    canvas.drawCircle(
-      center,
-      r,
-      Paint()..color = accent.withValues(alpha: 0.12),
-    );
-    canvas.drawCircle(
-      center,
-      r,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2
-        ..color = accent,
-    );
-
-    // Radius line, from the centre out to the drag handle.
-    final handle = Offset(center.dx, center.dy - r);
-    canvas.drawLine(
-      center,
-      handle,
-      Paint()
-        ..strokeWidth = 1
-        ..color = accent.withValues(alpha: 0.6),
-    );
-    canvas.drawCircle(center, 3, Paint()..color = accent);
-
-    canvas.drawCircle(handle, 9, Paint()..color = AppColors.ink);
-    canvas.drawCircle(
-      handle,
-      9,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2
-        ..color = accent,
-    );
-
-    final tp = TextPainter(
-      text: TextSpan(
-        text: '${lengthUnit.format(circleRadiusM!)} $lengthLabel',
-        style: AppTypography.mono(
-          size: 10,
-          weight: FontWeight.w500,
-          color: AppColors.ink,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    final rect = Rect.fromCenter(
-      center: Offset(center.dx, center.dy - r / 2),
-      width: tp.width + 14,
-      height: 18,
-    );
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(rect, const Radius.circular(4)),
-      Paint()..color = accent,
-    );
-    tp.paint(
-      canvas,
-      Offset(rect.center.dx - tp.width / 2, rect.center.dy - tp.height / 2),
-    );
   }
 
   static void _drawDashedLine(Canvas canvas, Offset a, Offset b, Paint paint) {
@@ -1414,7 +1288,6 @@ class _BottomActions extends StatelessWidget {
       tag: result.tag,
       createdAt: DateTime.now(),
       colorValue: accent.toARGB32(),
-      circleRadiusM: state.circleRadiusM,
     );
     await repo(plot);
     if (!context.mounted) return;

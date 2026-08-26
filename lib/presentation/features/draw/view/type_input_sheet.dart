@@ -101,9 +101,6 @@ class _TypeInputSheetState extends State<_TypeInputSheet> {
       ShapePreset.pentagon => {
           'Side': TextEditingController(text: def(26)),
         },
-      ShapePreset.circle => {
-          'Radius': TextEditingController(text: def(20)),
-        },
       ShapePreset.freeform => {
           'Side length': TextEditingController(text: def(25)),
         },
@@ -144,7 +141,6 @@ class _TypeInputSheetState extends State<_TypeInputSheet> {
         ShapePreset.trapezoid =>
           _trapezoid(m['Top']!, m['Bottom']!, m['Height']!),
         ShapePreset.pentagon => _regularPolygon(5, m['Side']!),
-        ShapePreset.circle => circleVertices(m['Radius']!),
         ShapePreset.freeform =>
           _regularPolygon(_sideCount, m['Side length']!),
       };
@@ -292,7 +288,6 @@ class _TypeInputSheetState extends State<_TypeInputSheet> {
     ShapePreset.triangle => context.l10n.typeTriangle3,
     ShapePreset.trapezoid => context.l10n.presetTrapezoid,
     ShapePreset.pentagon => context.l10n.typeRegularPentagon,
-    ShapePreset.circle => context.l10n.typeCircleSubtitle,
     ShapePreset.freeform => context.l10n.typeRegularPolygon,
   };
 
@@ -308,7 +303,6 @@ class _TypeInputSheetState extends State<_TypeInputSheet> {
     'Top' => context.l10n.typeTop,
     'Bottom' => context.l10n.typeBottom,
     'Side length' => context.l10n.typeSideLength,
-    'Radius' => context.l10n.typeRadius,
     _ => key,
   };
 }

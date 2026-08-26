@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/injection.dart';
+import '../../../../core/geometry/geometry.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
@@ -45,7 +46,7 @@ class _HomeView extends StatelessWidget {
         builder: (context, state) {
           final totalSqm = state.plots.fold<double>(
             0,
-            (acc, p) => acc + p.areaSqm,
+            (acc, p) => acc + Geometry.polygonArea(p.vertices),
           );
           return Column(
             children: [
@@ -463,7 +464,7 @@ class _RecentList extends StatelessWidget {
       itemBuilder: (context, i) {
         final p = visible[i];
         final color = Color(p.colorValue);
-        final areaSqm = p.areaSqm;
+        final areaSqm = Geometry.polygonArea(p.vertices);
         final unit =
             p.preferredUnit ?? context.watch<SettingsBloc>().state.areaUnit;
         return Material(

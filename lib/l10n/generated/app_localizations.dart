@@ -1879,42 +1879,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'“{name}” now reads in {unit}'**
   String plotUnitSaved(String name, String unit);
-
-  /// No description provided for @presetCircle.
-  ///
-  /// In en, this message translates to:
-  /// **'Circle'**
-  String get presetCircle;
-
-  /// No description provided for @typeRadius.
-  ///
-  /// In en, this message translates to:
-  /// **'Radius'**
-  String get typeRadius;
-
-  /// No description provided for @typeCircleSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Circle'**
-  String get typeCircleSubtitle;
-
-  /// No description provided for @drawRadius.
-  ///
-  /// In en, this message translates to:
-  /// **'RADIUS'**
-  String get drawRadius;
-
-  /// No description provided for @plotCircleMeta.
-  ///
-  /// In en, this message translates to:
-  /// **'circle · r {radius}'**
-  String plotCircleMeta(String radius);
-
-  /// No description provided for @drawCircleUnsaved.
-  ///
-  /// In en, this message translates to:
-  /// **'CIRCLE · UNSAVED'**
-  String get drawCircleUnsaved;
 }
 
 class _AppLocalizationsDelegate

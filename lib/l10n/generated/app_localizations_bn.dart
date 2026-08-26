@@ -1067,24 +1067,4 @@ class AppLocalizationsBn extends AppLocalizations {
   String plotUnitSaved(String name, String unit) {
     return '“$name” এখন $unit-এ দেখাবে';
   }
-
-  @override
-  String get presetCircle => 'বৃত্ত';
-
-  @override
-  String get typeRadius => 'ব্যাসার্ধ';
-
-  @override
-  String get typeCircleSubtitle => 'বৃত্ত';
-
-  @override
-  String get drawRadius => 'ব্যাসার্ধ';
-
-  @override
-  String plotCircleMeta(String radius) {
-    return 'বৃত্ত · ব্যাসার্ধ $radius';
-  }
-
-  @override
-  String get drawCircleUnsaved => 'বৃত্ত · অসংরক্ষিত';
 }

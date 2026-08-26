@@ -92,27 +92,13 @@ class TapPlacementCompleted extends DrawEvent {
 /// Type mode: replace the polygon with a freshly-generated vertex list.
 class TypeShapeGenerated extends DrawEvent {
   final List<Vertex> vertices;
-
-  /// Set when the generated shape is a circle, so the plot can be saved as
-  /// one rather than as a 72-sided polygon.
-  final double? circleRadiusM;
-
-  const TypeShapeGenerated(this.vertices, {this.circleRadiusM});
+  const TypeShapeGenerated(this.vertices);
   @override
-  List<Object?> get props => [vertices, circleRadiusM];
+  List<Object?> get props => [vertices];
 }
 
 /// View signals that the type-input sheet has been shown — clears the flag
 /// so it doesn't auto-open again on rebuild.
 class TypeInputAcknowledged extends DrawEvent {
   const TypeInputAcknowledged();
-}
-
-/// Drags a circle's rim handle. Resizes it rather than turning it into a
-/// polygon, which is what moving one of its 72 vertices would do.
-class CircleRadiusChanged extends DrawEvent {
-  final double radiusM;
-  const CircleRadiusChanged(this.radiusM);
-  @override
-  List<Object?> get props => [radiusM];
 }
