@@ -727,7 +727,7 @@
   "@aboutWhatItDoes": {},
   "aboutDraw": "Draw plots by tapping vertices, dragging a template, or typing exact measurements.",
   "@aboutDraw": {},
-  "aboutConvert": "Convert between 8 area units (sq ft, m², acre, hectare, bigha, katha, chatak, shotok).",
+  "aboutConvert": "Convert between 10 area units, including the Mymensingh regional bigha and katha.",
   "@aboutConvert": {},
   "aboutAdjust": "Adjust a polygon to hit a target area while keeping its shape.",
   "@aboutAdjust": {},
@@ -777,5 +777,13 @@
   "drawFirstVertexHint": "Tap anywhere on the canvas\nto drop your first vertex",
   "@drawFirstVertexHint": {},
   "drawCompassN": "N",
-  "@drawCompassN": {}
+  "@drawCompassN": {},
+  "unitBighaMymensinghLabel": "bigha (M)",
+  "@unitBighaMymensinghLabel": {},
+  "unitBighaMymensinghName": "Bigha — Mymensingh",
+  "@unitBighaMymensinghName": {},
+  "unitKathaMymensinghLabel": "katha (M)",
+  "@unitKathaMymensinghLabel": {},
+  "unitKathaMymensinghName": "Katha — Mymensingh",
+  "@unitKathaMymensinghName": {}
 }

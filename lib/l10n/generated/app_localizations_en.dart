@@ -860,7 +860,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aboutConvert =>
-      'Convert between 8 area units (sq ft, m², acre, hectare, bigha, katha, chatak, shotok).';
+      'Convert between 10 area units, including the Mymensingh regional bigha and katha.';
 
   @override
   String get aboutAdjust =>
@@ -935,4 +935,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get drawCompassN => 'N';
+
+  @override
+  String get unitBighaMymensinghLabel => 'bigha (M)';
+
+  @override
+  String get unitBighaMymensinghName => 'Bigha — Mymensingh';
+
+  @override
+  String get unitKathaMymensinghLabel => 'katha (M)';
+
+  @override
+  String get unitKathaMymensinghName => 'Katha — Mymensingh';
 }

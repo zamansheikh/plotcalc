@@ -235,7 +235,7 @@
   "aboutTagline": "অফলাইন ভূমি পরিমাপ, আপনার মতো করে",
   "aboutWhatItDoes": "এটি যা করে",
   "aboutDraw": "কোণে ট্যাপ করে, নমুনা টেনে, বা সঠিক মাপ লিখে প্লট আঁকুন।",
-  "aboutConvert": "৮টি ক্ষেত্রফলের এককের মধ্যে রূপান্তর করুন (বর্গফুট, বর্গমিটার, একর, হেক্টর, বিঘা, কাঠা, ছটাক, শতক)।",
+  "aboutConvert": "১০টি ক্ষেত্রফলের এককের মধ্যে রূপান্তর করুন, ময়মনসিংহের আঞ্চলিক বিঘা ও কাঠাসহ।",
   "aboutAdjust": "আকৃতি বজায় রেখে বহুভুজকে লক্ষ্য ক্ষেত্রফলে সমন্বয় করুন।",
   "aboutCompare": "দুটি সংরক্ষিত প্লট পাশাপাশি তুলনা করুন।",
   "aboutSubdivide": "একটি প্লটকে আনুপাতিক লটে ভাগ করুন।",
@@ -256,5 +256,9 @@
   "adjustAnchorS": "দ",
   "homeSides": " · {sides} বাহু",
   "drawFirstVertexHint": "প্রথম কোণ বসাতে ক্যানভাসের\nযেকোনো জায়গায় ট্যাপ করুন",
-  "drawCompassN": "উ"
+  "drawCompassN": "উ",
+  "unitBighaMymensinghLabel": "বিঘা (ময়)",
+  "unitBighaMymensinghName": "বিঘা — ময়মনসিংহ",
+  "unitKathaMymensinghLabel": "কাঠা (ময়)",
+  "unitKathaMymensinghName": "কাঠা — ময়মনসিংহ"
 }

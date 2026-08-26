@@ -858,7 +858,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get aboutConvert =>
-      '৮টি ক্ষেত্রফলের এককের মধ্যে রূপান্তর করুন (বর্গফুট, বর্গমিটার, একর, হেক্টর, বিঘা, কাঠা, ছটাক, শতক)।';
+      '১০টি ক্ষেত্রফলের এককের মধ্যে রূপান্তর করুন, ময়মনসিংহের আঞ্চলিক বিঘা ও কাঠাসহ।';
 
   @override
   String get aboutAdjust =>
@@ -933,4 +933,16 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get drawCompassN => 'উ';
+
+  @override
+  String get unitBighaMymensinghLabel => 'বিঘা (ময়)';
+
+  @override
+  String get unitBighaMymensinghName => 'বিঘা — ময়মনসিংহ';
+
+  @override
+  String get unitKathaMymensinghLabel => 'কাঠা (ময়)';
+
+  @override
+  String get unitKathaMymensinghName => 'কাঠা — ময়মনসিংহ';
 }

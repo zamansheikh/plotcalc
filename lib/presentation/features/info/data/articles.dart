@@ -104,7 +104,7 @@ const articles = <Article>[
       ArticleSection(
         heading: 'Bigha',
         body:
-            '1 bigha = 33 decimal = 20 katha ≈ 1,338.93 m² ≈ 14,400 sq ft.\n\n'
+            '1 bigha = 20 katha = 320 chatak = 14,400 sq ft ≈ 1,337.80 m².\n\n'
             'It\'s the largest of the four common BD units. Most rural plots '
             'are described in bigha-and-katha.',
       ),
@@ -125,16 +125,33 @@ const articles = <Article>[
       ArticleSection(
         heading: 'Shotok',
         body:
-            '1 shotok = 1 decimal ≈ 40.46 m² ≈ 435.6 sq ft.\n\n'
-            'Shotok is the same unit as the South Asian "decimal". 33 '
-            'shotok = 1 bigha.',
+            '1 shotok = 1 decimal = 435.6 sq ft ≈ 40.47 m².\n\n'
+            'Shotok is the same unit as the South Asian "decimal" — exactly '
+            'one hundredth of an acre. A bigha is 33.06 shotok, which is why '
+            'it is often quoted loosely as "33 decimal".',
+      ),
+      ArticleSection(
+        heading: 'Regional sizes: the Mymensingh bigha',
+        body:
+            'Bigha and katha are not the same size everywhere. The figures '
+            'above are the standard used in Dhaka and in most land deeds; '
+            'Rajshahi, Dinajpur and Bogura, for instance, work to a katha of '
+            'about 805 sq ft.\n\n'
+            'PlotCalc ships the Mymensingh pair as separate units so you '
+            'never have to mix conventions:\n\n'
+            '• 1 katha (Mymensingh) = 6.5 shotok = 2,831.4 sq ft\n'
+            '• 1 bigha (Mymensingh) = 20 katha (M) = 130 shotok = 1.3 acre\n\n'
+            'That makes a Mymensingh bigha a little over four times the '
+            'standard one — always confirm which convention a deed uses '
+            'before converting.',
       ),
       ArticleSection(
         heading: 'Quick conversion table',
         body:
-            '• 1 bigha = 20 katha = 320 chatak = 33 shotok\n'
-            '• 1 katha = 16 chatak = 1.65 shotok\n'
-            '• 1 chatak ≈ 0.103 shotok',
+            '• 1 bigha = 20 katha = 320 chatak ≈ 33.06 shotok\n'
+            '• 1 katha = 16 chatak = 1.65 shotok = 720 sq ft\n'
+            '• 1 chatak = 45 sq ft ≈ 0.103 shotok\n'
+            '• 1 acre = 100 shotok ≈ 3.025 bigha',
       ),
     ],
   ),

@@ -1511,7 +1511,7 @@ abstract class AppLocalizations {
   /// No description provided for @aboutConvert.
   ///
   /// In en, this message translates to:
-  /// **'Convert between 8 area units (sq ft, m², acre, hectare, bigha, katha, chatak, shotok).'**
+  /// **'Convert between 10 area units, including the Mymensingh regional bigha and katha.'**
   String get aboutConvert;
 
   /// No description provided for @aboutAdjust.
@@ -1639,6 +1639,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'N'**
   String get drawCompassN;
+
+  /// No description provided for @unitBighaMymensinghLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'bigha (M)'**
+  String get unitBighaMymensinghLabel;
+
+  /// No description provided for @unitBighaMymensinghName.
+  ///
+  /// In en, this message translates to:
+  /// **'Bigha — Mymensingh'**
+  String get unitBighaMymensinghName;
+
+  /// No description provided for @unitKathaMymensinghLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'katha (M)'**
+  String get unitKathaMymensinghLabel;
+
+  /// No description provided for @unitKathaMymensinghName.
+  ///
+  /// In en, this message translates to:
+  /// **'Katha — Mymensingh'**
+  String get unitKathaMymensinghName;
 }
 
 class _AppLocalizationsDelegate

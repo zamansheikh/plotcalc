@@ -42,6 +42,8 @@ extension AreaUnitL10n on AreaUnit {
     AreaUnit.katha => t.unitKathaLabel,
     AreaUnit.chatak => t.unitChatakLabel,
     AreaUnit.shotok => t.unitShotokLabel,
+    AreaUnit.bighaMymensingh => t.unitBighaMymensinghLabel,
+    AreaUnit.kathaMymensingh => t.unitKathaMymensinghLabel,
   };
 
   /// Full name used in pickers and lists ("Square feet").
@@ -54,6 +56,8 @@ extension AreaUnitL10n on AreaUnit {
     AreaUnit.katha => t.unitKathaName,
     AreaUnit.chatak => t.unitChatakName,
     AreaUnit.shotok => t.unitShotokName,
+    AreaUnit.bighaMymensingh => t.unitBighaMymensinghName,
+    AreaUnit.kathaMymensingh => t.unitKathaMymensinghName,
   };
 }
 
