@@ -1067,4 +1067,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String plotUnitSaved(String name, String unit) {
     return '“$name” এখন $unit-এ দেখাবে';
   }
+
+  @override
+  String get breakdownEditUnits => 'একক';
 }

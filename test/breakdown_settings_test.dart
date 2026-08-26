@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -22,6 +24,8 @@ Future<void> _boot([Map<String, Object> prefs = const {}]) async {
 Future<void> _settle(Bloc b) => Future<void>.delayed(Duration.zero);
 
 void main() {
+  _discoverability();
+
   group('persistence', () {
     test('starts on the defaults', () async {
       await _boot();
@@ -145,6 +149,73 @@ void main() {
       }
       await pump(tester, bloc, 1337.8);
       expect(find.textContaining('Enable at least one unit'), findsOneWidget);
+    });
+  });
+}
+
+/// The unit editor existed and worked, but was the sixth section in Settings,
+/// directly below a ten-row list — so in practice nobody found it. These pin
+/// the routes into it.
+void _discoverability() {
+  group('reaching the unit editor', () {
+    Future<void> pumpCard(WidgetTester tester, {required bool configurable}) {
+      return tester.pumpWidget(
+        BlocProvider<SettingsBloc>(
+          create: (_) => SettingsBloc(),
+          child: MaterialApp(
+            locale: const Locale('en'),
+            supportedLocales: AppLocalizations.supportedLocales,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            home: Scaffold(
+              body: AreaBreakdownView(
+                sqm: 1337.803776,
+                configurable: configurable,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    testWidgets('the breakdown card offers a way in', (tester) async {
+      await _boot();
+      await pumpCard(tester, configurable: true);
+      await tester.pumpAndSettle();
+      expect(find.text('Units'), findsOneWidget);
+      expect(find.byIcon(Icons.tune), findsOneWidget);
+    });
+
+    testWidgets('the editor\'s own sample does not link to itself', (
+      tester,
+    ) async {
+      await _boot();
+      await pumpCard(tester, configurable: false);
+      await tester.pumpAndSettle();
+      expect(find.byIcon(Icons.tune), findsNothing);
+      // Copy is still offered.
+      expect(find.text('Copy'), findsOneWidget);
+    });
+
+    test('the shortcut points at the real route', () {
+      final src = File(
+        'lib/presentation/shared/widgets/area_breakdown_view.dart',
+      ).readAsStringSync();
+      expect(src.contains('AppRoutes.breakdownUnits'), isTrue);
+    });
+
+    test('the Settings entry sits above the ten-row area-unit list', () {
+      final src = File(
+        'lib/presentation/features/settings/view/settings_screen.dart',
+      ).readAsStringSync();
+      final breakdown = src.indexOf('settingsBreakdown');
+      final areaUnit = src.indexOf('settingsAreaUnit');
+      expect(breakdown, greaterThan(-1));
+      expect(areaUnit, greaterThan(-1));
+      expect(
+        breakdown,
+        lessThan(areaUnit),
+        reason: 'below AREA UNIT it is hidden behind ten rows of scrolling',
+      );
     });
   });
 }

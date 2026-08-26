@@ -1879,6 +1879,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'“{name}” now reads in {unit}'**
   String plotUnitSaved(String name, String unit);
+
+  /// No description provided for @breakdownEditUnits.
+  ///
+  /// In en, this message translates to:
+  /// **'Units'**
+  String get breakdownEditUnits;
 }
 
 class _AppLocalizationsDelegate

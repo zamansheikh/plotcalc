@@ -43,7 +43,10 @@ class BreakdownUnitsScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        AreaBreakdownView(sqm: _sampleSqm),
+                        AreaBreakdownView(
+                          sqm: _sampleSqm,
+                          configurable: false,
+                        ),
                         const SizedBox(height: 12),
                         Text(
                           context.l10n.breakdownConfigHint,

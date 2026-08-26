@@ -44,19 +44,19 @@ class SettingsScreen extends StatelessWidget {
                     child: _GridRow(current: state.gridStyle),
                   ),
                   _Section(
+                    title: context.l10n.settingsBreakdown,
+                    child: _BreakdownRow(
+                      count: state.breakdown.orderedEnabled.length,
+                      total: state.breakdown.order.length,
+                    ),
+                  ),
+                  _Section(
                     title: context.l10n.settingsAreaUnit,
                     child: _AreaList(current: state.areaUnit),
                   ),
                   _Section(
                     title: context.l10n.settingsLengthUnit,
                     child: _LengthRow(current: state.lengthUnit),
-                  ),
-                  _Section(
-                    title: context.l10n.settingsBreakdown,
-                    child: _BreakdownRow(
-                      count: state.breakdown.orderedEnabled.length,
-                      total: state.breakdown.order.length,
-                    ),
                   ),
                   _Section(
                     title: context.l10n.settingsUnderlay,

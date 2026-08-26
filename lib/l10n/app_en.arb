@@ -877,5 +877,7 @@
         "type": "String"
       }
     }
-  }
+  },
+  "breakdownEditUnits": "Units",
+  "@breakdownEditUnits": {}
 }

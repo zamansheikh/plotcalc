@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/units/area_breakdown.dart';
@@ -22,11 +24,17 @@ class AreaBreakdownView extends StatelessWidget {
   /// when [framed], since that is what draws the label.
   final bool copyable;
 
+  /// Shows a shortcut to the unit editor. The question "why is it showing
+  /// these units?" arises here, not six sections deep in Settings — so the
+  /// control belongs here too. Off on the editor screen itself.
+  final bool configurable;
+
   const AreaBreakdownView({
     super.key,
     required this.sqm,
     this.framed = true,
     this.copyable = true,
+    this.configurable = true,
   });
 
   @override
@@ -82,13 +90,36 @@ class AreaBreakdownView extends StatelessWidget {
                   style: AppTypography.monoLabel,
                 ),
               ),
-              if (copyable && !breakdown.isEmpty)
-                _CopyButton(
-                  text: breakdown.parts
-                      .map((p) => '${p.formatted} ${p.unit.labelOf(context.l10n)}')
-                      .join(' · '),
+              if (configurable)
+                _HeaderAction(
+                  icon: Icons.tune,
+                  label: context.l10n.breakdownEditUnits,
                   accent: accent,
+                  onTap: () => context.push(AppRoutes.breakdownUnits),
                 ),
+              if (copyable && !breakdown.isEmpty) ...[
+                const SizedBox(width: 4),
+                _HeaderAction(
+                  icon: Icons.copy_all_outlined,
+                  label: context.l10n.actionCopy,
+                  accent: accent,
+                  onTap: () async {
+                    final messenger = ScaffoldMessenger.of(context);
+                    final copied = context.l10n.copiedToClipboard;
+                    await Clipboard.setData(
+                      ClipboardData(
+                        text: breakdown.parts
+                            .map(
+                              (p) =>
+                                  '${p.formatted} ${p.unit.labelOf(context.l10n)}',
+                            )
+                            .join(' · '),
+                      ),
+                    );
+                    messenger.showSnackBar(SnackBar(content: Text(copied)));
+                  },
+                ),
+              ],
             ],
           ),
           const SizedBox(height: 10),
@@ -129,32 +160,34 @@ class _Term extends StatelessWidget {
   }
 }
 
-/// Copies the compound reading. Handy in the calculator, where the number
-/// is usually on its way into a message or a deed.
-class _CopyButton extends StatelessWidget {
-  final String text;
+/// Small labelled icon in the card header. Used for both copy and the
+/// shortcut to the unit editor so they read as one set.
+class _HeaderAction extends StatelessWidget {
+  final IconData icon;
+  final String label;
   final Color accent;
-  const _CopyButton({required this.text, required this.accent});
+  final VoidCallback onTap;
+  const _HeaderAction({
+    required this.icon,
+    required this.label,
+    required this.accent,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () async {
-        final messenger = ScaffoldMessenger.of(context);
-        final copied = context.l10n.copiedToClipboard;
-        await Clipboard.setData(ClipboardData(text: text));
-        messenger.showSnackBar(SnackBar(content: Text(copied)));
-      },
+      onTap: onTap,
       borderRadius: BorderRadius.circular(8),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.copy_all_outlined, size: 13, color: accent),
+            Icon(icon, size: 13, color: accent),
             const SizedBox(width: 5),
             Text(
-              context.l10n.actionCopy,
+              label,
               style: AppTypography.mono(size: 10, color: accent),
             ),
           ],

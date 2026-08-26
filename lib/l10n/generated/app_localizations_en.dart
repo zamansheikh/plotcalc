@@ -1069,4 +1069,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String plotUnitSaved(String name, String unit) {
     return '“$name” now reads in $unit';
   }
+
+  @override
+  String get breakdownEditUnits => 'Units';
 }
