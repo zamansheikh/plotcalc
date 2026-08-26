@@ -260,5 +260,16 @@
   "unitBighaMymensinghLabel": "বিঘা (ময়)",
   "unitBighaMymensinghName": "বিঘা — ময়মনসিংহ",
   "unitKathaMymensinghLabel": "কাঠা (ময়)",
-  "unitKathaMymensinghName": "কাঠা — ময়মনসিংহ"
+  "unitKathaMymensinghName": "কাঠা — ময়মনসিংহ",
+  "breakdownTitle": "বিভাজন হিসাব",
+  "breakdownSectionLabel": "বিভাজন হিসাব",
+  "settingsBreakdown": "বিভাজনের একক",
+  "settingsBreakdownSub": "যৌগিক হিসাবে কোন কোন একক থাকবে বেছে নিন",
+  "breakdownConfigTitle": "বিভাজনের একক",
+  "breakdownConfigSubtitle": "সাজাতে টানুন, চালু/বন্ধ করতে ট্যাপ করুন",
+  "breakdownConfigHint": "বড় একক আগে ব্যবহার হয়, আর আপনার চালু করা সবচেয়ে ছোট এককটি বাকি অংশ বহন করে।",
+  "breakdownEmpty": "বিভাজন দেখতে অন্তত একটি একক চালু করুন।",
+  "breakdownNone": "কোনো একক চালু নেই",
+  "actionResetDefaults": "ডিফল্টে ফেরান",
+  "breakdownOf": "{total}টির মধ্যে {count}টি একক চালু"
 }

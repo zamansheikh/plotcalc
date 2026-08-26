@@ -67,8 +67,10 @@ enum AreaUnit {
   double toSqm(double v) => v * sqmPerUnit;
 
   /// Format a square-meter value as a readable string in this unit.
-  String format(double sqm) {
-    final v = fromSqm(sqm);
+  String format(double sqm) => formatValue(fromSqm(sqm));
+
+  /// Format a value that is *already* expressed in this unit.
+  String formatValue(double v) {
     if (precision == 0) {
       return NumberFormat.decimalPattern().format(v.round());
     }
@@ -77,6 +79,11 @@ enum AreaUnit {
     f.maximumFractionDigits = precision;
     return f.format(v);
   }
+
+  /// Whole-number rendering, for the non-remainder parts of a breakdown
+  /// where "1 bigha" reads better than "1.0000 bigha".
+  String formatWhole(double v) =>
+      NumberFormat.decimalPattern().format(v.round());
 
   static AreaUnit fromKey(String key) {
     return AreaUnit.values.firstWhere(

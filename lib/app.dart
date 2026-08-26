@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
@@ -33,6 +34,13 @@ class _PlotCalcAppState extends State<PlotCalcApp> {
           locale: settings.locale,
           supportedLocales: AppLocalizations.supportedLocales,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localeResolutionCallback: (device, supported) {
+            final resolved = resolveAppLocale(device, supported);
+            // Keep intl's NumberFormat/DateFormat on the UI locale, so areas
+            // and counts don't render in two different digit systems.
+            Intl.defaultLocale = resolved.toLanguageTag();
+            return resolved;
+          },
           routerConfig: _router,
         ),
       ),

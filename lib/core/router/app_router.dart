@@ -14,6 +14,7 @@ import '../../presentation/features/info/view/info_screen.dart';
 import '../../presentation/features/khotiyan/view/khotiyan_screen.dart';
 import '../../presentation/features/picker/view/picker_screen.dart';
 import '../../presentation/features/result/view/result_screen.dart';
+import '../../presentation/features/settings/view/breakdown_units_screen.dart';
 import '../../presentation/features/settings/view/settings_screen.dart';
 import '../../presentation/features/subdivide/view/subdivide_screen.dart';
 import '../../presentation/shared/widgets/main_shell.dart';
@@ -38,6 +39,7 @@ class AppRoutes {
   static const khotiyan = '/khotiyan';
   static const article = '/article';
   static const settings = '/settings';
+  static const breakdownUnits = '/settings/breakdown-units';
   static const about = '/about';
 }
 
@@ -154,6 +156,10 @@ GoRouter buildRouter() {
       GoRoute(
         path: AppRoutes.settings,
         builder: (_, _) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.breakdownUnits,
+        builder: (_, _) => const BreakdownUnitsScreen(),
       ),
       GoRoute(
         path: AppRoutes.about,

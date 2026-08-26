@@ -52,6 +52,13 @@ class SettingsScreen extends StatelessWidget {
                     child: _LengthRow(current: state.lengthUnit),
                   ),
                   _Section(
+                    title: context.l10n.settingsBreakdown,
+                    child: _BreakdownRow(
+                      count: state.breakdown.orderedEnabled.length,
+                      total: state.breakdown.order.length,
+                    ),
+                  ),
+                  _Section(
                     title: context.l10n.settingsUnderlay,
                     child: _UnderlayToggle(value: state.mapUnderlay),
                   ),
@@ -454,6 +461,53 @@ class _LanguageRow extends StatelessWidget {
           ),
         ],
       ],
+    );
+  }
+}
+
+/// Entry point into the breakdown-unit editor. Shows the current selection
+/// inline so the common case (checking what's on) needs no navigation.
+class _BreakdownRow extends StatelessWidget {
+  final int count;
+  final int total;
+  const _BreakdownRow({required this.count, required this.total});
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = context.watch<SettingsBloc>().state.accent;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => context.push(AppRoutes.breakdownUnits),
+        borderRadius: BorderRadius.circular(10),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      context.l10n.settingsBreakdownSub,
+                      style: AppTypography.sans(size: 13),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      context.l10n.breakdownOf(count, total),
+                      style: AppTypography.mono(
+                        size: 10,
+                        color: AppColors.textFaint,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right, size: 18, color: accent),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

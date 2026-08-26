@@ -52,3 +52,22 @@ class LocaleChanged extends SettingsEvent {
   @override
   List<Object?> get props => [locale];
 }
+
+class BreakdownUnitToggled extends SettingsEvent {
+  final AreaUnit unit;
+  const BreakdownUnitToggled(this.unit);
+  @override
+  List<Object?> get props => [unit];
+}
+
+class BreakdownUnitsReordered extends SettingsEvent {
+  final int oldIndex;
+  final int newIndex;
+  const BreakdownUnitsReordered(this.oldIndex, this.newIndex);
+  @override
+  List<Object?> get props => [oldIndex, newIndex];
+}
+
+class BreakdownReset extends SettingsEvent {
+  const BreakdownReset();
+}

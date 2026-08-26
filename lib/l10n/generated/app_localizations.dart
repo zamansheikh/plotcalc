@@ -1663,6 +1663,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Katha — Mymensingh'**
   String get unitKathaMymensinghName;
+
+  /// No description provided for @breakdownTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Breakdown'**
+  String get breakdownTitle;
+
+  /// No description provided for @breakdownSectionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'BREAKDOWN'**
+  String get breakdownSectionLabel;
+
+  /// No description provided for @settingsBreakdown.
+  ///
+  /// In en, this message translates to:
+  /// **'BREAKDOWN UNITS'**
+  String get settingsBreakdown;
+
+  /// No description provided for @settingsBreakdownSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose which units make up a compound reading'**
+  String get settingsBreakdownSub;
+
+  /// No description provided for @breakdownConfigTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Breakdown units'**
+  String get breakdownConfigTitle;
+
+  /// No description provided for @breakdownConfigSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to reorder, tap to switch on or off'**
+  String get breakdownConfigSubtitle;
+
+  /// No description provided for @breakdownConfigHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Units are used largest first, and the smallest one you enable carries the remainder.'**
+  String get breakdownConfigHint;
+
+  /// No description provided for @breakdownEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable at least one unit to see a breakdown.'**
+  String get breakdownEmpty;
+
+  /// No description provided for @breakdownNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No units enabled'**
+  String get breakdownNone;
+
+  /// No description provided for @actionResetDefaults.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset to defaults'**
+  String get actionResetDefaults;
+
+  /// No description provided for @breakdownOf.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} of {total} units on'**
+  String breakdownOf(int count, int total);
 }
 
 class _AppLocalizationsDelegate

@@ -945,4 +945,48 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get unitKathaMymensinghName => 'কাঠা — ময়মনসিংহ';
+
+  @override
+  String get breakdownTitle => 'বিভাজন হিসাব';
+
+  @override
+  String get breakdownSectionLabel => 'বিভাজন হিসাব';
+
+  @override
+  String get settingsBreakdown => 'বিভাজনের একক';
+
+  @override
+  String get settingsBreakdownSub => 'যৌগিক হিসাবে কোন কোন একক থাকবে বেছে নিন';
+
+  @override
+  String get breakdownConfigTitle => 'বিভাজনের একক';
+
+  @override
+  String get breakdownConfigSubtitle =>
+      'সাজাতে টানুন, চালু/বন্ধ করতে ট্যাপ করুন';
+
+  @override
+  String get breakdownConfigHint =>
+      'বড় একক আগে ব্যবহার হয়, আর আপনার চালু করা সবচেয়ে ছোট এককটি বাকি অংশ বহন করে।';
+
+  @override
+  String get breakdownEmpty => 'বিভাজন দেখতে অন্তত একটি একক চালু করুন।';
+
+  @override
+  String get breakdownNone => 'কোনো একক চালু নেই';
+
+  @override
+  String get actionResetDefaults => 'ডিফল্টে ফেরান';
+
+  @override
+  String breakdownOf(int count, int total) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return '$totalStringটির মধ্যে $countStringটি একক চালু';
+  }
 }

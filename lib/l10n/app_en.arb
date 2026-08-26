@@ -785,5 +785,38 @@
   "unitKathaMymensinghLabel": "katha (M)",
   "@unitKathaMymensinghLabel": {},
   "unitKathaMymensinghName": "Katha — Mymensingh",
-  "@unitKathaMymensinghName": {}
+  "@unitKathaMymensinghName": {},
+  "breakdownTitle": "Breakdown",
+  "@breakdownTitle": {},
+  "breakdownSectionLabel": "BREAKDOWN",
+  "@breakdownSectionLabel": {},
+  "settingsBreakdown": "BREAKDOWN UNITS",
+  "@settingsBreakdown": {},
+  "settingsBreakdownSub": "Choose which units make up a compound reading",
+  "@settingsBreakdownSub": {},
+  "breakdownConfigTitle": "Breakdown units",
+  "@breakdownConfigTitle": {},
+  "breakdownConfigSubtitle": "Drag to reorder, tap to switch on or off",
+  "@breakdownConfigSubtitle": {},
+  "breakdownConfigHint": "Units are used largest first, and the smallest one you enable carries the remainder.",
+  "@breakdownConfigHint": {},
+  "breakdownEmpty": "Enable at least one unit to see a breakdown.",
+  "@breakdownEmpty": {},
+  "breakdownNone": "No units enabled",
+  "@breakdownNone": {},
+  "actionResetDefaults": "Reset to defaults",
+  "@actionResetDefaults": {},
+  "breakdownOf": "{count} of {total} units on",
+  "@breakdownOf": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "total": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  }
 }

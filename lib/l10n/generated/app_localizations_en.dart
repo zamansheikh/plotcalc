@@ -947,4 +947,49 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get unitKathaMymensinghName => 'Katha — Mymensingh';
+
+  @override
+  String get breakdownTitle => 'Breakdown';
+
+  @override
+  String get breakdownSectionLabel => 'BREAKDOWN';
+
+  @override
+  String get settingsBreakdown => 'BREAKDOWN UNITS';
+
+  @override
+  String get settingsBreakdownSub =>
+      'Choose which units make up a compound reading';
+
+  @override
+  String get breakdownConfigTitle => 'Breakdown units';
+
+  @override
+  String get breakdownConfigSubtitle =>
+      'Drag to reorder, tap to switch on or off';
+
+  @override
+  String get breakdownConfigHint =>
+      'Units are used largest first, and the smallest one you enable carries the remainder.';
+
+  @override
+  String get breakdownEmpty => 'Enable at least one unit to see a breakdown.';
+
+  @override
+  String get breakdownNone => 'No units enabled';
+
+  @override
+  String get actionResetDefaults => 'Reset to defaults';
+
+  @override
+  String breakdownOf(int count, int total) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return '$countString of $totalString units on';
+  }
 }

@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/units/area_breakdown.dart';
 import '../../../core/units/area_unit.dart';
 import '../../../core/units/length_unit.dart';
 
@@ -19,6 +20,9 @@ class SettingsState extends Equatable {
   final LengthUnit lengthUnit;
   final bool mapUnderlay;
 
+  /// Which units make up a compound area reading, and in what order.
+  final BreakdownConfig breakdown;
+
   const SettingsState({
     this.locale,
     this.accent = AppColors.lime,
@@ -26,6 +30,7 @@ class SettingsState extends Equatable {
     this.areaUnit = AreaUnit.sqft,
     this.lengthUnit = LengthUnit.ft,
     this.mapUnderlay = false,
+    this.breakdown = BreakdownConfig.defaults,
   });
 
   SettingsState copyWith({
@@ -36,6 +41,7 @@ class SettingsState extends Equatable {
     AreaUnit? areaUnit,
     LengthUnit? lengthUnit,
     bool? mapUnderlay,
+    BreakdownConfig? breakdown,
   }) =>
       SettingsState(
         locale: resetLocale ? null : (locale ?? this.locale),
@@ -44,9 +50,19 @@ class SettingsState extends Equatable {
         areaUnit: areaUnit ?? this.areaUnit,
         lengthUnit: lengthUnit ?? this.lengthUnit,
         mapUnderlay: mapUnderlay ?? this.mapUnderlay,
+        breakdown: breakdown ?? this.breakdown,
       );
 
   @override
   List<Object?> get props =>
-      [locale, accent, gridStyle, areaUnit, lengthUnit, mapUnderlay];
+      [
+        locale,
+        accent,
+        gridStyle,
+        areaUnit,
+        lengthUnit,
+        mapUnderlay,
+        breakdown.order,
+        breakdown.enabled,
+      ];
 }

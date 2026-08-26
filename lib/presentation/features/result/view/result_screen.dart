@@ -17,6 +17,7 @@ import '../../../shared/widgets/grid_background.dart';
 import '../../../shared/widgets/phone_chrome.dart';
 import '../../adjust/view/adjust_screen.dart' show AdjustArgs;
 import '../../../../l10n/l10n.dart';
+import '../../../shared/widgets/area_breakdown_view.dart';
 
 class ResultArgs {
   final String name;
@@ -81,6 +82,11 @@ class _ResultScreenState extends State<ResultScreen> {
                       accent: accent,
                       areaUnit: areaUnit,
                       gridStyle: settings.gridStyle,
+                    ),
+                    const SizedBox(height: 14),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: AreaBreakdownView(sqm: areaSqm),
                     ),
                     const SizedBox(height: 14),
                     _ConversionsHeader(),
