@@ -238,6 +238,8 @@ void main() {
     });
   });
 
+  _regionalRivalry();
+
   group('config', () {
     test('toggle flips a unit on and off', () {
       final off = BreakdownConfig.defaults.toggled(AreaUnit.katha);
@@ -279,6 +281,51 @@ void main() {
     test('defaults leave the regional units off', () {
       expect(BreakdownConfig.defaults.isOn(AreaUnit.bighaMymensingh), isFalse);
       expect(BreakdownConfig.defaults.isOn(AreaUnit.kathaMymensingh), isFalse);
+    });
+  });
+}
+
+void _regionalRivalry() {
+  group('regional units are mutually exclusive', () {
+    test('turning on the Mymensingh bigha turns off the standard one', () {
+      final cfg = BreakdownConfig.defaults.toggled(AreaUnit.bighaMymensingh);
+      expect(cfg.isOn(AreaUnit.bighaMymensingh), isTrue);
+      expect(cfg.isOn(AreaUnit.bigha), isFalse,
+          reason: 'a reading cannot mix two bigha conventions');
+    });
+
+    test('and the reverse', () {
+      final cfg = BreakdownConfig.defaults
+          .toggled(AreaUnit.bighaMymensingh)
+          .toggled(AreaUnit.bigha);
+      expect(cfg.isOn(AreaUnit.bigha), isTrue);
+      expect(cfg.isOn(AreaUnit.bighaMymensingh), isFalse);
+    });
+
+    test('katha behaves the same way', () {
+      final cfg = BreakdownConfig.defaults.toggled(AreaUnit.kathaMymensingh);
+      expect(cfg.isOn(AreaUnit.kathaMymensingh), isTrue);
+      expect(cfg.isOn(AreaUnit.katha), isFalse);
+    });
+
+    test('switching a unit off never touches its rival', () {
+      final cfg = BreakdownConfig.defaults.toggled(AreaUnit.bigha);
+      expect(cfg.isOn(AreaUnit.bigha), isFalse);
+      expect(cfg.isOn(AreaUnit.bighaMymensingh), isFalse, reason: 'was already off');
+    });
+
+    test('unrelated units are unaffected', () {
+      final before = BreakdownConfig.defaults;
+      final cfg = before.toggled(AreaUnit.acre);
+      for (final u in [AreaUnit.katha, AreaUnit.shotok, AreaUnit.chatak]) {
+        expect(cfg.isOn(u), before.isOn(u), reason: u.name);
+      }
+    });
+
+    test('rivals are declared symmetrically', () {
+      BreakdownConfig.rivals.forEach((a, b) {
+        expect(BreakdownConfig.rivals[b], a, reason: '${a.name} <-> ${b.name}');
+      });
     });
   });
 }

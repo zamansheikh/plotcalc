@@ -16,6 +16,12 @@ class SettingsDrawer extends StatelessWidget {
   /// to follow the active locale.
   static List<_MenuItem> _menuItems(AppLocalizations t) => <_MenuItem>[
     _MenuItem(
+      icon: Icons.calculate_outlined,
+      label: t.calcTitle,
+      sub: t.homeCalculatorSub,
+      route: AppRoutes.calculator,
+    ),
+    _MenuItem(
       icon: Icons.pie_chart_outline,
       label: t.khotiyanTitle,
       sub: t.drawerKhotiyanSub,

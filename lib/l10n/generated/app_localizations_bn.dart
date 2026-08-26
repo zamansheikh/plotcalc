@@ -989,4 +989,57 @@ class AppLocalizationsBn extends AppLocalizations {
 
     return '$totalStringটির মধ্যে $countStringটি একক চালু';
   }
+
+  @override
+  String get calcTitle => 'জমির ক্যালকুলেটর';
+
+  @override
+  String get calcSubtitle => 'মোট, সমন্বয় ও একত্র করুন';
+
+  @override
+  String get calcTotalLabel => 'মোট ক্ষেত্রফল';
+
+  @override
+  String get calcTotalHint => '০';
+
+  @override
+  String get calcAdjustTitle => 'ক্ষেত্রফল সমন্বয়';
+
+  @override
+  String get calcAdjustSub => 'মোট থেকে যোগ বা বিয়োগ করুন';
+
+  @override
+  String get calcAdd => 'যোগ';
+
+  @override
+  String get calcSubtract => 'বিয়োগ';
+
+  @override
+  String get calcApply => 'প্রয়োগ';
+
+  @override
+  String get calcCombineTitle => 'একক একত্র করুন';
+
+  @override
+  String get calcCombineSub => 'একাধিক একক মিলিয়ে মোট তৈরি করুন';
+
+  @override
+  String get calcCombineApply => 'মোট হিসেবে বসান';
+
+  @override
+  String calcCombineRunning(String value, String unit) {
+    return 'যোগফল · $value $unit';
+  }
+
+  @override
+  String get calcClear => 'মুছুন';
+
+  @override
+  String get calcEmpty => 'বিভাজন দেখতে একটি ক্ষেত্রফল লিখুন।';
+
+  @override
+  String get calcCannotGoNegative => 'মোট শূন্যের নিচে যেতে পারে না।';
+
+  @override
+  String get homeCalculatorSub => 'যোগ, বিয়োগ, বিভাজন';
 }

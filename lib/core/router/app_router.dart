@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../presentation/features/about/view/about_screen.dart';
 import '../../presentation/features/adjust/view/adjust_screen.dart';
+import '../../presentation/features/calculator/view/calculator_screen.dart';
 import '../../presentation/features/compare/view/compare_screen.dart';
 import '../../presentation/features/converter/view/converter_screen.dart';
 import '../../presentation/features/draw/view/draw_screen.dart';
@@ -36,6 +37,7 @@ class AppRoutes {
   static const adjust = '/adjust';
   static const compare = '/compare';
   static const converter = '/converter';
+  static const calculator = '/calculator';
   static const khotiyan = '/khotiyan';
   static const article = '/article';
   static const settings = '/settings';
@@ -140,6 +142,10 @@ GoRouter buildRouter() {
       GoRoute(
         path: AppRoutes.converter,
         builder: (_, _) => const ConverterScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.calculator,
+        builder: (_, _) => const CalculatorScreen(),
       ),
       GoRoute(
         path: AppRoutes.khotiyan,

@@ -818,5 +818,48 @@
         "format": "decimalPattern"
       }
     }
-  }
+  },
+  "calcTitle": "Land calculator",
+  "@calcTitle": {},
+  "calcSubtitle": "Total, adjust, and combine areas",
+  "@calcSubtitle": {},
+  "calcTotalLabel": "TOTAL AREA",
+  "@calcTotalLabel": {},
+  "calcTotalHint": "0",
+  "@calcTotalHint": {},
+  "calcAdjustTitle": "Adjust area",
+  "@calcAdjustTitle": {},
+  "calcAdjustSub": "Add to or subtract from the total",
+  "@calcAdjustSub": {},
+  "calcAdd": "Add",
+  "@calcAdd": {},
+  "calcSubtract": "Subtract",
+  "@calcSubtract": {},
+  "calcApply": "Apply",
+  "@calcApply": {},
+  "calcCombineTitle": "Combine units",
+  "@calcCombineTitle": {},
+  "calcCombineSub": "Build a total from several units at once",
+  "@calcCombineSub": {},
+  "calcCombineApply": "Set as total",
+  "@calcCombineApply": {},
+  "calcCombineRunning": "Sum · {value} {unit}",
+  "@calcCombineRunning": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "calcClear": "Clear",
+  "@calcClear": {},
+  "calcEmpty": "Enter an area to see its breakdown.",
+  "@calcEmpty": {},
+  "calcCannotGoNegative": "Total cannot go below zero.",
+  "@calcCannotGoNegative": {},
+  "homeCalculatorSub": "Add, subtract, break down",
+  "@homeCalculatorSub": {}
 }

@@ -37,6 +37,16 @@ class BreakdownConfig {
 
   bool isOn(AreaUnit u) => enabled.contains(u);
 
+  /// Units that measure the same thing under a different regional
+  /// convention. A reading that mixed a standard bigha with a Mymensingh
+  /// one would be nonsense, so switching one on switches the other off.
+  static const rivals = <AreaUnit, AreaUnit>{
+    AreaUnit.bigha: AreaUnit.bighaMymensingh,
+    AreaUnit.bighaMymensingh: AreaUnit.bigha,
+    AreaUnit.katha: AreaUnit.kathaMymensingh,
+    AreaUnit.kathaMymensingh: AreaUnit.katha,
+  };
+
   BreakdownConfig copyWith({List<AreaUnit>? order, Set<AreaUnit>? enabled}) =>
       BreakdownConfig(
         order: order ?? this.order,
@@ -45,7 +55,12 @@ class BreakdownConfig {
 
   BreakdownConfig toggled(AreaUnit u) {
     final next = Set<AreaUnit>.from(enabled);
-    next.contains(u) ? next.remove(u) : next.add(u);
+    if (next.contains(u)) {
+      next.remove(u);
+    } else {
+      next.add(u);
+      next.remove(rivals[u]);
+    }
     return copyWith(enabled: next);
   }
 

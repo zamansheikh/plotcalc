@@ -1729,6 +1729,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} of {total} units on'**
   String breakdownOf(int count, int total);
+
+  /// No description provided for @calcTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Land calculator'**
+  String get calcTitle;
+
+  /// No description provided for @calcSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Total, adjust, and combine areas'**
+  String get calcSubtitle;
+
+  /// No description provided for @calcTotalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'TOTAL AREA'**
+  String get calcTotalLabel;
+
+  /// No description provided for @calcTotalHint.
+  ///
+  /// In en, this message translates to:
+  /// **'0'**
+  String get calcTotalHint;
+
+  /// No description provided for @calcAdjustTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust area'**
+  String get calcAdjustTitle;
+
+  /// No description provided for @calcAdjustSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to or subtract from the total'**
+  String get calcAdjustSub;
+
+  /// No description provided for @calcAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get calcAdd;
+
+  /// No description provided for @calcSubtract.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtract'**
+  String get calcSubtract;
+
+  /// No description provided for @calcApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get calcApply;
+
+  /// No description provided for @calcCombineTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Combine units'**
+  String get calcCombineTitle;
+
+  /// No description provided for @calcCombineSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Build a total from several units at once'**
+  String get calcCombineSub;
+
+  /// No description provided for @calcCombineApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Set as total'**
+  String get calcCombineApply;
+
+  /// No description provided for @calcCombineRunning.
+  ///
+  /// In en, this message translates to:
+  /// **'Sum · {value} {unit}'**
+  String calcCombineRunning(String value, String unit);
+
+  /// No description provided for @calcClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get calcClear;
+
+  /// No description provided for @calcEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter an area to see its breakdown.'**
+  String get calcEmpty;
+
+  /// No description provided for @calcCannotGoNegative.
+  ///
+  /// In en, this message translates to:
+  /// **'Total cannot go below zero.'**
+  String get calcCannotGoNegative;
+
+  /// No description provided for @homeCalculatorSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Add, subtract, break down'**
+  String get homeCalculatorSub;
 }
 
 class _AppLocalizationsDelegate

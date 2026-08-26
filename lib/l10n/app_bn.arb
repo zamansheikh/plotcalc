@@ -271,5 +271,22 @@
   "breakdownEmpty": "বিভাজন দেখতে অন্তত একটি একক চালু করুন।",
   "breakdownNone": "কোনো একক চালু নেই",
   "actionResetDefaults": "ডিফল্টে ফেরান",
-  "breakdownOf": "{total}টির মধ্যে {count}টি একক চালু"
+  "breakdownOf": "{total}টির মধ্যে {count}টি একক চালু",
+  "calcTitle": "জমির ক্যালকুলেটর",
+  "calcSubtitle": "মোট, সমন্বয় ও একত্র করুন",
+  "calcTotalLabel": "মোট ক্ষেত্রফল",
+  "calcTotalHint": "০",
+  "calcAdjustTitle": "ক্ষেত্রফল সমন্বয়",
+  "calcAdjustSub": "মোট থেকে যোগ বা বিয়োগ করুন",
+  "calcAdd": "যোগ",
+  "calcSubtract": "বিয়োগ",
+  "calcApply": "প্রয়োগ",
+  "calcCombineTitle": "একক একত্র করুন",
+  "calcCombineSub": "একাধিক একক মিলিয়ে মোট তৈরি করুন",
+  "calcCombineApply": "মোট হিসেবে বসান",
+  "calcCombineRunning": "যোগফল · {value} {unit}",
+  "calcClear": "মুছুন",
+  "calcEmpty": "বিভাজন দেখতে একটি ক্ষেত্রফল লিখুন।",
+  "calcCannotGoNegative": "মোট শূন্যের নিচে যেতে পারে না।",
+  "homeCalculatorSub": "যোগ, বিয়োগ, বিভাজন"
 }

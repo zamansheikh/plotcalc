@@ -992,4 +992,57 @@ class AppLocalizationsEn extends AppLocalizations {
 
     return '$countString of $totalString units on';
   }
+
+  @override
+  String get calcTitle => 'Land calculator';
+
+  @override
+  String get calcSubtitle => 'Total, adjust, and combine areas';
+
+  @override
+  String get calcTotalLabel => 'TOTAL AREA';
+
+  @override
+  String get calcTotalHint => '0';
+
+  @override
+  String get calcAdjustTitle => 'Adjust area';
+
+  @override
+  String get calcAdjustSub => 'Add to or subtract from the total';
+
+  @override
+  String get calcAdd => 'Add';
+
+  @override
+  String get calcSubtract => 'Subtract';
+
+  @override
+  String get calcApply => 'Apply';
+
+  @override
+  String get calcCombineTitle => 'Combine units';
+
+  @override
+  String get calcCombineSub => 'Build a total from several units at once';
+
+  @override
+  String get calcCombineApply => 'Set as total';
+
+  @override
+  String calcCombineRunning(String value, String unit) {
+    return 'Sum · $value $unit';
+  }
+
+  @override
+  String get calcClear => 'Clear';
+
+  @override
+  String get calcEmpty => 'Enter an area to see its breakdown.';
+
+  @override
+  String get calcCannotGoNegative => 'Total cannot go below zero.';
+
+  @override
+  String get homeCalculatorSub => 'Add, subtract, break down';
 }
