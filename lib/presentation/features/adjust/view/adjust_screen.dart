@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
@@ -187,7 +188,6 @@ class _TargetCard extends StatelessWidget {
         ? AreaUnit.sqft.toSqm(100)
         : areaUnit.toSqm(0.05);
 
-    final fmt = areaUnit.format(state.targetSqm);
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
       child: ClipRRect(
@@ -238,31 +238,10 @@ class _TargetCard extends StatelessWidget {
                             ),
                       ),
                       Expanded(
-                        child: Center(
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.baseline,
-                            textBaseline: TextBaseline.alphabetic,
-                            children: [
-                              Text(
-                                fmt,
-                                style: AppTypography.mono(
-                                  size: 32,
-                                  weight: FontWeight.w500,
-                                  color: accent,
-                                  letterSpacing: -0.6,
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                areaUnit.labelOf(context.l10n),
-                                style: AppTypography.mono(
-                                  size: 13,
-                                  color: AppColors.textDim,
-                                ),
-                              ),
-                            ],
-                          ),
+                        child: _TargetInput(
+                          targetSqm: state.targetSqm,
+                          areaUnit: areaUnit,
+                          accent: accent,
                         ),
                       ),
                       _StepBtn(
@@ -1292,4 +1271,116 @@ class _SelectionPainter extends CustomPainter {
       old.scale != scale ||
       old.center != center ||
       old.accent != accent;
+}
+
+/// The target area, typed directly.
+///
+/// The steppers beside it are for nudging; typing is how you say "make it
+/// 5.3". The field owns a controller so the caret survives a rebuild, and
+/// only takes dictation from the bloc when the value changed elsewhere —
+/// a stepper tap or a reset — so it never fights the keyboard.
+class _TargetInput extends StatefulWidget {
+  final double targetSqm;
+  final AreaUnit areaUnit;
+  final Color accent;
+
+  const _TargetInput({
+    required this.targetSqm,
+    required this.areaUnit,
+    required this.accent,
+  });
+
+  @override
+  State<_TargetInput> createState() => _TargetInputState();
+}
+
+class _TargetInputState extends State<_TargetInput> {
+  late final TextEditingController _ctrl = TextEditingController(text: _text());
+
+  String _text() {
+    final v = widget.areaUnit.fromSqm(widget.targetSqm);
+    if (v <= 0) return '';
+    // Trailing zeros make a target awkward to edit.
+    return v
+        .toStringAsFixed(widget.areaUnit.precision + 1)
+        .replaceFirst(RegExp(r'0+$'), '')
+        .replaceFirst(RegExp(r'\.$'), '');
+  }
+
+  double? get _typed =>
+      double.tryParse(_ctrl.text.replaceAll(',', '').trim());
+
+  @override
+  void didUpdateWidget(_TargetInput old) {
+    super.didUpdateWidget(old);
+    final shownSqm = _typed == null
+        ? null
+        : widget.areaUnit.toSqm(_typed!);
+    final unitChanged = old.areaUnit != widget.areaUnit;
+    // Only rewrite when the field no longer represents the value — otherwise
+    // typing "5." would be corrected out from under the user.
+    final drifted = shownSqm == null ||
+        (shownSqm - widget.targetSqm).abs() >
+            widget.targetSqm.abs() * 1e-6 + 1e-9;
+    if (unitChanged || drifted) {
+      _ctrl.text = _text();
+    }
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.baseline,
+      textBaseline: TextBaseline.alphabetic,
+      children: [
+        Expanded(
+          child: TextField(
+            controller: _ctrl,
+            textAlign: TextAlign.center,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+            ],
+            cursorColor: widget.accent,
+            style: AppTypography.mono(
+              size: 32,
+              weight: FontWeight.w500,
+              color: widget.accent,
+              letterSpacing: -0.6,
+            ),
+            decoration: InputDecoration(
+              isCollapsed: true,
+              border: InputBorder.none,
+              contentPadding: EdgeInsets.zero,
+              hintText: '0',
+              hintStyle: AppTypography.mono(
+                size: 32,
+                weight: FontWeight.w500,
+                color: AppColors.textFaint,
+                letterSpacing: -0.6,
+              ),
+            ),
+            onChanged: (raw) {
+              final v = double.tryParse(raw.replaceAll(',', '').trim());
+              if (v == null) return;
+              context
+                  .read<AdjustBloc>()
+                  .add(TargetChanged(widget.areaUnit.toSqm(v)));
+            },
+          ),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          widget.areaUnit.labelOf(context.l10n),
+          style: AppTypography.mono(size: 13, color: AppColors.textDim),
+        ),
+      ],
+    );
+  }
 }
