@@ -288,5 +288,9 @@
   "calcPartsHint": "যেকোনো একক বদলান — লেখার সঙ্গে সঙ্গে মোট বদলাবে।",
   "calcAdjustLabel": "মোট সমন্বয়",
   "calcResultLabel": "বিভাজন",
-  "calcAmountLabel": "পরিমাণ"
+  "calcAmountLabel": "পরিমাণ",
+  "actionCopy": "কপি",
+  "copiedToClipboard": "ক্লিপবোর্ডে কপি হয়েছে",
+  "resultShare": "শেয়ার",
+  "exportFailed": "রপ্তানি করা যায়নি। আবার চেষ্টা করুন।"
 }

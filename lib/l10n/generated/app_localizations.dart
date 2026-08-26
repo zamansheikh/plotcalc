@@ -1831,6 +1831,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'AMOUNT'**
   String get calcAmountLabel;
+
+  /// No description provided for @actionCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get actionCopy;
+
+  /// No description provided for @copiedToClipboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied to clipboard'**
+  String get copiedToClipboard;
+
+  /// No description provided for @resultShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get resultShare;
+
+  /// No description provided for @exportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not export. Please try again.'**
+  String get exportFailed;
 }
 
 class _AppLocalizationsDelegate

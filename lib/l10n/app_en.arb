@@ -852,5 +852,13 @@
   "calcResultLabel": "BREAKDOWN",
   "@calcResultLabel": {},
   "calcAmountLabel": "AMOUNT",
-  "@calcAmountLabel": {}
+  "@calcAmountLabel": {},
+  "actionCopy": "Copy",
+  "@actionCopy": {},
+  "copiedToClipboard": "Copied to clipboard",
+  "@copiedToClipboard": {},
+  "resultShare": "Share",
+  "@resultShare": {},
+  "exportFailed": "Could not export. Please try again.",
+  "@exportFailed": {}
 }

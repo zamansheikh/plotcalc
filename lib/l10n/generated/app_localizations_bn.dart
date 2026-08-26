@@ -1041,4 +1041,16 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get calcAmountLabel => 'পরিমাণ';
+
+  @override
+  String get actionCopy => 'কপি';
+
+  @override
+  String get copiedToClipboard => 'ক্লিপবোর্ডে কপি হয়েছে';
+
+  @override
+  String get resultShare => 'শেয়ার';
+
+  @override
+  String get exportFailed => 'রপ্তানি করা যায়নি। আবার চেষ্টা করুন।';
 }

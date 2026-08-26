@@ -1043,4 +1043,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get calcAmountLabel => 'AMOUNT';
+
+  @override
+  String get actionCopy => 'Copy';
+
+  @override
+  String get copiedToClipboard => 'Copied to clipboard';
+
+  @override
+  String get resultShare => 'Share';
+
+  @override
+  String get exportFailed => 'Could not export. Please try again.';
 }

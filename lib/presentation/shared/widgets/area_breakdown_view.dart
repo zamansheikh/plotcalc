@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/theme/app_colors.dart';
@@ -17,7 +18,16 @@ class AreaBreakdownView extends StatelessWidget {
   /// Renders on a card of its own. Off when the caller already provides one.
   final bool framed;
 
-  const AreaBreakdownView({super.key, required this.sqm, this.framed = true});
+  /// Shows a copy affordance next to the section label. Only meaningful
+  /// when [framed], since that is what draws the label.
+  final bool copyable;
+
+  const AreaBreakdownView({
+    super.key,
+    required this.sqm,
+    this.framed = true,
+    this.copyable = true,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -64,9 +74,22 @@ class AreaBreakdownView extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            context.l10n.breakdownSectionLabel,
-            style: AppTypography.monoLabel,
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  context.l10n.breakdownSectionLabel,
+                  style: AppTypography.monoLabel,
+                ),
+              ),
+              if (copyable && !breakdown.isEmpty)
+                _CopyButton(
+                  text: breakdown.parts
+                      .map((p) => '${p.formatted} ${p.unit.labelOf(context.l10n)}')
+                      .join(' · '),
+                  accent: accent,
+                ),
+            ],
           ),
           const SizedBox(height: 10),
           body,
@@ -102,6 +125,41 @@ class _Term extends StatelessWidget {
           style: AppTypography.sans(size: 12, color: AppColors.textDim),
         ),
       ],
+    );
+  }
+}
+
+/// Copies the compound reading. Handy in the calculator, where the number
+/// is usually on its way into a message or a deed.
+class _CopyButton extends StatelessWidget {
+  final String text;
+  final Color accent;
+  const _CopyButton({required this.text, required this.accent});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () async {
+        final messenger = ScaffoldMessenger.of(context);
+        final copied = context.l10n.copiedToClipboard;
+        await Clipboard.setData(ClipboardData(text: text));
+        messenger.showSnackBar(SnackBar(content: Text(copied)));
+      },
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.copy_all_outlined, size: 13, color: accent),
+            const SizedBox(width: 5),
+            Text(
+              context.l10n.actionCopy,
+              style: AppTypography.mono(size: 10, color: accent),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

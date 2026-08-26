@@ -5,7 +5,6 @@ import 'package:intl/intl.dart';
 import 'package:plotcalc/app.dart';
 import 'package:plotcalc/core/di/injection.dart';
 import 'package:plotcalc/core/units/area_unit.dart';
-import 'package:plotcalc/l10n/l10n.dart';
 import 'package:plotcalc/presentation/features/info/data/land_info_loader.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

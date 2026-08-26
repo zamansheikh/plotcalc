@@ -18,6 +18,13 @@ import '../../../shared/widgets/phone_chrome.dart';
 import '../../adjust/view/adjust_screen.dart' show AdjustArgs;
 import '../../../../l10n/l10n.dart';
 import '../../../shared/widgets/area_breakdown_view.dart';
+import 'dart:ui' as ui;
+
+import 'package:flutter/rendering.dart';
+
+import '../../../../core/export/plot_export.dart';
+import '../../../../core/export/plot_summary.dart';
+import '../../../../core/units/area_breakdown.dart';
 
 class ResultArgs {
   final String name;
@@ -44,6 +51,10 @@ class ResultScreen extends StatefulWidget {
 }
 
 class _ResultScreenState extends State<ResultScreen> {
+  /// Wraps the plot drawing so it can be rasterised for share/PDF.
+  final _artKey = GlobalKey();
+  bool _exporting = false;
+
   late List<Vertex> _verts = widget.args.vertices.isEmpty
       ? ShapePreset.freeform.vertices
       : widget.args.vertices;
@@ -55,6 +66,59 @@ class _ResultScreenState extends State<ResultScreen> {
     );
     if (!mounted || result == null || result.isEmpty) return;
     setState(() => _verts = result);
+  }
+
+  /// Rasterises the plot drawing for the share sheet and the PDF. Returns
+  /// null if the boundary isn't laid out yet, in which case callers simply
+  /// export without a picture rather than failing.
+  Future<Uint8List?> _captureArt() async {
+    try {
+      final obj = _artKey.currentContext?.findRenderObject();
+      if (obj is! RenderRepaintBoundary) return null;
+      final image = await obj.toImage(pixelRatio: 3);
+      final data = await image.toByteData(format: ui.ImageByteFormat.png);
+      return data?.buffer.asUint8List();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  PlotSummary _summary(SettingsState settings) {
+    final areaSqm = Geometry.polygonArea(_verts);
+    return PlotSummary(
+      name: widget.args.name,
+      areaSqm: areaSqm,
+      perimeterM: Geometry.polygonPerimeter(_verts),
+      sides: _verts.length,
+      unit: settings.areaUnit,
+      breakdown: AreaBreakdown.of(areaSqm, settings.breakdown),
+    );
+  }
+
+  Future<void> _export(_Export kind) async {
+    if (_exporting) return;
+    setState(() => _exporting = true);
+
+    final t = context.l10n;
+    final summary = _summary(context.read<SettingsBloc>().state);
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      switch (kind) {
+        case _Export.copy:
+          await PlotExport.copy(summary, t);
+          messenger.showSnackBar(
+            SnackBar(content: Text(t.copiedToClipboard)),
+          );
+        case _Export.share:
+          await PlotExport.share(summary, t, image: await _captureArt());
+        case _Export.pdf:
+          await PlotExport.sharePdf(summary, t, image: await _captureArt());
+      }
+    } catch (_) {
+      messenger.showSnackBar(SnackBar(content: Text(t.exportFailed)));
+    } finally {
+      if (mounted) setState(() => _exporting = false);
+    }
   }
 
   @override
@@ -76,12 +140,15 @@ class _ResultScreenState extends State<ResultScreen> {
                 physics: const BouncingScrollPhysics(),
                 child: Column(
                   children: [
-                    _HeroArea(
-                      vertices: _verts,
+                    RepaintBoundary(
+                      key: _artKey,
+                      child: _HeroArea(
+                        vertices: _verts,
                       areaSqm: areaSqm,
                       accent: accent,
                       areaUnit: areaUnit,
-                      gridStyle: settings.gridStyle,
+                        gridStyle: settings.gridStyle,
+                      ),
                     ),
                     const SizedBox(height: 14),
                     Padding(
@@ -97,7 +164,14 @@ class _ResultScreenState extends State<ResultScreen> {
                       accent: accent,
                     ),
                     const SizedBox(height: 14),
-                    _ResultActions(accent: accent, onAdjust: _openAdjust),
+                    _ResultActions(
+                      accent: accent,
+                      busy: _exporting,
+                      onAdjust: _openAdjust,
+                      onShare: () => _export(_Export.share),
+                      onPdf: () => _export(_Export.pdf),
+                      onCopy: () => _export(_Export.copy),
+                    ),
                   ],
                 ),
               ),
@@ -590,10 +664,23 @@ class _ValuationCardState extends State<_ValuationCard> {
   }
 }
 
+enum _Export { copy, share, pdf }
+
 class _ResultActions extends StatelessWidget {
   final Color accent;
+  final bool busy;
   final VoidCallback onAdjust;
-  const _ResultActions({required this.accent, required this.onAdjust});
+  final VoidCallback onShare;
+  final VoidCallback onPdf;
+  final VoidCallback onCopy;
+  const _ResultActions({
+    required this.accent,
+    required this.busy,
+    required this.onAdjust,
+    required this.onShare,
+    required this.onPdf,
+    required this.onCopy,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -603,17 +690,25 @@ class _ResultActions extends StatelessWidget {
         children: [
           Expanded(
             child: _ActionBtn(
-              icon: Icons.picture_as_pdf_outlined,
-              label: context.l10n.resultExportPdf,
-              onTap: () {},
+              icon: Icons.copy_all_outlined,
+              label: context.l10n.actionCopy,
+              onTap: busy ? null : onCopy,
             ),
           ),
           const SizedBox(width: 8),
           Expanded(
             child: _ActionBtn(
               icon: Icons.ios_share,
-              label: context.l10n.resultShareImage,
-              onTap: () {},
+              label: context.l10n.resultShare,
+              onTap: busy ? null : onShare,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _ActionBtn(
+              icon: Icons.picture_as_pdf_outlined,
+              label: context.l10n.resultExportPdf,
+              onTap: busy ? null : onPdf,
             ),
           ),
           const SizedBox(width: 8),
@@ -621,7 +716,7 @@ class _ResultActions extends StatelessWidget {
             child: _ActionBtn(
               icon: Icons.tune,
               label: context.l10n.resultAdjust,
-              onTap: onAdjust,
+              onTap: busy ? null : onAdjust,
             ),
           ),
         ],
@@ -633,7 +728,7 @@ class _ResultActions extends StatelessWidget {
 class _ActionBtn extends StatelessWidget {
   final IconData icon;
   final String label;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   const _ActionBtn({
     required this.icon,
     required this.label,
