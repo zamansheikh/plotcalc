@@ -12,7 +12,9 @@ import '../../../../domain/entities/plot.dart';
 import '../../../../domain/usecases/get_plots.dart';
 import '../../../shared/settings/settings_bloc.dart';
 import '../../../shared/settings/settings_state.dart';
+import '../../../shared/widgets/bottom_tab_bar.dart';
 import '../../../shared/widgets/grid_background.dart';
+import '../../../shared/widgets/main_shell.dart';
 import '../../../shared/widgets/plot_thumbnail.dart';
 import '../../result/view/result_screen.dart' show ResultArgs;
 import '../bloc/home_bloc.dart';
@@ -430,7 +432,7 @@ class _RecentHeader extends StatelessWidget {
         children: [
           Text('RECENT · $count', style: AppTypography.monoCaption),
           GestureDetector(
-            onTap: () => context.push(AppRoutes.history),
+            onTap: () => context.goTab(TabKind.history),
             child: Text(
               'See all',
               style: AppTypography.sans(

@@ -32,3 +32,15 @@ class MainShell extends StatelessWidget {
     );
   }
 }
+
+extension ShellNavigation on BuildContext {
+  /// Switches the shell to [tab], keeping that branch's own navigation stack.
+  ///
+  /// Always use this to reach a bottom-nav destination. The tab paths are
+  /// branches of the [StatefulShellRoute], so `push`ing one instead stacks
+  /// that screen on top of whichever branch is *currently* active: the bar
+  /// keeps highlighting the old tab, and — because the bar ignores taps on
+  /// the already-active tab — the user is left with no way back.
+  void goTab(TabKind tab) =>
+      StatefulNavigationShell.of(this).goBranch(tab.index);
+}
