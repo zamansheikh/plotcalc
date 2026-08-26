@@ -893,5 +893,7 @@
         "type": "String"
       }
     }
-  }
+  },
+  "drawCircleUnsaved": "CIRCLE · UNSAVED",
+  "@drawCircleUnsaved": {}
 }

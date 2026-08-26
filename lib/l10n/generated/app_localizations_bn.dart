@@ -1084,4 +1084,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String plotCircleMeta(String radius) {
     return 'বৃত্ত · ব্যাসার্ধ $radius';
   }
+
+  @override
+  String get drawCircleUnsaved => 'বৃত্ত · অসংরক্ষিত';
 }

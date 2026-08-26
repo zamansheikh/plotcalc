@@ -301,5 +301,6 @@
   "typeRadius": "ব্যাসার্ধ",
   "typeCircleSubtitle": "বৃত্ত",
   "drawRadius": "ব্যাসার্ধ",
-  "plotCircleMeta": "বৃত্ত · ব্যাসার্ধ {radius}"
+  "plotCircleMeta": "বৃত্ত · ব্যাসার্ধ {radius}",
+  "drawCircleUnsaved": "বৃত্ত · অসংরক্ষিত"
 }

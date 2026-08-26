@@ -7,7 +7,11 @@ import 'package:plotcalc/core/geometry/geometry.dart';
 import 'package:plotcalc/core/geometry/presets.dart';
 import 'package:plotcalc/core/units/area_unit.dart';
 import 'package:plotcalc/data/repositories/plot_repository_impl.dart';
+import 'package:plotcalc/core/geometry/vertex.dart';
+import 'package:plotcalc/core/input_method.dart';
 import 'package:plotcalc/domain/entities/plot.dart';
+import 'package:plotcalc/presentation/features/draw/bloc/draw_bloc.dart';
+import 'package:plotcalc/presentation/features/draw/bloc/draw_event.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Plot circle(double r) => Plot(
@@ -21,6 +25,8 @@ Plot circle(double r) => Plot(
 );
 
 void main() {
+  _drawBehaviour();
+
   group('exact circle maths', () {
     test('area and circumference use the real formulae', () {
       for (final r in [1.0, 7.5, 22.0, 100.0]) {
@@ -161,6 +167,84 @@ void main() {
       // What the result screen will show for a 22m-radius pond.
       expect(AreaUnit.sqm.format(exact), isNotEmpty);
       expect(exact, closeTo(1520.53, 0.01));
+    });
+  });
+}
+
+/// The first cut of this feature dropped a 72-vertex polygon into a canvas
+/// built for 3-8 vertices: every handle, edge label and diagonal at once.
+/// These pin the two root causes.
+void _drawBehaviour() {
+  group('drawing a circle', () {
+    late DrawBloc bloc;
+    setUp(() => bloc = DrawBloc());
+    tearDown(() => bloc.close());
+
+    /// Bloc handlers run on the event loop, so state has to be awaited.
+    Future<void> settle() => Future<void>.delayed(Duration.zero);
+
+    Future<void> start(ShapePreset preset) async {
+      bloc.add(DrawInitialized(
+        DrawArgs(method: InputMethod.draw, preset: preset),
+      ));
+      await settle();
+    }
+
+    test('the circle preset arrives as a circle, not a 72-gon', () async {
+      await start(ShapePreset.circle);
+      expect(bloc.state.circleRadiusM, closeTo(circlePresetRadius, 1e-9));
+      expect(bloc.state.vertices.length, circleSegments);
+    });
+
+    test('other presets carry no radius', () async {
+      for (final p in ShapePreset.values.where((p) => p != ShapePreset.circle)) {
+        final b = DrawBloc()
+          ..add(DrawInitialized(
+            DrawArgs(method: InputMethod.draw, preset: p),
+          ));
+        await settle();
+        expect(b.state.circleRadiusM, isNull, reason: p.name);
+        await b.close();
+      }
+    });
+
+    test('typing a radius produces a circle', () async {
+      bloc.add(TypeShapeGenerated(circleVertices(15), circleRadiusM: 15));
+      await settle();
+      expect(bloc.state.circleRadiusM, 15);
+    });
+
+    test('dragging resizes the circle instead of destroying it', () async {
+      await start(ShapePreset.circle);
+      bloc.add(const CircleRadiusChanged(40));
+      await settle();
+
+      expect(bloc.state.circleRadiusM, 40, reason: 'still a circle');
+      expect(bloc.state.vertices.length, circleSegments);
+      for (final v in bloc.state.vertices) {
+        expect(math.sqrt(v.x * v.x + v.y * v.y), closeTo(40, 1e-9));
+      }
+    });
+
+    test('a stray drag to the centre cannot make a zero-size circle', () async {
+      await start(ShapePreset.circle);
+      bloc.add(const CircleRadiusChanged(0));
+      await settle();
+      expect(bloc.state.circleRadiusM, greaterThan(0));
+    });
+
+    test('resizing a polygon is ignored', () async {
+      await start(ShapePreset.square);
+      bloc.add(const CircleRadiusChanged(40));
+      await settle();
+      expect(bloc.state.circleRadiusM, isNull);
+    });
+
+    test('editing a vertex does turn a circle into a polygon', () async {
+      await start(ShapePreset.circle);
+      bloc.add(const VertexMoved(index: 0, position: Vertex(99, 99)));
+      await settle();
+      expect(bloc.state.circleRadiusM, isNull);
     });
   });
 }

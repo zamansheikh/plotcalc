@@ -21,6 +21,9 @@ enum ShapePreset {
 /// [Plot.perimeterM], which use the exact formulae when a radius is known.
 const int circleSegments = 72;
 
+/// Radius of the circle offered by the shape picker.
+const double circlePresetRadius = 22;
+
 /// Vertices approximating a circle of [radius] metres, centred at origin.
 List<Vertex> circleVertices(double radius) => List.generate(
   circleSegments,
@@ -63,7 +66,7 @@ extension ShapePresetX on ShapePreset {
             final a = -math.pi / 2 + i * 2 * math.pi / 5;
             return Vertex(r * math.cos(a), r * math.sin(a));
           }),
-        ShapePreset.circle => circleVertices(22),
+        ShapePreset.circle => circleVertices(circlePresetRadius),
         ShapePreset.freeform => const [
             Vertex(-22, -18),
             Vertex(18, -22),

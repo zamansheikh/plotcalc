@@ -1909,6 +1909,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'circle · r {radius}'**
   String plotCircleMeta(String radius);
+
+  /// No description provided for @drawCircleUnsaved.
+  ///
+  /// In en, this message translates to:
+  /// **'CIRCLE · UNSAVED'**
+  String get drawCircleUnsaved;
 }
 
 class _AppLocalizationsDelegate

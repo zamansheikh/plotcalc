@@ -1086,4 +1086,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String plotCircleMeta(String radius) {
     return 'circle · r $radius';
   }
+
+  @override
+  String get drawCircleUnsaved => 'CIRCLE · UNSAVED';
 }

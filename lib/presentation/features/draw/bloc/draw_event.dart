@@ -107,3 +107,12 @@ class TypeShapeGenerated extends DrawEvent {
 class TypeInputAcknowledged extends DrawEvent {
   const TypeInputAcknowledged();
 }
+
+/// Drags a circle's rim handle. Resizes it rather than turning it into a
+/// polygon, which is what moving one of its 72 vertices would do.
+class CircleRadiusChanged extends DrawEvent {
+  final double radiusM;
+  const CircleRadiusChanged(this.radiusM);
+  @override
+  List<Object?> get props => [radiusM];
+}
