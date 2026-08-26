@@ -45,6 +45,23 @@ class PlotExport {
     await SharePlus.instance.share(params);
   }
 
+  /// Opens the share sheet with a two-plot comparison.
+  ///
+  /// Text only: the comparison is a pair of figures, and the two plots are
+  /// drawn at different scales, so a single image would misrepresent it.
+  static Future<void> shareComparison(
+    PlotSummary a,
+    PlotSummary b,
+    AppLocalizations t,
+  ) {
+    return SharePlus.instance.share(
+      ShareParams(
+        text: PlotSummary.comparisonText(a, b, t),
+        subject: t.compareTitle,
+      ),
+    );
+  }
+
   /// Builds the PDF and hands it to the platform's print/share dialog.
   static Future<void> sharePdf(
     PlotSummary summary,

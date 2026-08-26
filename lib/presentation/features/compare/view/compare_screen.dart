@@ -5,6 +5,9 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/geometry/geometry.dart';
 import '../../../../core/geometry/presets.dart';
+import '../../../../core/export/plot_export.dart';
+import '../../../../core/export/plot_summary.dart';
+import '../../../../core/units/area_breakdown.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/units/area_unit.dart';
@@ -74,6 +77,31 @@ class _CompareScreenState extends State<CompareScreen> {
     if (mounted) setState(() {});
   }
 
+  PlotSummary _summaryOf(Plot plot, SettingsState settings) {
+    final areaSqm = Geometry.polygonArea(plot.vertices);
+    return PlotSummary(
+      name: plot.name,
+      areaSqm: areaSqm,
+      perimeterM: Geometry.polygonPerimeter(plot.vertices),
+      sides: plot.vertices.length,
+      unit: settings.areaUnit,
+      breakdown: AreaBreakdown.of(areaSqm, settings.breakdown),
+    );
+  }
+
+  Future<void> _share() async {
+    final a = _a;
+    final b = _b;
+    if (a == null || b == null) return;
+    final t = context.l10n;
+    final settings = context.read<SettingsBloc>().state;
+    await PlotExport.shareComparison(
+      _summaryOf(a, settings),
+      _summaryOf(b, settings),
+      t,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsBloc>().state;
@@ -97,7 +125,7 @@ class _CompareScreenState extends State<CompareScreen> {
         child: Column(
           children: [
             const SizedBox(height: 8),
-            _TopBar(),
+            _TopBar(onShare: _share),
             Expanded(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
@@ -300,6 +328,10 @@ class _CompareScreenState extends State<CompareScreen> {
 }
 
 class _TopBar extends StatelessWidget {
+  final VoidCallback onShare;
+
+  const _TopBar({required this.onShare});
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -317,7 +349,7 @@ class _TopBar extends StatelessWidget {
           ),
           SmallIconButton(
             icon: Icons.ios_share,
-            onTap: () {},
+            onTap: onShare,
           ),
         ],
       ),

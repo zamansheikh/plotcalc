@@ -54,6 +54,41 @@ class PlotSummary {
     return lines.join('\n');
   }
 
+  /// Plain-text comparison of two plots, for the Compare screen's share.
+  ///
+  /// Built from the labels the screen itself shows, so what leaves the app
+  /// reads the way the screen did. The difference and ratio are quoted in
+  /// A's unit — B's is only used for its own line.
+  static String comparisonText(
+    PlotSummary a,
+    PlotSummary b,
+    AppLocalizations t,
+  ) {
+    String line(String tag, PlotSummary s) {
+      final area = '${s.unit.format(s.areaSqm)} ${s.unit.labelOf(t)}';
+      final chain = s.breakdownLine(t);
+      return chain.isEmpty
+          ? '$tag — ${s.name}: $area'
+          : '$tag — ${s.name}: $area  ($chain)';
+    }
+
+    final unit = a.unit;
+    final ratio = b.areaSqm == 0 ? null : a.areaSqm / b.areaSqm;
+
+    return [
+      t.compareTitle,
+      '',
+      line(t.comparePlotA, a),
+      line(t.comparePlotB, b),
+      '',
+      '${t.compareDelta}: '
+          '${unit.format(a.areaSqm - b.areaSqm)} ${unit.labelOf(t)}',
+      if (ratio != null) '${t.compareRatio}: ${ratio.toStringAsFixed(2)}',
+      '',
+      t.appName,
+    ].join('\n');
+  }
+
   /// The unit table used by the PDF, so a reader can convert without the app.
   List<(String, String)> conversions(AppLocalizations t) => [
     for (final u in AreaUnit.values)

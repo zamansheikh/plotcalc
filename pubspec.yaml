@@ -60,3 +60,10 @@ flutter:
     - docs/land_info.json
     # Khatiyan / mouza-map scans referenced by that content.
     - assets/images/
+    # Bundled so a PDF exported offline still renders: a PDF carries its own
+    # fonts and has no system fallback the way the on-screen UI does. The
+    # built-in Helvetica is ASCII-only, so even an em dash goes missing.
+    # Noto Sans, OFL-1.1.
+    - assets/fonts/NotoSans-Regular.ttf
+    - assets/fonts/NotoSans-Bold.ttf
+    - assets/fonts/NotoSansBengali-Regular.ttf

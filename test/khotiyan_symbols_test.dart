@@ -117,4 +117,19 @@ void main() {
       }
     }
   });
+
+  test('no single font covers a mark, so the chained style is required', () {
+    // Inter carries the fraction slash but no Bengali; Noto Sans Bengali
+    // carries the numerators but not U+2044. A mark can mix the two, so the
+    // chip must use a style with a fallback chain — see _MarkChip.
+    final marks = [
+      ...KhotiyanSymbols.ana,
+      ...KhotiyanSymbols.kora,
+      ...KhotiyanSymbols.kranti,
+    ];
+    final mixed = marks.where(
+      (m) => m.contains('\u2044') && m.runes.any((r) => r >= 0x0980),
+    );
+    expect(mixed, isNotEmpty, reason: 'e.g. \u09F7\u2044 for five ana');
+  });
 }

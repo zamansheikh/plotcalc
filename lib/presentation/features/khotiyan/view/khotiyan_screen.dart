@@ -517,13 +517,14 @@ class _MarkChip extends StatelessWidget {
       ),
       child: Text(
         mark,
-        // The Bengali face, not the Latin one: these are Bengali currency
-        // numerators, and Inter would only reach them through fallback.
-        style: AppTypography.bangla(
+        // No single face covers a mark. The numerators (U+09F4..U+09F8) are
+        // Bengali-only, while the fraction slash in ৷⁄ is Latin-only — so
+        // this needs the chained style, not the Bengali one, which declares
+        // no fallback of its own.
+        style: AppTypography.sans(
           size: 13,
           weight: FontWeight.w600,
           color: accent,
-          height: 1.2,
         ),
       ),
     );
