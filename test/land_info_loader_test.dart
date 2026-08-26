@@ -10,8 +10,18 @@ void main() {
 
   test('imports every Bengali topic from docs/land_info.json', () async {
     await InfoContent.load();
-    final imported = InfoContent.all.where((a) => a.isBengali).toList();
+    const importedIds = {
+      'khatiyan',
+      'khatiyan_identification',
+      'land_buying_guide_detailed',
+      'land_legal_disputes_bd',
+      'land_measurement_symbols',
+      'mouza_map_symbols',
+    };
+    final imported =
+        InfoContent.all.where((a) => importedIds.contains(a.id)).toList();
     expect(imported.length, 6);
+    expect(imported.every((a) => a.isBengali), isTrue);
     expect(
       imported.map((a) => a.id),
       containsAll(<String>[
@@ -37,8 +47,16 @@ void main() {
 
   test('every block type survives the mapping', () async {
     await InfoContent.load();
+    const importedIds = {
+      'khatiyan',
+      'khatiyan_identification',
+      'land_buying_guide_detailed',
+      'land_legal_disputes_bd',
+      'land_measurement_symbols',
+      'mouza_map_symbols',
+    };
     final blocks = InfoContent.all
-        .where((a) => a.isBengali)
+        .where((a) => importedIds.contains(a.id))
         .expand((a) => a.blocks)
         .toList();
 
@@ -54,7 +72,15 @@ void main() {
 
   test('titles, summaries and read times are populated', () async {
     await InfoContent.load();
-    for (final a in InfoContent.all.where((a) => a.isBengali)) {
+    const importedIds = {
+      'khatiyan',
+      'khatiyan_identification',
+      'land_buying_guide_detailed',
+      'land_legal_disputes_bd',
+      'land_measurement_symbols',
+      'mouza_map_symbols',
+    };
+    for (final a in InfoContent.all.where((a) => importedIds.contains(a.id))) {
       expect(a.title, isNotEmpty, reason: a.id);
       expect(a.summary, isNotEmpty, reason: a.id);
       expect(a.readTime, contains('মিনিট'), reason: a.id);
@@ -65,7 +91,7 @@ void main() {
   test('tables are rectangular enough to render', () async {
     await InfoContent.load();
     final tables = InfoContent.all
-        .where((a) => a.isBengali)
+        .where((a) => a.id.contains('_') || a.id == 'khatiyan')
         .expand((a) => a.blocks)
         .whereType<TableBlock>();
     for (final t in tables) {

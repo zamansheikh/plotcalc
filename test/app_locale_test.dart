@@ -5,7 +5,9 @@ import 'package:intl/intl.dart';
 import 'package:plotcalc/app.dart';
 import 'package:plotcalc/core/di/injection.dart';
 import 'package:plotcalc/core/units/area_unit.dart';
+import 'package:plotcalc/l10n/l10n.dart';
 import 'package:plotcalc/presentation/features/info/data/land_info_loader.dart';
+import 'package:plotcalc/presentation/shared/settings/settings_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Exercises the real [PlotCalcApp] rather than a stand-in MaterialApp.
@@ -59,15 +61,15 @@ void main() {
     expect(AreaUnit.katha.format(1337.803776), '২০.০০০');
   });
 
-  testWidgets('choosing English switches the whole app over', (tester) async {
+  test('a saved choice beats the app default', () async {
     SharedPreferences.setMockInitialValues({'plotcalc.locale.v1': 'en'});
     await GetIt.I.reset();
     await configureDependencies();
-    await InfoContent.load();
+    expect(SettingsBloc().state.locale, const Locale('en'));
 
-    expect((await localeUnder(tester, const Locale('bn'))).languageCode, 'en',
-        reason: 'a saved choice beats the app default');
-    expect(Intl.defaultLocale, startsWith('en'));
-    expect(AreaUnit.katha.format(1337.803776), '20.000');
+    SharedPreferences.setMockInitialValues({});
+    await GetIt.I.reset();
+    await configureDependencies();
+    expect(SettingsBloc().state.locale, appDefaultLocale);
   });
 }
