@@ -1,8 +1,8 @@
 name: plotcalc
-description: "Offline land measurement — draw, calculate, convert across 12 area units."
+description: "Offline land measurement — draw, calculate, convert across 10 area units."
 publish_to: "none"
 
-version: 2.0.1+10
+version: 2.1.0+11
 
 environment:
   sdk: ^3.11.5
