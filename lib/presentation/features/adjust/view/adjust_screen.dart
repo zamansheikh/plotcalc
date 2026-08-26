@@ -70,7 +70,23 @@ class _AdjustView extends StatelessWidget {
                 ? (solution?.vertices ?? state.baseVertices)
                 : state.adjustedVertices;
             final adjustedSqm = Geometry.polygonArea(adjustedVerts);
-            return Column(
+            // The plan takes whatever height is left over, so it is large on
+            // a tall phone instead of leaving dead space under the buttons,
+            // and shrinks when the keyboard claims the bottom half. The
+            // scroll view is what stops that shrinking becoming an overflow.
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                final planHeight = (constraints.maxHeight * 0.42).clamp(
+                  180.0,
+                  560.0,
+                );
+                return SingleChildScrollView(
+                  physics: const ClampingScrollPhysics(),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                    ),
+                    child: Column(
               children: [
                 const SizedBox(height: 8),
                 _TopBar(name: name),
@@ -91,6 +107,7 @@ class _AdjustView extends StatelessWidget {
                   areaUnit: settings.areaUnit,
                   solution: solution,
                   lengthUnit: settings.lengthUnit,
+                  height: planHeight,
                 ),
                 if (state.method == AdjustMethod.scale) ...[
                   _ModeRow(state: state, accent: settings.accent),
@@ -107,7 +124,12 @@ class _AdjustView extends StatelessWidget {
                   accent: settings.accent,
                   adjustedVerts: adjustedVerts,
                 ),
+                const SizedBox(height: 12),
               ],
+                    ),
+                  ),
+                );
+              },
             );
           },
         ),
@@ -322,6 +344,7 @@ class _CanvasArea extends StatelessWidget {
   final AreaUnit areaUnit;
   final BoundarySolution? solution;
   final LengthUnit lengthUnit;
+  final double height;
 
   const _CanvasArea({
     required this.state,
@@ -332,6 +355,7 @@ class _CanvasArea extends StatelessWidget {
     required this.areaUnit,
     required this.solution,
     required this.lengthUnit,
+    required this.height,
   });
 
   /// Which side or corner of the *base* outline sits under [p], in canvas
@@ -381,7 +405,7 @@ class _CanvasArea extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(14),
         child: SizedBox(
-          height: 220,
+          height: height,
           child: Container(
             decoration: BoxDecoration(
               color: AppColors.surface,
@@ -772,7 +796,11 @@ class _ModeBtn extends StatelessWidget {
           border: active ? null : Border.all(color: AppColors.line),
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Row(
+        // Three of these share a phone width, and Bengali runs longer than
+        // English; scale down rather than overflow.
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
@@ -783,6 +811,7 @@ class _ModeBtn extends StatelessWidget {
             const SizedBox(width: 6),
             Text(
               label,
+              maxLines: 1,
               style: AppTypography.sans(
                 size: 12,
                 weight: FontWeight.w500,
@@ -790,6 +819,7 @@ class _ModeBtn extends StatelessWidget {
               ),
             ),
           ],
+          ),
         ),
       ),
     );
@@ -927,20 +957,24 @@ class _BottomActions extends StatelessWidget {
                   borderRadius: BorderRadius.circular(14),
                 ),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    context.l10n.adjustApply,
-                    style: AppTypography.sans(
-                      size: 13,
-                      weight: FontWeight.w600,
-                      color: AppColors.ink,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      context.l10n.adjustApply,
+                      maxLines: 1,
+                      style: AppTypography.sans(
+                        size: 13,
+                        weight: FontWeight.w600,
+                        color: AppColors.ink,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 6),
-                  const Icon(Icons.check, size: 14, color: AppColors.ink),
-                ],
+                    const SizedBox(width: 6),
+                    const Icon(Icons.check, size: 14, color: AppColors.ink),
+                  ],
+                ),
               ),
             ),
           ),

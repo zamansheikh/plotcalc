@@ -9,11 +9,14 @@ import 'package:plotcalc/l10n/l10n.dart';
 import 'package:plotcalc/presentation/features/adjust/view/adjust_screen.dart';
 import 'package:plotcalc/presentation/shared/settings/settings_bloc.dart';
 import 'package:plotcalc/presentation/shared/settings/settings_event.dart';
+import 'package:plotcalc/presentation/shared/widgets/grid_background.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// The target has to be typeable: "make it 5.3" is the whole interaction.
 /// Steppers alone meant tapping your way there.
 void main() {
+  _layout();
+
   late SettingsBloc settings;
 
   setUp(() async {
@@ -32,9 +35,16 @@ void main() {
     Vertex(0, 20),
   ];
 
-  Future<void> pump(WidgetTester tester, {AreaUnit? unit}) async {
-    tester.view.physicalSize = const Size(1200, 2600);
+  Future<void> pump(
+    WidgetTester tester, {
+    AreaUnit? unit,
+    Size size = const Size(1200, 2600),
+    double keyboard = 0,
+  }) async {
+    tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1.0;
+    // Mimics the keyboard claiming the bottom of the screen.
+    tester.view.viewInsets = FakeViewPadding(bottom: keyboard);
     addTearDown(tester.view.reset);
     if (unit != null) {
       settings.add(AreaUnitChanged(unit));
@@ -127,5 +137,104 @@ void main() {
       await tester.pump(const Duration(milliseconds: 50));
     }
     expect(tester.takeException(), isNull);
+  });
+}
+
+/// The screen was a fixed Column with a 220px plan: the keyboard pushed it
+/// 97px past the bottom, and with the keyboard closed there was a slab of
+/// dead space under the buttons.
+void _layout() {
+  group('layout', () {
+    late SettingsBloc settings;
+
+    setUp(() async {
+      SharedPreferences.setMockInitialValues({});
+      await GetIt.I.reset();
+      await configureDependencies();
+      settings = SettingsBloc();
+    });
+    tearDown(() => settings.close());
+
+    const base = [
+      Vertex(0, 0),
+      Vertex(20, 0),
+      Vertex(20, 20),
+      Vertex(0, 20),
+    ];
+
+    Future<void> pumpAt(
+      WidgetTester tester,
+      Size size, {
+      double keyboard = 0,
+    }) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1.0;
+      tester.view.viewInsets = FakeViewPadding(bottom: keyboard);
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        BlocProvider<SettingsBloc>.value(
+          value: settings,
+          child: MaterialApp(
+            locale: const Locale('en'),
+            supportedLocales: AppLocalizations.supportedLocales,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            home: const AdjustScreen(
+              args: AdjustArgs(name: 'Plot', vertices: base),
+            ),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+    }
+
+    testWidgets('an open keyboard does not overflow the screen', (
+      tester,
+    ) async {
+      // A Pixel 6 in logical pixels, numeric keypad up.
+      await pumpAt(tester, const Size(393, 873), keyboard: 300);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('it survives a small screen with the keyboard up', (
+      tester,
+    ) async {
+      await pumpAt(tester, const Size(360, 640), keyboard: 260);
+      expect(tester.takeException(), isNull);
+    });
+
+    /// The target card has a grid behind it too, so take the tallest —
+    /// that is the plan.
+    double planHeight(WidgetTester tester) => tester
+        .widgetList<GridBackground>(find.byType(GridBackground))
+        .map((w) => tester.getSize(find.byWidget(w)).height)
+        .reduce((a, b) => a > b ? a : b);
+
+    testWidgets('the plan grows to fill a tall screen', (tester) async {
+      // The dead space under the buttons was a plan pinned at 220px.
+      await pumpAt(tester, const Size(393, 873));
+      expect(planHeight(tester), greaterThan(280),
+          reason: 'the plan should use the space, not leave it blank');
+    });
+
+    testWidgets('the plan gives way when the keyboard appears', (
+      tester,
+    ) async {
+      await pumpAt(tester, const Size(393, 873));
+      final open = planHeight(tester);
+      await pumpAt(tester, const Size(393, 873), keyboard: 300);
+      expect(planHeight(tester), lessThan(open));
+    });
+
+    testWidgets('the content scrolls once it no longer fits', (tester) async {
+      await pumpAt(tester, const Size(393, 873), keyboard: 300);
+      expect(find.byType(SingleChildScrollView), findsWidgets);
+      // Apply is reachable by scrolling rather than clipped away.
+      await tester.dragUntilVisible(
+        find.text('Apply adjustment'),
+        find.byType(SingleChildScrollView).first,
+        const Offset(0, -120),
+      );
+      expect(find.text('Apply adjustment'), findsOneWidget);
+    });
   });
 }
