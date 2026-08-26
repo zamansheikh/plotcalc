@@ -315,5 +315,12 @@
   "adjustSlideSwap": "অন্য বাহু",
   "resultEditShape": "আকৃতি সম্পাদনা",
   "plotUpdated": "“{name}” হালনাগাদ হয়েছে",
-  "resultUnsaved": "সংরক্ষিত নয়"
+  "resultUnsaved": "সংরক্ষিত নয়",
+  "subdivideAddLot": "লট যোগ",
+  "subdivideRemoveLot": "সরান",
+  "subdivideModeEqual": "সমান",
+  "subdivideModePercent": "শতাংশ",
+  "subdivideModeArea": "ক্ষেত্রফল",
+  "subdivideSavedLots": "“{name}” থেকে {count}টি লট সংরক্ষিত",
+  "subdivideLotsDontSum": "লটের যোগফল {total}, প্লট {plot}"
 }

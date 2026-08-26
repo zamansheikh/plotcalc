@@ -1139,4 +1139,33 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get resultUnsaved => 'NOT SAVED';
+
+  @override
+  String get subdivideAddLot => 'Add lot';
+
+  @override
+  String get subdivideRemoveLot => 'Remove';
+
+  @override
+  String get subdivideModeEqual => 'Equal';
+
+  @override
+  String get subdivideModePercent => 'Percent';
+
+  @override
+  String get subdivideModeArea => 'Area';
+
+  @override
+  String subdivideSavedLots(int count, String name) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'Saved $countString lots from “$name”';
+  }
+
+  @override
+  String subdivideLotsDontSum(String total, String plot) {
+    return 'Lots add up to $total, plot is $plot';
+  }
 }

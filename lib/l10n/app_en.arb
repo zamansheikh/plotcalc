@@ -940,5 +940,38 @@
     }
   },
   "resultUnsaved": "NOT SAVED",
-  "@resultUnsaved": {}
+  "@resultUnsaved": {},
+  "subdivideAddLot": "Add lot",
+  "@subdivideAddLot": {},
+  "subdivideRemoveLot": "Remove",
+  "@subdivideRemoveLot": {},
+  "subdivideModeEqual": "Equal",
+  "@subdivideModeEqual": {},
+  "subdivideModePercent": "Percent",
+  "@subdivideModePercent": {},
+  "subdivideModeArea": "Area",
+  "@subdivideModeArea": {},
+  "subdivideSavedLots": "Saved {count} lots from “{name}”",
+  "@subdivideSavedLots": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "subdivideLotsDontSum": "Lots add up to {total}, plot is {plot}",
+  "@subdivideLotsDontSum": {
+    "placeholders": {
+      "total": {
+        "type": "String"
+      },
+      "plot": {
+        "type": "String"
+      }
+    }
+  }
 }

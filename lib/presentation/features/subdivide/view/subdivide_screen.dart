@@ -1,5 +1,7 @@
-import 'package:flutter/foundation.dart';
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
@@ -13,18 +15,27 @@ import '../../../../core/units/area_unit.dart';
 import '../../../../domain/entities/plot.dart';
 import '../../../../domain/usecases/get_plots.dart';
 import '../../../shared/settings/settings_bloc.dart';
-import '../../../shared/settings/settings_state.dart';
 import '../../../shared/widgets/grid_background.dart';
 import '../../../shared/widgets/plot_thumbnail.dart';
-import '../../../shared/widgets/polygon_painter.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../shared/widgets/tab_header.dart';
+import 'package:uuid/uuid.dart';
 
-class _Lot {
-  double pct;
-  final Color color;
-  _Lot({required this.pct, required this.color});
-}
+import '../../../../core/geometry/lot_division.dart';
+import '../../../../domain/usecases/save_plot.dart';
+
+/// How the lots are being sized.
+enum _SplitMode { equal, percent, area }
+
+const _lotColours = [
+  AppColors.lime,
+  AppColors.soil,
+  AppColors.sky,
+  AppColors.amber,
+  AppColors.violet,
+  AppColors.emerald,
+  AppColors.rose,
+];
 
 class SubdivideScreen extends StatefulWidget {
   const SubdivideScreen({super.key});
@@ -35,30 +46,95 @@ class SubdivideScreen extends StatefulWidget {
 
 class _SubdivideScreenState extends State<SubdivideScreen> {
   Plot? _plot;
-  late final List<_Lot> _lots = [
-    _Lot(pct: 0.35, color: AppColors.lime),
-    _Lot(pct: 0.40, color: AppColors.soil),
-    _Lot(pct: 0.25, color: AppColors.sky),
-  ];
 
-  void _adjust(int index, double delta) {
+  /// Shares of the parent plot, normalised to 1. Percent and area entry are
+  /// both just different ways of writing a share down.
+  List<double> _shares = LotDivision.equalShares(2);
+  _SplitMode _mode = _SplitMode.equal;
+
+  List<Vertex> get _verts => _plot?.vertices ?? const [];
+  double get _totalSqm => Geometry.polygonArea(_verts);
+
+  List<Lot> get _lots => LotDivision.divide(_verts, _shares);
+
+  Color _colourFor(int i) => _lotColours[i % _lotColours.length];
+
+  void _setShares(List<double> next) {
+    final sum = next.fold<double>(0, (a, b) => a + b);
+    if (sum <= 0) return;
+    setState(() => _shares = [for (final s in next) s / sum]);
+  }
+
+  void _addLot() {
+    // The new lot takes an even share and everyone gives up a little.
+    final next = [..._shares, 1 / (_shares.length + 1)];
+    _setShares(next);
+    setState(() => _mode = _SplitMode.percent);
+  }
+
+  void _removeLot(int index) {
+    if (_shares.length <= 2) return;
+    final next = [..._shares]..removeAt(index);
+    _setShares(next);
+  }
+
+  void _makeEqual() {
     setState(() {
-      final next = (_lots[index].pct + delta).clamp(0.05, 0.9);
-      final diff = next - _lots[index].pct;
-      _lots[index].pct = next;
-      // Distribute diff across other lots proportionally.
-      final others = [
-        for (var i = 0; i < _lots.length; i++)
-          if (i != index) i,
-      ];
-      final otherSum = others.fold<double>(0, (s, i) => s + _lots[i].pct);
-      if (otherSum > 0) {
-        for (final i in others) {
-          _lots[i].pct = (_lots[i].pct - diff * (_lots[i].pct / otherSum))
-              .clamp(0.05, 0.9);
-        }
-      }
+      _mode = _SplitMode.equal;
+      _shares = LotDivision.equalShares(_shares.length);
     });
+  }
+
+  /// Sets one lot's share, taking the difference from the others in
+  /// proportion so the plot still adds up.
+  void _setShare(int index, double share) {
+    final clamped = share.clamp(0.01, 0.99);
+    final others = [
+      for (var i = 0; i < _shares.length; i++)
+        if (i != index) i,
+    ];
+    final otherSum = others.fold<double>(0, (a, i) => a + _shares[i]);
+    final remaining = 1 - clamped;
+    final next = List<double>.of(_shares);
+    next[index] = clamped;
+    for (final i in others) {
+      next[i] = otherSum <= 0
+          ? remaining / others.length
+          : remaining * (_shares[i] / otherSum);
+    }
+    _setShares(next);
+  }
+
+  void _dragCut(int cutIndex, double x) =>
+      _setShares(LotDivision.sharesAfterDrag(_verts, _shares, cutIndex, x));
+
+  /// Saves each lot as its own plot, named after the parent.
+  Future<void> _saveLots() async {
+    final parent = _plot;
+    if (parent == null) return;
+    final messenger = ScaffoldMessenger.of(context);
+    final t = context.l10n;
+    final lots = _lots;
+
+    for (var i = 0; i < lots.length; i++) {
+      await sl<SavePlot>()(
+        Plot(
+          id: const Uuid().v4(),
+          // "land_abc" divided into "land_abc_lot_1", "land_abc_lot_2" ...
+          name: '${parent.name}_lot_${i + 1}',
+          vertices: lots[i].vertices,
+          tag: parent.tag,
+          createdAt: DateTime.now(),
+          colorValue: _colourFor(i).toARGB32(),
+          preferredUnit: parent.preferredUnit,
+        ),
+      );
+    }
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(t.subdivideSavedLots(lots.length, parent.name)),
+      ),
+    );
   }
 
   @override
@@ -85,8 +161,9 @@ class _SubdivideScreenState extends State<SubdivideScreen> {
       );
     }
 
-    final verts = _plot!.vertices;
-    final totalSqm = Geometry.polygonArea(verts);
+    final verts = _verts;
+    final totalSqm = _totalSqm;
+    final lots = _lots;
 
     return SafeArea(
       child: Column(
@@ -94,24 +171,44 @@ class _SubdivideScreenState extends State<SubdivideScreen> {
           const SizedBox(height: 8),
           _SelectedHeader(
             plot: _plot!,
-            lotCount: _lots.length,
+            lotCount: lots.length,
             onChange: () => setState(() => _plot = null),
           ),
-          _Canvas(verts: verts, lots: _lots, accent: accent),
-          const SizedBox(height: 12),
+          _Canvas(
+            verts: verts,
+            lots: lots,
+            colours: [for (var i = 0; i < lots.length; i++) _colourFor(i)],
+            cuts: LotDivision.cuts(verts, _shares),
+            accent: accent,
+            onDragCut: _dragCut,
+          ),
+          const SizedBox(height: 10),
+          _ModeRow(
+            mode: _mode,
+            accent: accent,
+            onEqual: _makeEqual,
+            onMode: (m) => setState(() => _mode = m),
+            onAdd: _addLot,
+          ),
+          const SizedBox(height: 8),
           Expanded(
             child: ListView.separated(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: _lots.length,
+              itemCount: lots.length,
               separatorBuilder: (_, _) => const SizedBox(height: 6),
               itemBuilder: (_, i) {
                 return _LotTile(
-                  lot: _lots[i],
-                  name: context.l10n.subdivideLot(i + 1),
+                  index: i,
+                  lot: lots[i],
+                  colour: _colourFor(i),
+                  name: '${_plot!.name}_lot_${i + 1}',
                   totalSqm: totalSqm,
                   areaUnit: settings.areaUnit,
-                  onMinus: () => _adjust(i, -0.05),
-                  onPlus: () => _adjust(i, 0.05),
+                  mode: _mode,
+                  accent: accent,
+                  canRemove: lots.length > 2,
+                  onRemove: () => _removeLot(i),
+                  onShare: (share) => _setShare(i, share),
                 );
               },
             ),
@@ -121,15 +218,10 @@ class _SubdivideScreenState extends State<SubdivideScreen> {
             child: SizedBox(
               width: double.infinity,
               child: FilledButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        context.l10n.subdivideSaved(_plot!.name),
-                      ),
-                    ),
-                  );
-                },
+                // Was a snackbar and nothing else: it announced a save that
+                // never happened. Each lot is now written to history in its
+                // own right.
+                onPressed: _saveLots,
                 style: FilledButton.styleFrom(
                   backgroundColor: accent,
                   foregroundColor: AppColors.ink,
@@ -393,12 +485,19 @@ class _EmptyState extends StatelessWidget {
 
 class _Canvas extends StatelessWidget {
   final List<Vertex> verts;
-  final List<_Lot> lots;
+  final List<Lot> lots;
+  final List<Color> colours;
+  final List<double> cuts;
   final Color accent;
+  final void Function(int cutIndex, double x) onDragCut;
+
   const _Canvas({
     required this.verts,
     required this.lots,
+    required this.colours,
+    required this.cuts,
     required this.accent,
+    required this.onDragCut,
   });
 
   @override
@@ -406,49 +505,62 @@ class _Canvas extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         child: SizedBox(
-          height: 280,
+          height: 230,
           child: Container(
             decoration: BoxDecoration(
               color: AppColors.surface,
               border: Border.all(color: AppColors.line),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(14),
             ),
             child: LayoutBuilder(
-              builder: (context, constraints) {
-                final w = constraints.maxWidth, h = constraints.maxHeight;
+              builder: (context, c) {
+                final w = c.maxWidth, h = c.maxHeight;
                 final cx = w / 2, cy = h / 2;
-                final scale = _autoScale(verts, w, h);
-                return Stack(
-                  children: [
-                    const GridBackground(style: GridStyle.blueprint),
-                    Positioned.fill(
-                      child: CustomPaint(
-                        painter: PolygonPainter(
-                          vertices: verts,
-                          color: accent,
-                          scale: scale,
-                          center: Offset(cx, cy),
-                          fillOpacity: 0.06,
+                final scale = _scaleFor(verts, w, h);
+                double toWorldX(double px) => (px - cx) / scale;
+
+                return GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onPanUpdate: (d) {
+                    if (cuts.isEmpty) return;
+                    // Drag whichever boundary line is nearest the finger.
+                    var nearest = 0;
+                    var best = double.infinity;
+                    for (var i = 0; i < cuts.length; i++) {
+                      final px = cx + cuts[i] * scale;
+                      final dist = (px - d.localPosition.dx).abs();
+                      if (dist < best) {
+                        best = dist;
+                        nearest = i;
+                      }
+                    }
+                    onDragCut(nearest, toWorldX(d.localPosition.dx));
+                  },
+                  child: Stack(
+                    children: [
+                      GridBackground(
+                        style: context.watch<SettingsBloc>().state.gridStyle,
+                      ),
+                      Positioned.fill(
+                        child: CustomPaint(
+                          painter: _DivisionPainter(
+                            verts: verts,
+                            lots: lots,
+                            colours: colours,
+                            cuts: cuts,
+                            names: [
+                              for (var i = 0; i < lots.length; i++)
+                                context.l10n.subdivideLot(i + 1),
+                            ],
+                            scale: scale,
+                            center: Offset(cx, cy),
+                          ),
                         ),
                       ),
-                    ),
-                    Positioned.fill(
-                      child: CustomPaint(
-                        painter: _DivisionPainter(
-                          verts: verts,
-                          lots: lots,
-                          names: [
-                            for (var i = 0; i < lots.length; i++)
-                              context.l10n.subdivideLot(i + 1),
-                          ],
-                          scale: scale,
-                          center: Offset(cx, cy),
-                        ),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 );
               },
             ),
@@ -458,147 +570,173 @@ class _Canvas extends StatelessWidget {
     );
   }
 
-  static double _autoScale(List<Vertex> verts, double w, double h) {
+  static double _scaleFor(List<Vertex> verts, double w, double h) {
+    if (verts.length < 2) return 4.2;
     final (minX, minY, maxX, maxY) = Geometry.bbox(verts);
-    final dx = maxX - minX;
-    final dy = maxY - minY;
-    final pad = 60.0;
-    final sx = dx == 0 ? 5.0 : (w - pad) / dx;
-    final sy = dy == 0 ? 5.0 : (h - pad) / dy;
-    final s = sx < sy ? sx : sy;
-    return s.clamp(2.0, 8.0);
+    final dx = maxX - minX, dy = maxY - minY;
+    const pad = 48.0;
+    final sx = dx == 0 ? 4.2 : (w - pad) / dx;
+    final sy = dy == 0 ? 4.2 : (h - pad) / dy;
+    return math.min(sx, sy).clamp(1.0, 12.0);
   }
 }
 
+/// Fills each lot with its own colour and marks the draggable boundaries.
+///
+/// The lots are the polygons the division actually produced, so what is
+/// shaded here is exactly the land the figures below describe.
 class _DivisionPainter extends CustomPainter {
-  /// Localized lot labels, parallel to [lots] — a painter has no
-  /// BuildContext of its own to look them up with.
-  final List<String> names;
   final List<Vertex> verts;
-  final List<_Lot> lots;
+  final List<Lot> lots;
+  final List<Color> colours;
+  final List<double> cuts;
+  final List<String> names;
   final double scale;
   final Offset center;
+
   _DivisionPainter({
     required this.verts,
     required this.lots,
+    required this.colours,
+    required this.cuts,
     required this.names,
     required this.scale,
     required this.center,
   });
 
+  Offset _at(Vertex v) =>
+      Offset(center.dx + v.x * scale, center.dy + v.y * scale);
+
+  Path _path(List<Vertex> poly) {
+    final path = Path();
+    if (poly.isEmpty) return path;
+    path.moveTo(_at(poly.first).dx, _at(poly.first).dy);
+    for (final v in poly.skip(1)) {
+      path.lineTo(_at(v).dx, _at(v).dy);
+    }
+    path.close();
+    return path;
+  }
+
   @override
   void paint(Canvas canvas, Size size) {
-    final (minX, _, maxX, _) = Geometry.bbox(verts);
-    final width = maxX - minX;
+    if (verts.length < 3) return;
 
-    // Vertical division lines based on cumulative percentages
-    var cum = 0.0;
-    final dashed = Paint()
-      ..color = AppColors.text.withValues(alpha: 0.6)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1;
-    for (var i = 0; i < lots.length - 1; i++) {
-      cum += lots[i].pct;
-      final x = minX + width * cum;
-      final px = center.dx + x * scale;
-      _drawDashedLine(
-        canvas,
-        Offset(px, center.dy - 100),
-        Offset(px, center.dy + 100),
-        dashed,
-      );
-      // Drag handle stubs
-      canvas.drawCircle(
-        Offset(px, center.dy - 100),
-        6,
-        Paint()..color = AppColors.text,
-      );
-      canvas.drawCircle(
-        Offset(px, center.dy + 100),
-        6,
-        Paint()..color = AppColors.text,
+    for (var i = 0; i < lots.length; i++) {
+      final colour = colours[i % colours.length];
+      final path = _path(lots[i].vertices);
+      canvas.drawPath(path, Paint()..color = colour.withValues(alpha: 0.22));
+      canvas.drawPath(
+        path,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.2
+          ..color = colour,
       );
     }
 
-    // Lot labels
-    cum = 0.0;
+    // Parent outline on top, so the whole plot stays legible.
+    canvas.drawPath(
+      _path(verts),
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2
+        ..color = AppColors.text.withValues(alpha: 0.5),
+    );
+
+    // Boundary handles.
+    final (_, minY, _, maxY) = Geometry.bbox(verts);
+    for (final cut in cuts) {
+      final x = center.dx + cut * scale;
+      final top = center.dy + minY * scale;
+      final bottom = center.dy + maxY * scale;
+      canvas.drawLine(
+        Offset(x, top),
+        Offset(x, bottom),
+        Paint()
+          ..strokeWidth = 2
+          ..color = AppColors.text.withValues(alpha: 0.85),
+      );
+      for (final y in [top, bottom]) {
+        canvas.drawCircle(Offset(x, y), 5, Paint()..color = AppColors.ink);
+        canvas.drawCircle(
+          Offset(x, y),
+          5,
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2
+            ..color = AppColors.text,
+        );
+      }
+    }
+
+    // Lot names, centred on the piece they belong to.
     for (var i = 0; i < lots.length; i++) {
-      final cx = minX + width * (cum + lots[i].pct / 2);
-      final px = center.dx + cx * scale;
+      final poly = lots[i].vertices;
+      if (poly.isEmpty) continue;
+      var sx = 0.0, sy = 0.0;
+      for (final v in poly) {
+        sx += v.x;
+        sy += v.y;
+      }
+      final mid = _at(Vertex(sx / poly.length, sy / poly.length));
       final tp = TextPainter(
         text: TextSpan(
           text: names[i].toUpperCase(),
           style: AppTypography.mono(
-            size: 11,
+            size: 10,
             weight: FontWeight.w600,
-            color: lots[i].color,
+            color: colours[i % colours.length],
           ),
         ),
         textDirection: TextDirection.ltr,
       )..layout();
-      tp.paint(canvas, Offset(px - tp.width / 2, center.dy - tp.height / 2));
-      cum += lots[i].pct;
-    }
-
-    // Vertex dots
-    for (final v in verts) {
-      final p = Offset(center.dx + v.x * scale, center.dy + v.y * scale);
-      canvas.drawCircle(p, 4, Paint()..color = AppColors.ink);
-      canvas.drawCircle(
-        p,
-        4,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.5
-          ..color = AppColors.lime,
-      );
-    }
-  }
-
-  void _drawDashedLine(Canvas canvas, Offset a, Offset b, Paint paint) {
-    final delta = b - a;
-    final dist = delta.distance;
-    final dir = delta / dist;
-    var d = 0.0;
-    var draw = true;
-    while (d < dist) {
-      final next = (d + (draw ? 4 : 3)).clamp(0.0, dist);
-      if (draw) {
-        canvas.drawLine(a + dir * d, a + dir * next, paint);
-      }
-      d = next;
-      draw = !draw;
+      tp.paint(canvas, Offset(mid.dx - tp.width / 2, mid.dy - tp.height / 2));
     }
   }
 
   @override
   bool shouldRepaint(covariant _DivisionPainter old) =>
-      old.lots != lots ||
-      !listEquals(old.names, names) ||
+      old.verts != verts ||
+      old.cuts != cuts ||
       old.scale != scale ||
-      old.verts != verts;
+      old.center != center ||
+      old.lots.length != lots.length;
 }
 
+/// One lot: its colour, name, share and area — and, in percent or area
+/// mode, a field for saying how big it should be.
 class _LotTile extends StatelessWidget {
-  final _Lot lot;
+  final int index;
+  final Lot lot;
+  final Color colour;
   final String name;
   final double totalSqm;
   final AreaUnit areaUnit;
-  final VoidCallback onMinus;
-  final VoidCallback onPlus;
+  final _SplitMode mode;
+  final Color accent;
+  final bool canRemove;
+  final VoidCallback onRemove;
+  final ValueChanged<double> onShare;
+
   const _LotTile({
+    required this.index,
     required this.lot,
+    required this.colour,
     required this.name,
     required this.totalSqm,
     required this.areaUnit,
-    required this.onMinus,
-    required this.onPlus,
+    required this.mode,
+    required this.accent,
+    required this.canRemove,
+    required this.onRemove,
+    required this.onShare,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
       decoration: BoxDecoration(
         color: AppColors.surface,
         border: Border.all(color: AppColors.line),
@@ -607,10 +745,10 @@ class _LotTile extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 10,
-            height: 32,
+            width: 8,
+            height: 34,
             decoration: BoxDecoration(
-              color: lot.color,
+              color: colour,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -621,65 +759,266 @@ class _LotTile extends StatelessWidget {
               children: [
                 Text(
                   name,
-                  style: AppTypography.sans(
-                    size: 13,
-                    weight: FontWeight.w500,
-                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.sans(size: 12, weight: FontWeight.w500),
                 ),
-                const SizedBox(height: 1),
+                const SizedBox(height: 2),
                 Text(
-                  '${(lot.pct * 100).toStringAsFixed(0)}% · ${areaUnit.format(totalSqm * lot.pct)} ${areaUnit.labelOf(context.l10n)}',
-                  style: AppTypography.mono(
-                    size: 10,
-                    color: AppColors.textDim,
-                  ),
+                  '${(lot.share * 100).toStringAsFixed(1)}% · '
+                  '${areaUnit.format(lot.areaSqm)} '
+                  '${areaUnit.labelOf(context.l10n)}',
+                  style: AppTypography.mono(size: 10, color: AppColors.textDim),
                 ),
               ],
             ),
           ),
-          _SmallStep(symbol: '−', onTap: onMinus),
-          SizedBox(
-            width: 36,
-            child: Center(
-              child: Text(
-                '${(lot.pct * 100).toStringAsFixed(0)}%',
-                style: AppTypography.mono(
-                  size: 11,
-                  color: lot.color,
-                ),
+          if (mode != _SplitMode.equal)
+            SizedBox(
+              width: 96,
+              child: _ShareField(
+                key: ValueKey('$index-${mode.name}'),
+                mode: mode,
+                share: lot.share,
+                totalSqm: totalSqm,
+                areaUnit: areaUnit,
+                accent: accent,
+                onShare: onShare,
               ),
             ),
-          ),
-          _SmallStep(symbol: '+', onTap: onPlus),
+          if (canRemove)
+            IconButton(
+              tooltip: context.l10n.subdivideRemoveLot,
+              onPressed: onRemove,
+              icon: const Icon(
+                Icons.remove_circle_outline,
+                size: 18,
+                color: AppColors.textFaint,
+              ),
+            ),
         ],
       ),
     );
   }
 }
 
-class _SmallStep extends StatelessWidget {
-  final String symbol;
+/// Types a lot's size, as a percentage or as an area depending on the mode.
+class _ShareField extends StatefulWidget {
+  final _SplitMode mode;
+  final double share;
+  final double totalSqm;
+  final AreaUnit areaUnit;
+  final Color accent;
+  final ValueChanged<double> onShare;
+
+  const _ShareField({
+    super.key,
+    required this.mode,
+    required this.share,
+    required this.totalSqm,
+    required this.areaUnit,
+    required this.accent,
+    required this.onShare,
+  });
+
+  @override
+  State<_ShareField> createState() => _ShareFieldState();
+}
+
+class _ShareFieldState extends State<_ShareField> {
+  late final TextEditingController _ctrl =
+      TextEditingController(text: _text());
+
+  String _text() {
+    final v = widget.mode == _SplitMode.percent
+        ? widget.share * 100
+        : widget.areaUnit.fromSqm(widget.share * widget.totalSqm);
+    return v
+        .toStringAsFixed(2)
+        .replaceFirst(RegExp(r'0+$'), '')
+        .replaceFirst(RegExp(r'\.$'), '');
+  }
+
+  @override
+  void didUpdateWidget(_ShareField old) {
+    super.didUpdateWidget(old);
+    final typed = double.tryParse(_ctrl.text);
+    final shown = typed == null
+        ? null
+        : widget.mode == _SplitMode.percent
+        ? typed / 100
+        : widget.areaUnit.toSqm(typed) / widget.totalSqm;
+    // Leave the field alone while it still represents this lot, so typing
+    // is never corrected mid-keystroke.
+    if (shown == null || (shown - widget.share).abs() > 1e-4) {
+      _ctrl.text = _text();
+    }
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: _ctrl,
+      textAlign: TextAlign.right,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
+      cursorColor: widget.accent,
+      style: AppTypography.mono(
+        size: 13,
+        weight: FontWeight.w600,
+        color: widget.accent,
+      ),
+      decoration: InputDecoration(
+        isDense: true,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 8,
+          vertical: 8,
+        ),
+        suffixText: widget.mode == _SplitMode.percent
+            ? '%'
+            : widget.areaUnit.labelOf(context.l10n),
+        suffixStyle: AppTypography.mono(size: 9, color: AppColors.textFaint),
+        filled: true,
+        fillColor: AppColors.surfaceHi,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: AppColors.line),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: AppColors.line),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: widget.accent),
+        ),
+      ),
+      onChanged: (raw) {
+        final v = double.tryParse(raw);
+        if (v == null || v <= 0) return;
+        widget.onShare(
+          widget.mode == _SplitMode.percent
+              ? v / 100
+              : widget.areaUnit.toSqm(v) / widget.totalSqm,
+        );
+      },
+    );
+  }
+}
+
+/// Equal / Percent / Area, and the button that adds another lot.
+class _ModeRow extends StatelessWidget {
+  final _SplitMode mode;
+  final Color accent;
+  final VoidCallback onEqual;
+  final ValueChanged<_SplitMode> onMode;
+  final VoidCallback onAdd;
+
+  const _ModeRow({
+    required this.mode,
+    required this.accent,
+    required this.onEqual,
+    required this.onMode,
+    required this.onAdd,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final options = [
+      (_SplitMode.equal, context.l10n.subdivideModeEqual),
+      (_SplitMode.percent, context.l10n.subdivideModePercent),
+      (_SplitMode.area, context.l10n.subdivideModeArea),
+    ];
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          for (final (m, label) in options) ...[
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(right: 6),
+                child: _Pill(
+                  label: label,
+                  active: mode == m,
+                  accent: accent,
+                  onTap: () => m == _SplitMode.equal ? onEqual() : onMode(m),
+                ),
+              ),
+            ),
+          ],
+          _Pill(
+            label: context.l10n.subdivideAddLot,
+            active: false,
+            accent: accent,
+            icon: Icons.add,
+            onTap: onAdd,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Pill extends StatelessWidget {
+  final String label;
+  final bool active;
+  final Color accent;
+  final IconData? icon;
   final VoidCallback onTap;
-  const _SmallStep({required this.symbol, required this.onTap});
+  const _Pill({
+    required this.label,
+    required this.active,
+    required this.accent,
+    required this.onTap,
+    this.icon,
+  });
+
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(6),
+      borderRadius: BorderRadius.circular(10),
       child: Container(
-        width: 22,
-        height: 22,
+        padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 10),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: AppColors.ink,
-          border: Border.all(color: AppColors.line),
-          borderRadius: BorderRadius.circular(6),
+          color: active ? accent : AppColors.ink,
+          border: Border.all(color: active ? accent : AppColors.line),
+          borderRadius: BorderRadius.circular(10),
         ),
-        child: Text(
-          symbol,
-          style: AppTypography.mono(size: 12, color: AppColors.text),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (icon != null) ...[
+                Icon(
+                  icon,
+                  size: 13,
+                  color: active ? AppColors.ink : accent,
+                ),
+                const SizedBox(width: 4),
+              ],
+              Text(
+                label,
+                maxLines: 1,
+                style: AppTypography.sans(
+                  size: 11,
+                  weight: FontWeight.w500,
+                  color: active ? AppColors.ink : AppColors.text,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
+

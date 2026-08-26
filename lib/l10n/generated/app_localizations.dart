@@ -1993,6 +1993,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'NOT SAVED'**
   String get resultUnsaved;
+
+  /// No description provided for @subdivideAddLot.
+  ///
+  /// In en, this message translates to:
+  /// **'Add lot'**
+  String get subdivideAddLot;
+
+  /// No description provided for @subdivideRemoveLot.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get subdivideRemoveLot;
+
+  /// No description provided for @subdivideModeEqual.
+  ///
+  /// In en, this message translates to:
+  /// **'Equal'**
+  String get subdivideModeEqual;
+
+  /// No description provided for @subdivideModePercent.
+  ///
+  /// In en, this message translates to:
+  /// **'Percent'**
+  String get subdivideModePercent;
+
+  /// No description provided for @subdivideModeArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Area'**
+  String get subdivideModeArea;
+
+  /// No description provided for @subdivideSavedLots.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved {count} lots from “{name}”'**
+  String subdivideSavedLots(int count, String name);
+
+  /// No description provided for @subdivideLotsDontSum.
+  ///
+  /// In en, this message translates to:
+  /// **'Lots add up to {total}, plot is {plot}'**
+  String subdivideLotsDontSum(String total, String plot);
 }
 
 class _AppLocalizationsDelegate

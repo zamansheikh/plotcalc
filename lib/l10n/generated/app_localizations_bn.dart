@@ -1136,4 +1136,33 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get resultUnsaved => 'সংরক্ষিত নয়';
+
+  @override
+  String get subdivideAddLot => 'লট যোগ';
+
+  @override
+  String get subdivideRemoveLot => 'সরান';
+
+  @override
+  String get subdivideModeEqual => 'সমান';
+
+  @override
+  String get subdivideModePercent => 'শতাংশ';
+
+  @override
+  String get subdivideModeArea => 'ক্ষেত্রফল';
+
+  @override
+  String subdivideSavedLots(int count, String name) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '“$name” থেকে $countStringটি লট সংরক্ষিত';
+  }
+
+  @override
+  String subdivideLotsDontSum(String total, String plot) {
+    return 'লটের যোগফল $total, প্লট $plot';
+  }
 }
