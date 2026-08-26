@@ -7,6 +7,7 @@ import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/units/area_unit.dart';
+import '../../../../core/units/khotiyan_symbols.dart';
 import '../../../shared/settings/settings_bloc.dart';
 import '../../../shared/widgets/phone_chrome.dart';
 import '../../../../l10n/l10n.dart';
@@ -351,6 +352,7 @@ class _SelectorCard extends StatelessWidget {
             max: 16,
             accent: accent,
             onChanged: onAna,
+            unit: KhotiyanUnit.ana,
           ),
           _StepperRow(
             label: context.l10n.khotiyanGonda,
@@ -359,6 +361,7 @@ class _SelectorCard extends StatelessWidget {
             max: 19,
             accent: accent,
             onChanged: onGonda,
+            unit: KhotiyanUnit.gonda,
           ),
           _StepperRow(
             label: context.l10n.khotiyanKora,
@@ -367,6 +370,7 @@ class _SelectorCard extends StatelessWidget {
             max: 3,
             accent: accent,
             onChanged: onKora,
+            unit: KhotiyanUnit.kora,
           ),
           _StepperRow(
             label: context.l10n.khotiyanKranti,
@@ -375,6 +379,7 @@ class _SelectorCard extends StatelessWidget {
             max: 2,
             accent: accent,
             onChanged: onKranti,
+            unit: KhotiyanUnit.kranti,
           ),
           _StepperRow(
             label: context.l10n.khotiyanTil,
@@ -383,6 +388,7 @@ class _SelectorCard extends StatelessWidget {
             max: 19,
             accent: accent,
             onChanged: onTil,
+            unit: KhotiyanUnit.til,
             isLast: true,
           ),
         ],
@@ -400,6 +406,9 @@ class _StepperRow extends StatelessWidget {
   final ValueChanged<int> onChanged;
   final bool isLast;
 
+  /// The unit whose traditional mark to show, if it has one.
+  final KhotiyanUnit unit;
+
   const _StepperRow({
     required this.label,
     required this.sub,
@@ -407,11 +416,13 @@ class _StepperRow extends StatelessWidget {
     required this.max,
     required this.accent,
     required this.onChanged,
+    required this.unit,
     this.isLast = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final mark = KhotiyanSymbols.of(unit, value);
     return Container(
       decoration: BoxDecoration(
         border: !isLast
@@ -426,11 +437,15 @@ class _StepperRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.baseline,
               textBaseline: TextBaseline.alphabetic,
               children: [
-                Text(
-                  label,
-                  style: AppTypography.sans(
-                    size: 14,
-                    weight: FontWeight.w600,
+                Flexible(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTypography.sans(
+                      size: 14,
+                      weight: FontWeight.w600,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 6),
@@ -442,6 +457,11 @@ class _StepperRow extends StatelessWidget {
                     letterSpacing: 0.6,
                   ),
                 ),
+                // How this amount is actually written on a khotiyan.
+                if (mark != null) ...[
+                  const SizedBox(width: 8),
+                  _MarkChip(mark: mark, accent: accent),
+                ],
               ],
             ),
           ),
@@ -471,6 +491,40 @@ class _StepperRow extends StatelessWidget {
             onTap: () => onChanged(value + 1),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// The traditional mark for the current amount, e.g. ৷⁄ for five ana.
+///
+/// Deeds and khotiyans are written in these, not in digits, so showing the
+/// mark alongside the figure is what lets someone check the paper in hand.
+class _MarkChip extends StatelessWidget {
+  final String mark;
+  final Color accent;
+
+  const _MarkChip({required this.mark, required this.accent});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: accent.withValues(alpha: 0.30)),
+      ),
+      child: Text(
+        mark,
+        // The Bengali face, not the Latin one: these are Bengali currency
+        // numerators, and Inter would only reach them through fallback.
+        style: AppTypography.bangla(
+          size: 13,
+          weight: FontWeight.w600,
+          color: accent,
+          height: 1.2,
+        ),
       ),
     );
   }
