@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
@@ -8,7 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/units/area_unit.dart';
 import '../../../shared/settings/settings_bloc.dart';
-import '../../../shared/widgets/phone_chrome.dart';
+import '../../../shared/widgets/unit_input.dart';
 import '../../../../l10n/l10n.dart';
 
 class ConverterScreen extends StatefulWidget {
@@ -41,7 +40,13 @@ class _ConverterScreenState extends State<ConverterScreen> {
         child: Column(
           children: [
             const SizedBox(height: 8),
-            _Header(),
+            ToolHeader(
+              title: context.l10n.converterTitle,
+              subtitle: context.l10n.converterSubtitle,
+              onBack: () => context.canPop()
+                  ? context.pop()
+                  : context.go(AppRoutes.home),
+            ),
             _InputCard(
               controller: _ctrl,
               from: _from,
@@ -66,50 +71,6 @@ class _ConverterScreenState extends State<ConverterScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _Header extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: SmallIconButton(
-              icon: Icons.chevron_left,
-              onTap: () {
-                if (context.canPop()) {
-                  context.pop();
-                } else {
-                  context.go(AppRoutes.home);
-                }
-              },
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(context.l10n.converterTitle, style: AppTypography.heroTitle),
-                const SizedBox(height: 2),
-                Text(
-                  context.l10n.converterSubtitle,
-                  style: AppTypography.mono(
-                    size: 11,
-                    color: AppColors.textDim,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -153,97 +114,20 @@ class _InputCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.baseline,
-              textBaseline: TextBaseline.alphabetic,
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: controller,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(
-                        RegExp(r'[0-9.,]'),
-                      ),
-                    ],
-                    cursorColor: accent,
-                    style: AppTypography.mono(
-                      size: 36,
-                      weight: FontWeight.w500,
-                      color: accent,
-                      letterSpacing: -0.7,
-                    ),
-                    decoration: const InputDecoration(
-                      isCollapsed: true,
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                    onChanged: (_) => onValueChanged(),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  from.labelOf(context.l10n),
-                  style: AppTypography.mono(
-                    size: 14,
-                    color: AppColors.textDim,
-                  ),
-                ),
-              ],
+            BigNumberField(
+              controller: controller,
+              accent: accent,
+              suffix: from.labelOf(context.l10n),
+              onChanged: (_) => onValueChanged(),
             ),
             const SizedBox(height: 14),
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: [
-                for (final u in AreaUnit.values)
-                  _UnitChip(
-                    unit: u,
-                    active: u == from,
-                    accent: accent,
-                    onTap: () => onUnitChanged(u),
-                  ),
-              ],
+            UnitChipRow(
+              units: AreaUnit.values,
+              selected: from,
+              accent: accent,
+              onChanged: onUnitChanged,
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _UnitChip extends StatelessWidget {
-  final AreaUnit unit;
-  final bool active;
-  final Color accent;
-  final VoidCallback onTap;
-  const _UnitChip({
-    required this.unit,
-    required this.active,
-    required this.accent,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(999),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: active ? accent : AppColors.ink,
-          border: Border.all(color: active ? accent : AppColors.line),
-          borderRadius: BorderRadius.circular(999),
-        ),
-        child: Text(
-          unit.labelOf(context.l10n),
-          style: AppTypography.mono(
-            size: 11,
-            color: active ? AppColors.ink : AppColors.text,
-          ),
         ),
       ),
     );

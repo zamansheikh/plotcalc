@@ -1003,13 +1003,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get calcTotalLabel => 'TOTAL AREA';
 
   @override
-  String get calcTotalHint => '0';
-
-  @override
   String get calcAdjustTitle => 'Adjust area';
-
-  @override
-  String get calcAdjustSub => 'Add to or subtract from the total';
 
   @override
   String get calcAdd => 'Add';
@@ -1018,21 +1012,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get calcSubtract => 'Subtract';
 
   @override
-  String get calcApply => 'Apply';
-
-  @override
   String get calcCombineTitle => 'Combine units';
-
-  @override
-  String get calcCombineSub => 'Build a total from several units at once';
-
-  @override
-  String get calcCombineApply => 'Set as total';
-
-  @override
-  String calcCombineRunning(String value, String unit) {
-    return 'Sum · $value $unit';
-  }
 
   @override
   String get calcClear => 'Clear';
@@ -1045,4 +1025,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeCalculatorSub => 'Add, subtract, break down';
+
+  @override
+  String get calcModeTotal => 'Single value';
+
+  @override
+  String get calcModeParts => 'By unit';
+
+  @override
+  String get calcPartsHint => 'Edit any unit — the total updates as you type.';
+
+  @override
+  String get calcAdjustLabel => 'ADJUST TOTAL';
+
+  @override
+  String get calcResultLabel => 'BREAKDOWN';
+
+  @override
+  String get calcAmountLabel => 'AMOUNT';
 }

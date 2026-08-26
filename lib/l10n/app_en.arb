@@ -825,35 +825,14 @@
   "@calcSubtitle": {},
   "calcTotalLabel": "TOTAL AREA",
   "@calcTotalLabel": {},
-  "calcTotalHint": "0",
-  "@calcTotalHint": {},
   "calcAdjustTitle": "Adjust area",
   "@calcAdjustTitle": {},
-  "calcAdjustSub": "Add to or subtract from the total",
-  "@calcAdjustSub": {},
   "calcAdd": "Add",
   "@calcAdd": {},
   "calcSubtract": "Subtract",
   "@calcSubtract": {},
-  "calcApply": "Apply",
-  "@calcApply": {},
   "calcCombineTitle": "Combine units",
   "@calcCombineTitle": {},
-  "calcCombineSub": "Build a total from several units at once",
-  "@calcCombineSub": {},
-  "calcCombineApply": "Set as total",
-  "@calcCombineApply": {},
-  "calcCombineRunning": "Sum · {value} {unit}",
-  "@calcCombineRunning": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      },
-      "unit": {
-        "type": "String"
-      }
-    }
-  },
   "calcClear": "Clear",
   "@calcClear": {},
   "calcEmpty": "Enter an area to see its breakdown.",
@@ -861,5 +840,17 @@
   "calcCannotGoNegative": "Total cannot go below zero.",
   "@calcCannotGoNegative": {},
   "homeCalculatorSub": "Add, subtract, break down",
-  "@homeCalculatorSub": {}
+  "@homeCalculatorSub": {},
+  "calcModeTotal": "Single value",
+  "@calcModeTotal": {},
+  "calcModeParts": "By unit",
+  "@calcModeParts": {},
+  "calcPartsHint": "Edit any unit — the total updates as you type.",
+  "@calcPartsHint": {},
+  "calcAdjustLabel": "ADJUST TOTAL",
+  "@calcAdjustLabel": {},
+  "calcResultLabel": "BREAKDOWN",
+  "@calcResultLabel": {},
+  "calcAmountLabel": "AMOUNT",
+  "@calcAmountLabel": {}
 }

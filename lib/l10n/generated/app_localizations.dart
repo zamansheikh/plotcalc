@@ -1748,23 +1748,11 @@ abstract class AppLocalizations {
   /// **'TOTAL AREA'**
   String get calcTotalLabel;
 
-  /// No description provided for @calcTotalHint.
-  ///
-  /// In en, this message translates to:
-  /// **'0'**
-  String get calcTotalHint;
-
   /// No description provided for @calcAdjustTitle.
   ///
   /// In en, this message translates to:
   /// **'Adjust area'**
   String get calcAdjustTitle;
-
-  /// No description provided for @calcAdjustSub.
-  ///
-  /// In en, this message translates to:
-  /// **'Add to or subtract from the total'**
-  String get calcAdjustSub;
 
   /// No description provided for @calcAdd.
   ///
@@ -1778,35 +1766,11 @@ abstract class AppLocalizations {
   /// **'Subtract'**
   String get calcSubtract;
 
-  /// No description provided for @calcApply.
-  ///
-  /// In en, this message translates to:
-  /// **'Apply'**
-  String get calcApply;
-
   /// No description provided for @calcCombineTitle.
   ///
   /// In en, this message translates to:
   /// **'Combine units'**
   String get calcCombineTitle;
-
-  /// No description provided for @calcCombineSub.
-  ///
-  /// In en, this message translates to:
-  /// **'Build a total from several units at once'**
-  String get calcCombineSub;
-
-  /// No description provided for @calcCombineApply.
-  ///
-  /// In en, this message translates to:
-  /// **'Set as total'**
-  String get calcCombineApply;
-
-  /// No description provided for @calcCombineRunning.
-  ///
-  /// In en, this message translates to:
-  /// **'Sum · {value} {unit}'**
-  String calcCombineRunning(String value, String unit);
 
   /// No description provided for @calcClear.
   ///
@@ -1831,6 +1795,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add, subtract, break down'**
   String get homeCalculatorSub;
+
+  /// No description provided for @calcModeTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Single value'**
+  String get calcModeTotal;
+
+  /// No description provided for @calcModeParts.
+  ///
+  /// In en, this message translates to:
+  /// **'By unit'**
+  String get calcModeParts;
+
+  /// No description provided for @calcPartsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit any unit — the total updates as you type.'**
+  String get calcPartsHint;
+
+  /// No description provided for @calcAdjustLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'ADJUST TOTAL'**
+  String get calcAdjustLabel;
+
+  /// No description provided for @calcResultLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'BREAKDOWN'**
+  String get calcResultLabel;
+
+  /// No description provided for @calcAmountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'AMOUNT'**
+  String get calcAmountLabel;
 }
 
 class _AppLocalizationsDelegate

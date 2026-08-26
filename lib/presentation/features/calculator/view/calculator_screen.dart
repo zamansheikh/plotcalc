@@ -1,20 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/units/area_breakdown.dart';
 import '../../../../core/units/area_unit.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../shared/settings/settings_bloc.dart';
 import '../../../shared/widgets/area_breakdown_view.dart';
-import '../../../shared/widgets/phone_chrome.dart';
+import '../../../shared/widgets/unit_input.dart';
+
+/// How the running total is being entered.
+enum _Entry {
+  /// One number in one unit.
+  total,
+
+  /// A value per unit — effectively an editable breakdown.
+  parts,
+}
 
 /// Working surface for land arithmetic: hold a running total, read it as a
-/// compound breakdown, add or subtract a quantity in any unit, or assemble a
-/// total from several units at once.
+/// compound breakdown, and add to or subtract from it in any unit.
 ///
 /// Distinct from the converter, which only restates one value in every unit.
 class CalculatorScreen extends StatefulWidget {
@@ -25,42 +33,43 @@ class CalculatorScreen extends StatefulWidget {
 }
 
 class _CalculatorScreenState extends State<CalculatorScreen> {
-  /// Square metres is the canonical store; the text field is only ever a
-  /// view of it in the currently selected unit.
+  /// Square metres is the canonical store. Every field is a view of it, so
+  /// switching units restates the same area rather than reinterpreting the
+  /// digits the user typed.
   double _totalSqm = 0;
   AreaUnit _totalUnit = AreaUnit.katha;
 
-  final _totalCtrl = TextEditingController();
+  _Entry _entry = _Entry.total;
 
-  bool _adjustAdds = true;
-  AreaUnit _adjustUnit = AreaUnit.katha;
+  final _totalCtrl = TextEditingController();
+  final _parts = <AreaUnit, TextEditingController>{};
+
+  /// Until the user picks an adjust unit explicitly, it follows the total's
+  /// unit — adding to a total you are reading in katha almost always means
+  /// adding katha, and one fewer decision is one fewer tap.
+  AreaUnit? _adjustUnitOverride;
   final _adjustCtrl = TextEditingController();
   String? _adjustError;
-
-  final _combine = <AreaUnit, TextEditingController>{};
-
-  bool _showAdjust = false;
-  bool _showCombine = false;
 
   @override
   void dispose() {
     _totalCtrl.dispose();
     _adjustCtrl.dispose();
-    for (final c in _combine.values) {
+    for (final c in _parts.values) {
       c.dispose();
     }
     super.dispose();
   }
 
-  TextEditingController _combineCtrl(AreaUnit u) =>
-      _combine.putIfAbsent(u, TextEditingController.new);
+  AreaUnit get _adjustUnit => _adjustUnitOverride ?? _totalUnit;
 
-  /// Trailing zeros make a running total hard to read, so trim them.
+  TextEditingController _partCtrl(AreaUnit u) =>
+      _parts.putIfAbsent(u, TextEditingController.new);
+
+  /// Trailing zeros make a running total hard to scan.
   String _pretty(double v) {
     if (v == 0) return '';
-    if (v == v.roundToDouble() && v.abs() < 1e9) {
-      return v.toStringAsFixed(0);
-    }
+    if (v == v.roundToDouble() && v.abs() < 1e9) return v.toStringAsFixed(0);
     return v
         .toStringAsFixed(4)
         .replaceFirst(RegExp(r'0+$'), '')
@@ -74,24 +83,33 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     });
   }
 
-  void _onTotalTyped(String raw) {
-    final v = double.tryParse(raw.replaceAll(',', '').trim());
-    setState(() => _totalSqm = (v == null || v < 0) ? 0 : _totalUnit.toSqm(v));
+  /// Fills the per-unit fields from the current total, so switching to
+  /// "By unit" starts from what is already on screen instead of blank.
+  void _seedParts(BreakdownConfig config) {
+    final breakdown = AreaBreakdown.of(_totalSqm, config);
+    final byUnit = {for (final p in breakdown.parts) p.unit: p.value};
+    for (final u in config.orderedEnabled) {
+      _partCtrl(u).text = _pretty(byUnit[u] ?? 0);
+    }
   }
 
-  void _changeTotalUnit(AreaUnit u) {
-    // Keep the area itself fixed and restate it in the new unit.
+  void _recomputeFromParts(List<AreaUnit> units) {
+    var sum = 0.0;
+    for (final u in units) {
+      final v = double.tryParse(_partCtrl(u).text.replaceAll(',', '').trim());
+      if (v != null && v > 0) sum += u.toSqm(v);
+    }
     setState(() {
-      _totalUnit = u;
-      _totalCtrl.text = _pretty(u.fromSqm(_totalSqm));
+      _totalSqm = sum;
+      _totalCtrl.text = _pretty(_totalUnit.fromSqm(sum));
     });
   }
 
-  void _applyAdjustment() {
+  void _applyAdjustment({required bool adds}) {
     final v = double.tryParse(_adjustCtrl.text.replaceAll(',', '').trim());
     if (v == null || v <= 0) return;
     final delta = _adjustUnit.toSqm(v);
-    final next = _adjustAdds ? _totalSqm + delta : _totalSqm - delta;
+    final next = adds ? _totalSqm + delta : _totalSqm - delta;
     if (next < 0) {
       setState(() => _adjustError = context.l10n.calcCannotGoNegative);
       return;
@@ -99,571 +117,346 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     setState(() => _adjustError = null);
     _setTotal(next);
     _adjustCtrl.clear();
+    if (_entry == _Entry.parts) {
+      _seedParts(context.read<SettingsBloc>().state.breakdown);
+    }
   }
 
-  double get _combineSqm {
-    var sum = 0.0;
-    _combine.forEach((unit, ctrl) {
-      final v = double.tryParse(ctrl.text.replaceAll(',', '').trim());
-      if (v != null && v > 0) sum += unit.toSqm(v);
-    });
-    return sum;
-  }
-
-  void _applyCombine() {
-    final sqm = _combineSqm;
-    if (sqm <= 0) return;
-    _setTotal(sqm);
-    setState(() => _showCombine = false);
+  void _clear() {
+    _adjustCtrl.clear();
+    for (final c in _parts.values) {
+      c.clear();
+    }
+    setState(() => _adjustError = null);
+    _setTotal(0);
   }
 
   @override
   Widget build(BuildContext context) {
-    final accent = context.watch<SettingsBloc>().state.accent;
+    final settings = context.watch<SettingsBloc>().state;
+    final accent = settings.accent;
+    final units = settings.breakdown.orderedEnabled;
+
     return Scaffold(
       backgroundColor: AppColors.ink,
       body: SafeArea(
-        child: PhoneChrome(
-          child: Column(
-            children: [
-              const SizedBox(height: 8),
-              _TopBar(onClear: () {
-                _adjustCtrl.clear();
-                for (final c in _combine.values) {
-                  c.clear();
-                }
-                setState(() => _adjustError = null);
-                _setTotal(0);
-              }),
-              Expanded(
-                child: ListView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-                  children: [
-                    _totalCard(accent),
-                    const SizedBox(height: 12),
-                    if (_totalSqm > 0)
-                      AreaBreakdownView(sqm: _totalSqm)
-                    else
-                      _hint(context.l10n.calcEmpty),
-                    const SizedBox(height: 12),
-                    _adjustCard(accent),
-                    const SizedBox(height: 10),
-                    _combineCard(accent),
-                  ],
-                ),
+        child: Column(
+          children: [
+            const SizedBox(height: 8),
+            ToolHeader(
+              title: context.l10n.calcTitle,
+              subtitle: context.l10n.calcSubtitle,
+              onBack: () =>
+                  context.canPop() ? context.pop() : context.go(AppRoutes.home),
+              trailing: _totalSqm > 0
+                  ? _ClearButton(onTap: _clear)
+                  : null,
+            ),
+            Expanded(
+              child: ListView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                children: [
+                  _entryCard(accent, units, settings.breakdown),
+                  const SizedBox(height: 18),
+                  _sectionLabel(context.l10n.calcResultLabel),
+                  const SizedBox(height: 8),
+                  _card(
+                    child: _totalSqm > 0
+                        ? AreaBreakdownView(sqm: _totalSqm, framed: false)
+                        : Text(
+                            context.l10n.calcEmpty,
+                            style: AppTypography.sans(
+                              size: 12,
+                              color: AppColors.textDim,
+                            ),
+                          ),
+                  ),
+                  const SizedBox(height: 18),
+                  _sectionLabel(context.l10n.calcAdjustLabel),
+                  const SizedBox(height: 8),
+                  _adjustCard(accent),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _hint(String text) => Container(
+  Widget _sectionLabel(String text) =>
+      Text(text, style: AppTypography.monoLabel);
+
+  Widget _card({required Widget child, bool emphasised = false}) => Container(
     width: double.infinity,
-    padding: const EdgeInsets.all(14),
+    padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
       color: AppColors.surface,
-      border: Border.all(color: AppColors.line),
-      borderRadius: BorderRadius.circular(14),
+      border: Border.all(
+        color: emphasised ? AppColors.lineMid : AppColors.line,
+      ),
+      borderRadius: BorderRadius.circular(16),
     ),
-    child: Text(
-      text,
-      style: AppTypography.sans(size: 12, color: AppColors.textDim),
-    ),
+    child: child,
   );
 
-  Widget _totalCard(Color accent) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        border: Border.all(color: AppColors.lineMid),
-        borderRadius: BorderRadius.circular(14),
-      ),
+  Widget _entryCard(
+    Color accent,
+    List<AreaUnit> units,
+    BreakdownConfig config,
+  ) {
+    return _card(
+      emphasised: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(context.l10n.calcTotalLabel, style: AppTypography.monoLabel),
-          const SizedBox(height: 8),
           Row(
             children: [
               Expanded(
-                child: _NumberInput(
-                  controller: _totalCtrl,
+                child: _ModeTab(
+                  label: context.l10n.calcModeTotal,
+                  active: _entry == _Entry.total,
                   accent: accent,
-                  big: true,
-                  onChanged: _onTotalTyped,
+                  onTap: () => setState(() => _entry = _Entry.total),
                 ),
               ),
-              const SizedBox(width: 10),
-              _UnitPicker(
-                current: _totalUnit,
-                accent: accent,
-                onChanged: _changeTotalUnit,
+              const SizedBox(width: 6),
+              Expanded(
+                child: _ModeTab(
+                  label: context.l10n.calcModeParts,
+                  active: _entry == _Entry.parts,
+                  accent: accent,
+                  onTap: () {
+                    _seedParts(config);
+                    setState(() => _entry = _Entry.parts);
+                  },
+                ),
               ),
             ],
           ),
+          const SizedBox(height: 16),
+          if (_entry == _Entry.total) ...[
+            Text(context.l10n.calcTotalLabel, style: AppTypography.monoLabel),
+            const SizedBox(height: 8),
+            BigNumberField(
+              controller: _totalCtrl,
+              accent: accent,
+              suffix: _totalUnit.labelOf(context.l10n),
+              onChanged: (raw) {
+                final v = double.tryParse(raw.replaceAll(',', '').trim());
+                setState(
+                  () => _totalSqm =
+                      (v == null || v < 0) ? 0 : _totalUnit.toSqm(v),
+                );
+              },
+            ),
+            const SizedBox(height: 14),
+            UnitChipRow(
+              units: AreaUnit.values,
+              selected: _totalUnit,
+              accent: accent,
+              onChanged: (u) => setState(() {
+                _totalUnit = u;
+                _totalCtrl.text = _pretty(u.fromSqm(_totalSqm));
+              }),
+            ),
+          ] else ...[
+            for (var i = 0; i < units.length; i++) ...[
+              if (i > 0) Divider(height: 18, color: AppColors.line),
+              _PartRow(
+                unit: units[i],
+                controller: _partCtrl(units[i]),
+                accent: accent,
+                onChanged: (_) => _recomputeFromParts(units),
+              ),
+            ],
+            const SizedBox(height: 14),
+            Text(
+              context.l10n.calcPartsHint,
+              style: AppTypography.sans(size: 11, color: AppColors.textFaint),
+            ),
+          ],
         ],
       ),
     );
   }
 
   Widget _adjustCard(Color accent) {
-    return _Expandable(
-      icon: Icons.tune,
-      title: context.l10n.calcAdjustTitle,
-      subtitle: context.l10n.calcAdjustSub,
-      expanded: _showAdjust,
-      accent: accent,
-      onToggle: () => setState(() => _showAdjust = !_showAdjust),
+    final amount =
+        double.tryParse(_adjustCtrl.text.replaceAll(',', '').trim()) ?? 0;
+    final ready = amount > 0;
+    return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: _Segment(
-                  label: context.l10n.calcAdd,
-                  icon: Icons.add,
-                  selected: _adjustAdds,
-                  accent: accent,
-                  onTap: () => setState(() => _adjustAdds = true),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _Segment(
-                  label: context.l10n.calcSubtract,
-                  icon: Icons.remove,
-                  selected: !_adjustAdds,
-                  accent: AppColors.danger,
-                  onTap: () => setState(() => _adjustAdds = false),
-                ),
-              ),
-            ],
+          Text(context.l10n.calcAmountLabel, style: AppTypography.monoLabel),
+          const SizedBox(height: 6),
+          BigNumberField(
+            controller: _adjustCtrl,
+            accent: accent,
+            size: 26,
+            suffix: _adjustUnit.labelOf(context.l10n),
+            onChanged: (_) => setState(() => _adjustError = null),
           ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(
-                child: _NumberInput(
-                  controller: _adjustCtrl,
-                  accent: accent,
-                  onChanged: (_) => setState(() => _adjustError = null),
-                ),
-              ),
-              const SizedBox(width: 8),
-              _UnitPicker(
-                current: _adjustUnit,
-                accent: accent,
-                onChanged: (u) => setState(() => _adjustUnit = u),
-              ),
-            ],
+          const SizedBox(height: 12),
+          UnitChipRow(
+            units: AreaUnit.values,
+            selected: _adjustUnit,
+            accent: accent,
+            onChanged: (u) => setState(() => _adjustUnitOverride = u),
           ),
           if (_adjustError != null) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             Text(
               _adjustError!,
               style: AppTypography.sans(size: 11, color: AppColors.danger),
             ),
           ],
-          const SizedBox(height: 10),
-          _PrimaryButton(
-            label: context.l10n.calcApply,
-            accent: accent,
-            onTap: _applyAdjustment,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _combineCard(Color accent) {
-    final units = context.watch<SettingsBloc>().state.breakdown.orderedEnabled;
-    final sum = _combineSqm;
-    return _Expandable(
-      icon: Icons.calculate_outlined,
-      title: context.l10n.calcCombineTitle,
-      subtitle: context.l10n.calcCombineSub,
-      expanded: _showCombine,
-      accent: accent,
-      onToggle: () => setState(() => _showCombine = !_showCombine),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          for (final u in units) ...[
-            Row(
-              children: [
-                SizedBox(
-                  width: 92,
-                  child: Text(
-                    u.labelOf(context.l10n),
-                    style: AppTypography.sans(
-                      size: 12,
-                      weight: FontWeight.w600,
-                    ),
-                  ),
+          const SizedBox(height: 14),
+          // One tap chooses the operation and performs it. An earlier version
+          // had a mode toggle as well, which meant two controls labelled
+          // "Add" doing different things.
+          Row(
+            children: [
+              Expanded(
+                child: WideButton(
+                  label: context.l10n.calcSubtract,
+                  icon: Icons.remove,
+                  accent: AppColors.danger,
+                  filled: false,
+                  onTap: ready
+                      ? () => _applyAdjustment(adds: false)
+                      : null,
                 ),
-                Expanded(
-                  child: _NumberInput(
-                    controller: _combineCtrl(u),
-                    accent: accent,
-                    onChanged: (_) => setState(() {}),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-          ],
-          const SizedBox(height: 2),
-          Text(
-            context.l10n.calcCombineRunning(
-              _totalUnit.format(sum),
-              _totalUnit.labelOf(context.l10n),
-            ),
-            style: AppTypography.mono(size: 11, color: AppColors.textDim),
-          ),
-          const SizedBox(height: 10),
-          _PrimaryButton(
-            label: context.l10n.calcCombineApply,
-            accent: accent,
-            onTap: sum > 0 ? _applyCombine : null,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TopBar extends StatelessWidget {
-  final VoidCallback onClear;
-  const _TopBar({required this.onClear});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 6, 16, 12),
-      child: Row(
-        children: [
-          SmallIconButton(
-            icon: Icons.chevron_left,
-            onTap: () =>
-                context.canPop() ? context.pop() : context.go(AppRoutes.home),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  context.l10n.calcTitle,
-                  style: AppTypography.sans(size: 15, weight: FontWeight.w600),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  context.l10n.calcSubtitle,
-                  style: AppTypography.mono(size: 10, color: AppColors.textDim),
-                ),
-              ],
-            ),
-          ),
-          TextButton(
-            onPressed: onClear,
-            child: Text(
-              context.l10n.calcClear,
-              style: AppTypography.mono(size: 10, color: AppColors.textDim),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _NumberInput extends StatelessWidget {
-  final TextEditingController controller;
-  final Color accent;
-  final ValueChanged<String> onChanged;
-  final bool big;
-  const _NumberInput({
-    required this.controller,
-    required this.accent,
-    required this.onChanged,
-    this.big = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      onChanged: onChanged,
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
-      style: AppTypography.mono(
-        size: big ? 26 : 15,
-        weight: FontWeight.w600,
-        color: big ? accent : AppColors.text,
-      ),
-      cursorColor: accent,
-      decoration: InputDecoration(
-        isDense: true,
-        hintText: '0',
-        hintStyle: AppTypography.mono(
-          size: big ? 26 : 15,
-          color: AppColors.textFaint,
-        ),
-        filled: true,
-        fillColor: AppColors.surfaceHi,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: 12,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: AppColors.line),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: AppColors.line),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: accent),
-        ),
-      ),
-    );
-  }
-}
-
-class _UnitPicker extends StatelessWidget {
-  final AreaUnit current;
-  final Color accent;
-  final ValueChanged<AreaUnit> onChanged;
-  const _UnitPicker({
-    required this.current,
-    required this.accent,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return PopupMenuButton<AreaUnit>(
-      onSelected: onChanged,
-      color: AppColors.surfaceHi,
-      itemBuilder: (_) => [
-        for (final u in AreaUnit.values)
-          PopupMenuItem(
-            value: u,
-            child: Text(
-              u.nameOf(context.l10n),
-              style: AppTypography.sans(
-                size: 13,
-                color: u == current ? accent : AppColors.text,
               ),
-            ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: WideButton(
+                  label: context.l10n.calcAdd,
+                  icon: Icons.add,
+                  accent: accent,
+                  onTap: ready ? () => _applyAdjustment(adds: true) : null,
+                ),
+              ),
+            ],
           ),
-      ],
+        ],
+      ),
+    );
+  }
+}
+
+class _ClearButton extends StatelessWidget {
+  final VoidCallback onTap;
+  const _ClearButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(999),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 13),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: AppColors.surfaceHi,
           border: Border.all(color: AppColors.line),
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(999),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              current.labelOf(context.l10n),
-              style: AppTypography.sans(
-                size: 13,
-                weight: FontWeight.w600,
-                color: accent,
-              ),
-            ),
-            const SizedBox(width: 4),
-            Icon(Icons.arrow_drop_down, size: 18, color: accent),
-          ],
+        child: Text(
+          context.l10n.calcClear,
+          style: AppTypography.mono(size: 10, color: AppColors.textDim),
         ),
       ),
     );
   }
 }
 
-class _Segment extends StatelessWidget {
+class _ModeTab extends StatelessWidget {
   final String label;
-  final IconData icon;
-  final bool selected;
+  final bool active;
   final Color accent;
   final VoidCallback onTap;
-  const _Segment({
+  const _ModeTab({
     required this.label,
-    required this.icon,
-    required this.selected,
+    required this.active,
     required this.accent,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(10),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: selected ? AppColors.limeDim : Colors.transparent,
-            border: Border.all(color: selected ? accent : AppColors.line),
-            borderRadius: BorderRadius.circular(10),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: active ? accent : AppColors.ink,
+          border: Border.all(color: active ? accent : AppColors.line),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Text(
+          label,
+          style: AppTypography.sans(
+            size: 12,
+            weight: FontWeight.w500,
+            color: active ? AppColors.ink : AppColors.text,
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
+        ),
+      ),
+    );
+  }
+}
+
+/// One unit's field in "By unit" mode, laid out like the converter's
+/// result rows so the two screens read the same way.
+class _PartRow extends StatelessWidget {
+  final AreaUnit unit;
+  final TextEditingController controller;
+  final Color accent;
+  final ValueChanged<String> onChanged;
+  const _PartRow({
+    required this.unit,
+    required this.controller,
+    required this.accent,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(
-                icon,
-                size: 15,
-                color: selected ? accent : AppColors.textDim,
-              ),
-              const SizedBox(width: 6),
               Text(
-                label,
-                style: AppTypography.sans(
-                  size: 12,
-                  weight: FontWeight.w600,
-                  color: selected ? accent : AppColors.textDim,
+                unit.nameOf(context.l10n).toUpperCase(),
+                style: AppTypography.mono(
+                  size: 9,
+                  color: AppColors.textFaint,
+                  letterSpacing: 1,
                 ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                unit.labelOf(context.l10n),
+                style: AppTypography.mono(size: 10, color: AppColors.textDim),
               ),
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _PrimaryButton extends StatelessWidget {
-  final String label;
-  final Color accent;
-  final VoidCallback? onTap;
-  const _PrimaryButton({
-    required this.label,
-    required this.accent,
-    this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final on = onTap != null;
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 13),
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: on ? accent : AppColors.surfaceHi,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: on ? accent : AppColors.line),
-          ),
-          child: Text(
-            label,
-            style: AppTypography.sans(
-              size: 13,
-              weight: FontWeight.w600,
-              color: on ? AppColors.ink : AppColors.textFaint,
-            ),
+        SizedBox(
+          width: 120,
+          child: BigNumberField(
+            controller: controller,
+            accent: accent,
+            size: 20,
+            onChanged: onChanged,
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _Expandable extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final bool expanded;
-  final Color accent;
-  final VoidCallback onToggle;
-  final Widget child;
-  const _Expandable({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.expanded,
-    required this.accent,
-    required this.onToggle,
-    required this.child,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        border: Border.all(color: AppColors.line),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        children: [
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: onToggle,
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Row(
-                  children: [
-                    Icon(icon, size: 18, color: accent),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            title,
-                            style: AppTypography.sans(
-                              size: 13,
-                              weight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            subtitle,
-                            style: AppTypography.sans(
-                              size: 11,
-                              color: AppColors.textDim,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Icon(
-                      expanded ? Icons.expand_less : Icons.expand_more,
-                      size: 20,
-                      color: AppColors.textDim,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          if (expanded)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
-              child: child,
-            ),
-        ],
-      ),
+      ],
     );
   }
 }
