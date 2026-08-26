@@ -7,6 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../shared/settings/settings_bloc.dart';
 import '../data/articles.dart';
+import '../data/land_info_loader.dart';
 
 class InfoScreen extends StatelessWidget {
   const InfoScreen({super.key});
@@ -14,6 +15,7 @@ class InfoScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = context.watch<SettingsBloc>().state.accent;
+    final items = InfoContent.all;
     return SafeArea(
       child: Column(
         children: [
@@ -23,10 +25,10 @@ class InfoScreen extends StatelessWidget {
             child: ListView.separated(
               physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              itemCount: articles.length,
+              itemCount: items.length,
               separatorBuilder: (_, _) => const SizedBox(height: 10),
               itemBuilder: (_, i) => _ArticleCard(
-                article: articles[i],
+                article: items[i],
                 accent: accent,
               ),
             ),
@@ -49,7 +51,7 @@ class _Header extends StatelessWidget {
           Text('Land 101', style: AppTypography.heroTitle),
           const SizedBox(height: 2),
           Text(
-            'Reference articles on units, measurement, and surveying',
+            'Units, measurement, surveying — and Bangladeshi land records',
             style: AppTypography.mono(size: 11, color: AppColors.textDim),
           ),
         ],
@@ -102,10 +104,16 @@ class _ArticleCard extends StatelessWidget {
                         Expanded(
                           child: Text(
                             article.title,
-                            style: AppTypography.sans(
-                              size: 14,
-                              weight: FontWeight.w600,
-                            ),
+                            style: article.isBengali
+                                ? AppTypography.bangla(
+                                    size: 13.5,
+                                    weight: FontWeight.w600,
+                                    height: 1.45,
+                                  )
+                                : AppTypography.sans(
+                                    size: 14,
+                                    weight: FontWeight.w600,
+                                  ),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
@@ -120,11 +128,17 @@ class _ArticleCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       article.summary,
-                      style: AppTypography.sans(
-                        size: 12,
-                        color: AppColors.textDim,
-                        height: 1.4,
-                      ),
+                      style: article.isBengali
+                          ? AppTypography.bangla(
+                              size: 11.5,
+                              color: AppColors.textDim,
+                              height: 1.6,
+                            )
+                          : AppTypography.sans(
+                              size: 12,
+                              color: AppColors.textDim,
+                              height: 1.4,
+                            ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),

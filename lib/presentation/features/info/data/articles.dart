@@ -1,9 +1,63 @@
 import 'package:flutter/material.dart';
 
-class ArticleSection {
+/// One renderable unit of article content.
+///
+/// [ArticleSection] is the compact heading+prose form the hand-written English
+/// articles use. The remaining variants mirror the block types in
+/// `docs/land_info.json`, so imported land-record content keeps its tables,
+/// images and lists instead of being flattened into paragraphs.
+sealed class ArticleBlock {
+  const ArticleBlock();
+}
+
+class ArticleSection extends ArticleBlock {
   final String? heading;
   final String body;
   const ArticleSection({this.heading, required this.body});
+}
+
+class HeadingBlock extends ArticleBlock {
+  final String text;
+  const HeadingBlock(this.text);
+}
+
+class SubHeadingBlock extends ArticleBlock {
+  final String text;
+  const SubHeadingBlock(this.text);
+}
+
+class ParagraphBlock extends ArticleBlock {
+  final String text;
+  const ParagraphBlock(this.text);
+}
+
+/// A bullet whose lead-in phrase is emphasised ahead of the explanation.
+class BulletPointBlock extends ArticleBlock {
+  final String? title;
+  final String text;
+  const BulletPointBlock({this.title, required this.text});
+}
+
+class BulletListBlock extends ArticleBlock {
+  final List<String> items;
+  const BulletListBlock(this.items);
+}
+
+class NumberedListBlock extends ArticleBlock {
+  final List<String> items;
+  const NumberedListBlock(this.items);
+}
+
+class ImageBlock extends ArticleBlock {
+  final String asset;
+  final String? caption;
+  const ImageBlock({required this.asset, this.caption});
+}
+
+class TableBlock extends ArticleBlock {
+  final List<String> headers;
+  final List<List<String>> rows;
+  const TableBlock({required this.headers, required this.rows});
 }
 
 class Article {
@@ -12,19 +66,26 @@ class Article {
   final String summary;
   final IconData icon;
   final String readTime; // e.g. "3 min read"
-  final List<ArticleSection> sections;
+  final List<ArticleBlock> blocks;
+
+  /// Bengali articles need a Bengali-capable face and a slightly looser line
+  /// height; the renderer keys off this rather than sniffing the script.
+  final bool isBengali;
+
   const Article({
     required this.id,
     required this.title,
     required this.summary,
     required this.icon,
     required this.readTime,
-    required this.sections,
+    required this.blocks,
+    this.isBengali = false,
   });
 }
 
-/// Static catalogue of land-measurement reference articles. Add or extend
-/// freely — Info screen and ArticleScreen pick this up automatically.
+/// Hand-written English reference articles. The Bengali land-record topics
+/// live in `docs/land_info.json` and are merged in at startup — see
+/// `land_info_loader.dart`.
 const articles = <Article>[
   Article(
     id: 'bd-units',
@@ -33,7 +94,7 @@ const articles = <Article>[
         'Bigha, katha, chatak, shotok — what each one is and how they relate.',
     icon: Icons.straighten,
     readTime: '3 min read',
-    sections: [
+    blocks: [
       ArticleSection(
         body:
             'Bangladesh uses a tiered system of traditional land units. Each '
@@ -84,7 +145,7 @@ const articles = <Article>[
         'When square feet beats square meters and vice versa.',
     icon: Icons.compare_arrows,
     readTime: '2 min read',
-    sections: [
+    blocks: [
       ArticleSection(
         body:
             'Most of the world uses metric. The US, parts of the UK, and '
@@ -128,7 +189,7 @@ const articles = <Article>[
         'Three field methods that work when the plot isn\'t a rectangle.',
     icon: Icons.timeline,
     readTime: '4 min read',
-    sections: [
+    blocks: [
       ArticleSection(
         body:
             'Most real plots aren\'t clean rectangles. Hills, rivers, old '
@@ -172,7 +233,7 @@ const articles = <Article>[
         'The shoelace formula in plain language — and why it always works.',
     icon: Icons.calculate_outlined,
     readTime: '3 min read',
-    sections: [
+    blocks: [
       ArticleSection(
         body:
             'Every closed polygon\'s area can be computed from just its '
@@ -213,7 +274,7 @@ const articles = <Article>[
         'Use them to verify squareness and catch field-measurement errors.',
     icon: Icons.timeline,
     readTime: '2 min read',
-    sections: [
+    blocks: [
       ArticleSection(
         body:
             'Side lengths alone don\'t pin down a quadrilateral. A '

@@ -48,3 +48,9 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  assets:
+    # Bengali land-record reference content, shared with the docs/ site.
+    - docs/land_info.json
+    # Khatiyan / mouza-map scans referenced by that content.
+    - assets/images/

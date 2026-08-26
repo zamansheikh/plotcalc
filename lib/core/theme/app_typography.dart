@@ -6,6 +6,36 @@ import 'app_colors.dart';
 class AppTypography {
   AppTypography._();
 
+  static String? _banglaFamily;
+
+  /// Inter and JetBrains Mono carry no Bengali glyphs, so the Bengali
+  /// land-record articles would render as tofu boxes. Registering Noto Sans
+  /// Bengali once and appending it to every fallback chain fixes Bengali text
+  /// app-wide without each call site having to know the script.
+  static void registerBanglaFallback() {
+    _banglaFamily = GoogleFonts.notoSansBengali().fontFamily;
+  }
+
+  static List<String>? get _fallback =>
+      _banglaFamily == null ? null : [_banglaFamily!];
+
+  /// Bengali-first face, for content known to be Bengali.
+  static TextStyle bangla({
+    double size = 14,
+    FontWeight weight = FontWeight.w400,
+    Color color = AppColors.text,
+    double letterSpacing = 0,
+    double height = 1.7,
+  }) {
+    return GoogleFonts.notoSansBengali(
+      fontSize: size,
+      fontWeight: weight,
+      color: color,
+      letterSpacing: letterSpacing,
+      height: height,
+    );
+  }
+
   static TextStyle sans({
     double size = 14,
     FontWeight weight = FontWeight.w400,
@@ -19,7 +49,7 @@ class AppTypography {
       color: color,
       letterSpacing: letterSpacing,
       height: height,
-    );
+    ).copyWith(fontFamilyFallback: _fallback);
   }
 
   static TextStyle mono({
@@ -35,7 +65,7 @@ class AppTypography {
       color: color,
       letterSpacing: letterSpacing,
       height: height,
-    );
+    ).copyWith(fontFamilyFallback: _fallback);
   }
 
   static TextStyle get displayMono => mono(
