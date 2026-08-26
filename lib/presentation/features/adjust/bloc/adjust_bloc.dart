@@ -18,6 +18,9 @@ class AdjustBloc extends Bloc<AdjustEvent, AdjustState> {
     });
     on<ModeChanged>((e, emit) => emit(state.copyWith(mode: e.mode)));
     on<AnchorChanged>((e, emit) => emit(state.copyWith(anchor: e.anchor)));
+    on<DisplayUnitChanged>(
+      (e, emit) => emit(state.copyWith(displayUnit: e.unit)),
+    );
     on<MethodChanged>((e, emit) => emit(state.copyWith(method: e.method)));
     on<TargetKindChanged>((e, emit) {
       // Side 2 and corner 2 are different things, so the selection cannot
@@ -29,6 +32,9 @@ class AdjustBloc extends Bloc<AdjustEvent, AdjustState> {
       next.contains(e.index) ? next.remove(e.index) : next.add(e.index);
       emit(state.copyWith(selection: next));
     });
+    on<SlideDirectionToggled>(
+      (e, emit) => emit(state.copyWith(slideAlongNext: !state.slideAlongNext)),
+    );
     on<SelectionCleared>(
       (e, emit) => emit(state.copyWith(selection: const {})),
     );

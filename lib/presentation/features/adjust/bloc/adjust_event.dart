@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 
 import '../../../../core/geometry/vertex.dart';
 import '../../../../core/geometry/boundary_adjust.dart';
+import '../../../../core/units/area_unit.dart';
 import 'adjust_state.dart';
 
 sealed class AdjustEvent extends Equatable {
@@ -71,4 +72,16 @@ class SelectionToggled extends AdjustEvent {
 
 class SelectionCleared extends AdjustEvent {
   const SelectionCleared();
+}
+
+class DisplayUnitChanged extends AdjustEvent {
+  final AreaUnit unit;
+  const DisplayUnitChanged(this.unit);
+  @override
+  List<Object?> get props => [unit];
+}
+
+/// Swaps which of the two boundaries at the chosen corner it slides along.
+class SlideDirectionToggled extends AdjustEvent {
+  const SlideDirectionToggled();
 }

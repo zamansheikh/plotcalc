@@ -128,6 +128,31 @@ void main() {
     expect(double.parse(targetText(tester)), closeTo(before, 0.01));
   });
 
+  testWidgets('the target can be entered in any unit', (tester) async {
+    // A plot is discussed in katha even when the app is set to sq ft.
+    await pump(tester, unit: AreaUnit.sqft);
+    final asSqft = double.parse(targetText(tester));
+    expect(asSqft, closeTo(AreaUnit.sqft.fromSqm(400), 1));
+
+    await tester.tap(find.text('katha').first);
+    await tester.pump(const Duration(milliseconds: 100));
+
+    // Same plot, restated — not reinterpreted.
+    expect(
+      double.parse(targetText(tester)),
+      closeTo(AreaUnit.katha.fromSqm(400), 0.01),
+    );
+  });
+
+  testWidgets('choosing a unit here does not change the app setting', (
+    tester,
+  ) async {
+    await pump(tester, unit: AreaUnit.sqft);
+    await tester.tap(find.text('katha').first);
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(settings.state.areaUnit, AreaUnit.sqft);
+  });
+
   testWidgets('typing rubbish does not crash or wipe the plot', (
     tester,
   ) async {

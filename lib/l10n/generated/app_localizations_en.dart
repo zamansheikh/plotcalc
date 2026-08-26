@@ -1116,4 +1116,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get actionClearSelection => 'Clear';
+
+  @override
+  String get adjustPickSlide => 'Slide';
+
+  @override
+  String get adjustTapToSlide => 'Tap a corner to slide it along a boundary';
+
+  @override
+  String get adjustSlideAlong => 'Along';
+
+  @override
+  String get adjustSlideSwap => 'Other side';
 }

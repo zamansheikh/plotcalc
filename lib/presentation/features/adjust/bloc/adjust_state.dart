@@ -5,6 +5,7 @@ import 'package:equatable/equatable.dart';
 import '../../../../core/geometry/boundary_adjust.dart';
 import '../../../../core/geometry/geometry.dart';
 import '../../../../core/geometry/vertex.dart';
+import '../../../../core/units/area_unit.dart';
 
 /// How the plot is reshaped to hit the target.
 enum AdjustMethod {
@@ -32,6 +33,15 @@ class AdjustState extends Equatable {
   /// Sides (or corners) the user has picked to move.
   final Set<int> selection;
 
+  /// Which of the two boundaries meeting at the chosen corner it slides
+  /// along: the one running to the next corner, or to the previous one.
+  final bool slideAlongNext;
+
+  /// Unit the target is entered and read in. `null` follows the app setting.
+  /// A plot is often discussed in katha even when the app is set to sq ft,
+  /// so this is per-visit rather than a global change.
+  final AreaUnit? displayUnit;
+
   const AdjustState({
     this.baseVertices = const [],
     this.targetSqm = 0,
@@ -40,6 +50,8 @@ class AdjustState extends Equatable {
     this.method = AdjustMethod.scale,
     this.targetKind = AdjustTargetKind.side,
     this.selection = const {},
+    this.displayUnit,
+    this.slideAlongNext = true,
   });
 
   AdjustState copyWith({
@@ -50,6 +62,8 @@ class AdjustState extends Equatable {
     AdjustMethod? method,
     AdjustTargetKind? targetKind,
     Set<int>? selection,
+    AreaUnit? displayUnit,
+    bool? slideAlongNext,
   }) =>
       AdjustState(
         baseVertices: baseVertices ?? this.baseVertices,
@@ -59,6 +73,8 @@ class AdjustState extends Equatable {
         method: method ?? this.method,
         targetKind: targetKind ?? this.targetKind,
         selection: selection ?? this.selection,
+        displayUnit: displayUnit ?? this.displayUnit,
+        slideAlongNext: slideAlongNext ?? this.slideAlongNext,
       );
 
   double get baseSqm => Geometry.polygonArea(baseVertices);
@@ -74,6 +90,7 @@ class AdjustState extends Equatable {
     targetSqm: targetSqm,
     kind: targetKind,
     selection: selection,
+    alongNext: slideAlongNext,
   );
 
   /// The plot resized to [targetSqm].
@@ -132,5 +149,7 @@ class AdjustState extends Equatable {
     method,
     targetKind,
     selection,
+    displayUnit,
+    slideAlongNext,
   ];
 }

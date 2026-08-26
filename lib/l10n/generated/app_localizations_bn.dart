@@ -1113,4 +1113,16 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get actionClearSelection => 'বাদ দিন';
+
+  @override
+  String get adjustPickSlide => 'পিছলে সরান';
+
+  @override
+  String get adjustTapToSlide => 'সীমানা বরাবর সরাতে একটি কোণে ট্যাপ করুন';
+
+  @override
+  String get adjustSlideAlong => 'বরাবর';
+
+  @override
+  String get adjustSlideSwap => 'অন্য বাহু';
 }

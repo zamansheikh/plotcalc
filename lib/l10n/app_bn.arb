@@ -308,5 +308,9 @@
   "adjustMoveIn": "{distance} ভিতরে সরান",
   "adjustUnreachable": "শুধু এটি সরিয়ে সম্ভব নয় — আরও বাহু বাছুন",
   "adjustSelectedCount": "{count}টি নির্বাচিত",
-  "actionClearSelection": "বাদ দিন"
+  "actionClearSelection": "বাদ দিন",
+  "adjustPickSlide": "পিছলে সরান",
+  "adjustTapToSlide": "সীমানা বরাবর সরাতে একটি কোণে ট্যাপ করুন",
+  "adjustSlideAlong": "বরাবর",
+  "adjustSlideSwap": "অন্য বাহু"
 }

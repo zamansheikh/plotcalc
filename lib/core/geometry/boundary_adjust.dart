@@ -10,6 +10,14 @@ enum AdjustTargetKind {
 
   /// Individual corners, moved along the angle bisector.
   corner,
+
+  /// A corner slid along one of the two boundaries meeting at it.
+  ///
+  /// Corner B joins sides AB and BC. Sliding B along AB keeps that
+  /// boundary's bearing and only changes its length, while BC pivots to
+  /// follow — which is what moving a peg along an existing boundary line
+  /// actually does on the ground.
+  slide,
 }
 
 /// The answer to "how far do I move it?".
@@ -185,14 +193,48 @@ class BoundaryAdjust {
     return out;
   }
 
+  /// Slides each corner in [corners] along one of the boundaries meeting at
+  /// it: the next one (corner -> corner+1) when [alongNext], otherwise the
+  /// previous one. Positive [offsetM] moves away from the far end of that
+  /// boundary, lengthening it.
+  static List<Vertex> slideCorners(
+    List<Vertex> verts,
+    Set<int> corners,
+    double offsetM, {
+    required bool alongNext,
+  }) {
+    final n = verts.length;
+    if (n < 3 || corners.isEmpty) return List.of(verts);
+
+    final out = List<Vertex>.of(verts);
+    for (final i in corners) {
+      if (i < 0 || i >= n) continue;
+      final here = verts[i];
+      final anchor = alongNext ? verts[(i + 1) % n] : verts[(i - 1 + n) % n];
+      final dx = here.x - anchor.x;
+      final dy = here.y - anchor.y;
+      final len = math.sqrt(dx * dx + dy * dy);
+      // A zero-length boundary has no direction to slide along.
+      if (len < 1e-12) continue;
+      out[i] = Vertex(
+        here.x + dx / len * offsetM,
+        here.y + dy / len * offsetM,
+      );
+    }
+    return out;
+  }
+
   static List<Vertex> apply(
     List<Vertex> verts,
     AdjustTargetKind kind,
     Set<int> selection,
-    double offsetM,
-  ) => switch (kind) {
+    double offsetM, {
+    bool alongNext = true,
+  }) => switch (kind) {
     AdjustTargetKind.side => offsetSides(verts, selection, offsetM),
     AdjustTargetKind.corner => moveCorners(verts, selection, offsetM),
+    AdjustTargetKind.slide =>
+      slideCorners(verts, selection, offsetM, alongNext: alongNext),
   };
 
   /// Solves for the offset that makes the plot measure [targetSqm].
@@ -208,17 +250,19 @@ class BoundaryAdjust {
     required double targetSqm,
     required AdjustTargetKind kind,
     required Set<int> selection,
+    bool alongNext = true,
   }) {
     if (base.length < 3 || selection.isEmpty) return null;
     if (!targetSqm.isFinite || targetSqm <= 0) return null;
     final baseArea = Geometry.polygonArea(base);
     if (baseArea <= 0) return null;
 
-    double areaAt(double d) =>
-        Geometry.polygonArea(apply(base, kind, selection, d));
+    double areaAt(double d) => Geometry.polygonArea(
+      apply(base, kind, selection, d, alongNext: alongNext),
+    );
 
     BoundarySolution at(double d) {
-      final verts = apply(base, kind, selection, d);
+      final verts = apply(base, kind, selection, d, alongNext: alongNext);
       final area = Geometry.polygonArea(verts);
       return BoundarySolution(
         offsetM: d,
@@ -244,7 +288,7 @@ class BoundaryAdjust {
 
     for (var i = 1; i <= steps; i++) {
       final d = dir * limit * i / steps;
-      final verts = apply(base, kind, selection, d);
+      final verts = apply(base, kind, selection, d, alongNext: alongNext);
       if (verts.any((v) => !v.x.isFinite || !v.y.isFinite)) break;
       final a = Geometry.polygonArea(verts);
       if (!a.isFinite) break;

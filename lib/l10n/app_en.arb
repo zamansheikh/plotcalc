@@ -920,5 +920,13 @@
     }
   },
   "actionClearSelection": "Clear",
-  "@actionClearSelection": {}
+  "@actionClearSelection": {},
+  "adjustPickSlide": "Slide",
+  "@adjustPickSlide": {},
+  "adjustTapToSlide": "Tap a corner to slide it along a boundary",
+  "@adjustTapToSlide": {},
+  "adjustSlideAlong": "Along",
+  "@adjustSlideAlong": {},
+  "adjustSlideSwap": "Other side",
+  "@adjustSlideSwap": {}
 }

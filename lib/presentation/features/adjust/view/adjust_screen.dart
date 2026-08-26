@@ -18,6 +18,7 @@ import '../../../shared/settings/settings_state.dart';
 import '../../../shared/widgets/grid_background.dart';
 import '../../../shared/widgets/phone_chrome.dart';
 import '../../../shared/widgets/polygon_painter.dart';
+import '../../../shared/widgets/unit_input.dart';
 import '../bloc/adjust_bloc.dart';
 import '../bloc/adjust_event.dart';
 import '../bloc/adjust_state.dart';
@@ -94,7 +95,7 @@ class _AdjustView extends StatelessWidget {
                   state: state,
                   baseSqm: baseSqm,
                   adjustedSqm: adjustedSqm,
-                  areaUnit: settings.areaUnit,
+                  areaUnit: state.displayUnit ?? settings.areaUnit,
                   accent: settings.accent,
                 ),
                 _MethodRow(state: state, accent: settings.accent),
@@ -104,7 +105,7 @@ class _AdjustView extends StatelessWidget {
                   adjustedSqm: adjustedSqm,
                   accent: settings.accent,
                   gridStyle: settings.gridStyle,
-                  areaUnit: settings.areaUnit,
+                  areaUnit: state.displayUnit ?? settings.areaUnit,
                   solution: solution,
                   lengthUnit: settings.lengthUnit,
                   height: planHeight,
@@ -274,7 +275,19 @@ class _TargetCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
+                  // A plot is often discussed in katha even when the app is
+                  // set to sq ft, so the target can be entered in any unit
+                  // without changing the app-wide setting.
+                  UnitChipRow(
+                    units: AreaUnit.values,
+                    selected: areaUnit,
+                    accent: accent,
+                    onChanged: (u) => context.read<AdjustBloc>().add(
+                      DisplayUnitChanged(u),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -366,7 +379,9 @@ class _CanvasArea extends StatelessWidget {
     Offset at(Vertex v) =>
         Offset(center.dx + v.x * scale, center.dy + v.y * scale);
 
-    if (state.targetKind == AdjustTargetKind.corner) {
+    // Slide selects a corner too — the side is implied by which boundary it
+    // runs along.
+    if (state.targetKind != AdjustTargetKind.side) {
       var best = -1;
       var bestD = 28.0;
       for (var i = 0; i < verts.length; i++) {
@@ -1064,23 +1079,65 @@ class _BoundaryControls extends StatelessWidget {
                   ),
                 ),
               ),
-              if (state.selection.isNotEmpty) ...[
-                const SizedBox(width: 6),
+              const SizedBox(width: 6),
+              Expanded(
+                child: _Choice(
+                  label: t.adjustPickSlide,
+                  active: state.targetKind == AdjustTargetKind.slide,
+                  accent: accent,
+                  onTap: () => context.read<AdjustBloc>().add(
+                    const TargetKindChanged(AdjustTargetKind.slide),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          // Which of the two boundaries at the corner it runs along.
+          if (state.targetKind == AdjustTargetKind.slide &&
+              state.selection.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Text(
+                  t.adjustSlideAlong.toUpperCase(),
+                  style: AppTypography.monoLabel,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  _slideLabel(state),
+                  style: AppTypography.mono(size: 11, color: accent),
+                ),
+                const Spacer(),
                 TextButton(
                   onPressed: () => context.read<AdjustBloc>().add(
-                    const SelectionCleared(),
+                    const SlideDirectionToggled(),
                   ),
                   child: Text(
-                    t.actionClearSelection,
-                    style: AppTypography.mono(
-                      size: 10,
-                      color: AppColors.textDim,
-                    ),
+                    t.adjustSlideSwap,
+                    style: AppTypography.mono(size: 10, color: accent),
                   ),
                 ),
               ],
-            ],
-          ),
+            ),
+          ],
+          if (state.selection.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () => context.read<AdjustBloc>().add(
+                  const SelectionCleared(),
+                ),
+                child: Text(
+                  t.actionClearSelection,
+                  style: AppTypography.mono(
+                    size: 10,
+                    color: AppColors.textDim,
+                  ),
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: 10),
           _Answer(
             state: state,
@@ -1113,9 +1170,11 @@ class _Answer extends StatelessWidget {
     final t = context.l10n;
     final (text, colour) = switch (solution) {
       null => (
-        state.targetKind == AdjustTargetKind.side
-            ? t.adjustTapToPick
-            : t.adjustTapToPickCorner,
+        switch (state.targetKind) {
+          AdjustTargetKind.side => t.adjustTapToPick,
+          AdjustTargetKind.corner => t.adjustTapToPickCorner,
+          AdjustTargetKind.slide => t.adjustTapToSlide,
+        },
         AppColors.textDim,
       ),
       final s when !s.isExact => (t.adjustUnreachable, AppColors.danger),
@@ -1230,7 +1289,24 @@ class _SelectionPainter extends CustomPainter {
     if (verts.length < 3) return;
     final n = verts.length;
 
-    if (state.targetKind == AdjustTargetKind.corner) {
+    if (state.targetKind != AdjustTargetKind.side) {
+      // Show the boundary the corner runs along, so "one side, one corner"
+      // is visible rather than implied.
+      if (state.targetKind == AdjustTargetKind.slide) {
+        for (final i in state.selection) {
+          if (i < 0 || i >= n) continue;
+          final other =
+              state.slideAlongNext ? (i + 1) % n : (i - 1 + n) % n;
+          canvas.drawLine(
+            _at(verts[i]),
+            _at(verts[other]),
+            Paint()
+              ..strokeWidth = 3
+              ..strokeCap = StrokeCap.round
+              ..color = accent.withValues(alpha: 0.55),
+          );
+        }
+      }
       for (final i in state.selection) {
         if (i < 0 || i >= n) continue;
         final p = _at(verts[i]);
@@ -1265,7 +1341,7 @@ class _SelectionPainter extends CustomPainter {
     final label = '$sign${lengthUnit.format(s.offsetM.abs())} $lengthLabel';
     for (final i in state.selection) {
       if (i < 0 || i >= n) continue;
-      final mid = state.targetKind == AdjustTargetKind.corner
+      final mid = state.targetKind != AdjustTargetKind.side
           ? _at(verts[i])
           : Offset(
               (_at(verts[i]).dx + _at(verts[(i + 1) % n]).dx) / 2,
@@ -1302,6 +1378,7 @@ class _SelectionPainter extends CustomPainter {
   bool shouldRepaint(covariant _SelectionPainter old) =>
       old.state != state ||
       old.solution?.offsetM != solution?.offsetM ||
+      old.state.slideAlongNext != state.slideAlongNext ||
       old.scale != scale ||
       old.center != center ||
       old.accent != accent;
@@ -1417,4 +1494,14 @@ class _TargetInputState extends State<_TargetInput> {
       ],
     );
   }
+}
+
+/// Names the boundary a corner slides along, as the corners either side of
+/// it: "C4 to C5".
+String _slideLabel(AdjustState state) {
+  final n = state.baseVertices.length;
+  if (state.selection.isEmpty || n < 3) return '';
+  final i = state.selection.first;
+  final other = state.slideAlongNext ? (i + 1) % n : (i - 1 + n) % n;
+  return 'C${i + 1} \u2192 C${other + 1}';
 }

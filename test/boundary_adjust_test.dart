@@ -355,4 +355,119 @@ void main() {
       expect(s.isExact, isTrue);
     });
   });
+
+  group('sliding a corner along a boundary', () {
+    // Corner B joins sides AB and BC. Sliding B along AB keeps that
+    // boundary's bearing and only changes its length; BC pivots to follow.
+
+    test('the corner stays on the line it slid along', () {
+      const i = 1;
+      for (final alongNext in [true, false]) {
+        final moved = BoundaryAdjust.slideCorners(
+          square20, {i}, 4, alongNext: alongNext,
+        );
+        final n = square20.length;
+        final anchor =
+            alongNext ? square20[(i + 1) % n] : square20[(i - 1 + n) % n];
+        final before = square20[i];
+        final after = moved[i];
+        // Collinear with the anchor means the boundary kept its bearing.
+        final cross = (before.x - anchor.x) * (after.y - anchor.y) -
+            (before.y - anchor.y) * (after.x - anchor.x);
+        expect(cross.abs(), lessThan(1e-9), reason: 'alongNext=$alongNext');
+      }
+    });
+
+    test('only that corner moves', () {
+      final moved = BoundaryAdjust.slideCorners(
+        square20, {2}, 3, alongNext: true,
+      );
+      for (var k = 0; k < square20.length; k++) {
+        if (k == 2) continue;
+        expect(moved[k].x, closeTo(square20[k].x, 1e-12), reason: 'corner $k');
+        expect(moved[k].y, closeTo(square20[k].y, 1e-12), reason: 'corner $k');
+      }
+    });
+
+    test('the two directions move it opposite ways', () {
+      final a = BoundaryAdjust.slideCorners(
+        square20, {1}, 3, alongNext: true,
+      )[1];
+      final b = BoundaryAdjust.slideCorners(
+        square20, {1}, 3, alongNext: false,
+      )[1];
+      expect((a.x - b.x).abs() + (a.y - b.y).abs(), greaterThan(1),
+          reason: 'sliding along AB is not the same as along BC');
+    });
+
+    test('it reaches a target and reports the distance', () {
+      final s = BoundaryAdjust.solve(
+        base: square20,
+        targetSqm: 440,
+        kind: AdjustTargetKind.slide,
+        selection: {1},
+        alongNext: false,
+      )!;
+      expect(s.isExact, isTrue);
+      expect(Geometry.polygonArea(s.vertices), closeTo(440, 1e-4));
+    });
+
+    test('6k random slides: exact means exact, and nothing else moves', () {
+      final rnd = Random(31);
+      final lies = <String>[];
+      var solved = 0, attempted = 0;
+
+      for (var t = 0; t < 6000; t++) {
+        final base = convexPolygon(rnd);
+        final area = Geometry.polygonArea(base);
+        if (area <= 1) continue;
+        final i = rnd.nextInt(base.length);
+        final alongNext = rnd.nextBool();
+        final target = area * (0.85 + rnd.nextDouble() * 0.3);
+
+        final s = BoundaryAdjust.solve(
+          base: base, targetSqm: target,
+          kind: AdjustTargetKind.slide, selection: {i}, alongNext: alongNext,
+        );
+        if (s == null) continue;
+        attempted++;
+        if (!s.isExact) continue;
+        solved++;
+
+        final actual = Geometry.polygonArea(s.vertices);
+        if ((actual - target).abs() / target > 1e-6) lies.add('area');
+        if (s.vertices.length != base.length) lies.add('count');
+        for (var k = 0; k < base.length; k++) {
+          if (k == i) continue;
+          if ((base[k].x - s.vertices[k].x).abs() > 1e-9 ||
+              (base[k].y - s.vertices[k].y).abs() > 1e-9) {
+            lies.add('moved corner $k as well');
+          }
+        }
+        final n = base.length;
+        final anchor = alongNext ? base[(i + 1) % n] : base[(i - 1 + n) % n];
+        final cross = (base[i].x - anchor.x) * (s.vertices[i].y - anchor.y) -
+            (base[i].y - anchor.y) * (s.vertices[i].x - anchor.x);
+        final scale = Geometry.sideLength(anchor, base[i]) +
+            Geometry.sideLength(anchor, s.vertices[i]);
+        if (cross.abs() > 1e-6 * scale * scale) lies.add('left the line');
+      }
+
+      expect(lies.toSet(), isEmpty, reason: lies.toSet().join('\n'));
+      // Sliding one corner along one line has less reach than pushing a
+      // whole side; the rest are reported unreachable, not faked.
+      expect(solved / attempted, greaterThan(0.85),
+          reason: 'solved $solved of $attempted');
+    });
+
+    test('a zero-length boundary is left alone rather than dividing by it', () {
+      const degenerate = [Vertex(0, 0), Vertex(0, 0), Vertex(10, 0),
+                         Vertex(10, 10)];
+      final moved = BoundaryAdjust.slideCorners(
+        degenerate, {0}, 5, alongNext: true,
+      );
+      expect(moved[0], degenerate[0]);
+      expect(moved.every((v) => v.x.isFinite && v.y.isFinite), isTrue);
+    });
+  });
 }

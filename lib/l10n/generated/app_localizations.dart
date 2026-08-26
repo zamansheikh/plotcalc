@@ -1951,6 +1951,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Clear'**
   String get actionClearSelection;
+
+  /// No description provided for @adjustPickSlide.
+  ///
+  /// In en, this message translates to:
+  /// **'Slide'**
+  String get adjustPickSlide;
+
+  /// No description provided for @adjustTapToSlide.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a corner to slide it along a boundary'**
+  String get adjustTapToSlide;
+
+  /// No description provided for @adjustSlideAlong.
+  ///
+  /// In en, this message translates to:
+  /// **'Along'**
+  String get adjustSlideAlong;
+
+  /// No description provided for @adjustSlideSwap.
+  ///
+  /// In en, this message translates to:
+  /// **'Other side'**
+  String get adjustSlideSwap;
 }
 
 class _AppLocalizationsDelegate
