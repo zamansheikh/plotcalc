@@ -57,9 +57,9 @@ class _AdjustView extends StatelessWidget {
             if (state.baseVertices.isEmpty) {
               return const SizedBox.shrink();
             }
-            final baseSqm = Geometry.polygonArea(state.baseVertices);
-            final adjustedVerts = _scale(state, state.targetSqm / baseSqm);
-            final adjustedSqm = Geometry.polygonArea(adjustedVerts);
+            final baseSqm = state.baseSqm;
+            final adjustedVerts = state.adjustedVertices;
+            final adjustedSqm = state.adjustedSqm;
             return Column(
               children: [
                 const SizedBox(height: 8),
@@ -92,44 +92,6 @@ class _AdjustView extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  static List<Vertex> _scale(AdjustState s, double ratio) {
-    if (ratio <= 0) ratio = 0.0001;
-    double sx = 1, sy = 1;
-    switch (s.mode) {
-      case AdjustMode.uniform:
-        sx = sy = math.sqrt(ratio);
-        break;
-      case AdjustMode.horizontal:
-        sx = ratio;
-        break;
-      case AdjustMode.vertical:
-        sy = ratio;
-        break;
-    }
-    final (minX, minY, maxX, maxY) = Geometry.bbox(s.baseVertices);
-    var ax = (minX + maxX) / 2;
-    var ay = (minY + maxY) / 2;
-    switch (s.anchor) {
-      case AdjustAnchor.west:
-        ax = minX;
-        break;
-      case AdjustAnchor.east:
-        ax = maxX;
-        break;
-      case AdjustAnchor.north:
-        ay = minY;
-        break;
-      case AdjustAnchor.south:
-        ay = maxY;
-        break;
-      case AdjustAnchor.center:
-        break;
-    }
-    return s.baseVertices
-        .map((v) => Vertex(ax + (v.x - ax) * sx, ay + (v.y - ay) * sy))
-        .toList();
   }
 }
 
@@ -195,9 +157,11 @@ class _TargetCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final baseInUnit = areaUnit.fromSqm(baseSqm);
-    final targetInUnit = areaUnit.fromSqm(state.targetSqm);
-    final pct = baseInUnit == 0 ? 0.0 : (targetInUnit / baseInUnit - 1) * 100;
+    // Both readouts describe the shape actually drawn, not the typed target.
+    // They agree whenever the target is usable; when it is not (empty field,
+    // zero), the shape stays at its base size and the card must say so rather
+    // than reporting -100%.
+    final pct = baseSqm == 0 ? 0.0 : (adjustedSqm / baseSqm - 1) * 100;
     final delta = adjustedSqm - baseSqm;
     final stepSqm = areaUnit == AreaUnit.sqft
         ? AreaUnit.sqft.toSqm(100)
