@@ -879,5 +879,46 @@
     }
   },
   "breakdownEditUnits": "Units",
-  "@breakdownEditUnits": {}
+  "@breakdownEditUnits": {},
+  "adjustMethodScale": "Resize",
+  "@adjustMethodScale": {},
+  "adjustMethodBoundary": "Move boundary",
+  "@adjustMethodBoundary": {},
+  "adjustPickSides": "Sides",
+  "@adjustPickSides": {},
+  "adjustPickCorners": "Corners",
+  "@adjustPickCorners": {},
+  "adjustTapToPick": "Tap a side on the plan to move it",
+  "@adjustTapToPick": {},
+  "adjustTapToPickCorner": "Tap a corner on the plan to move it",
+  "@adjustTapToPickCorner": {},
+  "adjustMoveOut": "Move out {distance}",
+  "@adjustMoveOut": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "adjustMoveIn": "Move in {distance}",
+  "@adjustMoveIn": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "adjustUnreachable": "Cannot reach that by moving this alone — pick more sides",
+  "@adjustUnreachable": {},
+  "adjustSelectedCount": "{count} selected",
+  "@adjustSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "actionClearSelection": "Clear",
+  "@actionClearSelection": {}
 }

@@ -2,8 +2,18 @@ import 'dart:math' as math;
 
 import 'package:equatable/equatable.dart';
 
+import '../../../../core/geometry/boundary_adjust.dart';
 import '../../../../core/geometry/geometry.dart';
 import '../../../../core/geometry/vertex.dart';
+
+/// How the plot is reshaped to hit the target.
+enum AdjustMethod {
+  /// Resize the whole outline.
+  scale,
+
+  /// Move chosen boundaries or corners, leaving the rest alone.
+  boundary,
+}
 
 enum AdjustMode { uniform, horizontal, vertical }
 enum AdjustAnchor { center, north, east, south, west }
@@ -14,11 +24,22 @@ class AdjustState extends Equatable {
   final AdjustMode mode;
   final AdjustAnchor anchor;
 
+  final AdjustMethod method;
+
+  /// Whether [selection] indexes sides or corners.
+  final AdjustTargetKind targetKind;
+
+  /// Sides (or corners) the user has picked to move.
+  final Set<int> selection;
+
   const AdjustState({
     this.baseVertices = const [],
     this.targetSqm = 0,
     this.mode = AdjustMode.uniform,
     this.anchor = AdjustAnchor.center,
+    this.method = AdjustMethod.scale,
+    this.targetKind = AdjustTargetKind.side,
+    this.selection = const {},
   });
 
   AdjustState copyWith({
@@ -26,15 +47,34 @@ class AdjustState extends Equatable {
     double? targetSqm,
     AdjustMode? mode,
     AdjustAnchor? anchor,
+    AdjustMethod? method,
+    AdjustTargetKind? targetKind,
+    Set<int>? selection,
   }) =>
       AdjustState(
         baseVertices: baseVertices ?? this.baseVertices,
         targetSqm: targetSqm ?? this.targetSqm,
         mode: mode ?? this.mode,
         anchor: anchor ?? this.anchor,
+        method: method ?? this.method,
+        targetKind: targetKind ?? this.targetKind,
+        selection: selection ?? this.selection,
       );
 
   double get baseSqm => Geometry.polygonArea(baseVertices);
+
+  /// How far the chosen boundaries have to move, or null when nothing is
+  /// selected or the plot/target cannot support an answer.
+  ///
+  /// Solving walks the offset outward step by step, so this is not free —
+  /// callers should resolve it once per build and pass the result down
+  /// rather than reading it repeatedly.
+  BoundarySolution? solveBoundary() => BoundaryAdjust.solve(
+    base: baseVertices,
+    targetSqm: targetSqm,
+    kind: targetKind,
+    selection: selection,
+  );
 
   /// The plot resized to [targetSqm].
   ///
@@ -84,5 +124,13 @@ class AdjustState extends Equatable {
   double get adjustedSqm => Geometry.polygonArea(adjustedVertices);
 
   @override
-  List<Object?> get props => [baseVertices, targetSqm, mode, anchor];
+  List<Object?> get props => [
+    baseVertices,
+    targetSqm,
+    mode,
+    anchor,
+    method,
+    targetKind,
+    selection,
+  ];
 }

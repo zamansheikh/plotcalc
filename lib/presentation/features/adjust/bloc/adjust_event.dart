@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/geometry/vertex.dart';
+import '../../../../core/geometry/boundary_adjust.dart';
 import 'adjust_state.dart';
 
 sealed class AdjustEvent extends Equatable {
@@ -40,4 +41,30 @@ class AnchorChanged extends AdjustEvent {
 
 class AdjustReset extends AdjustEvent {
   const AdjustReset();
+}
+
+class MethodChanged extends AdjustEvent {
+  final AdjustMethod method;
+  const MethodChanged(this.method);
+  @override
+  List<Object?> get props => [method];
+}
+
+class TargetKindChanged extends AdjustEvent {
+  final AdjustTargetKind kind;
+  const TargetKindChanged(this.kind);
+  @override
+  List<Object?> get props => [kind];
+}
+
+/// Taps a side or corner on the canvas.
+class SelectionToggled extends AdjustEvent {
+  final int index;
+  const SelectionToggled(this.index);
+  @override
+  List<Object?> get props => [index];
+}
+
+class SelectionCleared extends AdjustEvent {
+  const SelectionCleared();
 }

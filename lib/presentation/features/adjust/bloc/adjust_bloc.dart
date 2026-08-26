@@ -18,6 +18,20 @@ class AdjustBloc extends Bloc<AdjustEvent, AdjustState> {
     });
     on<ModeChanged>((e, emit) => emit(state.copyWith(mode: e.mode)));
     on<AnchorChanged>((e, emit) => emit(state.copyWith(anchor: e.anchor)));
+    on<MethodChanged>((e, emit) => emit(state.copyWith(method: e.method)));
+    on<TargetKindChanged>((e, emit) {
+      // Side 2 and corner 2 are different things, so the selection cannot
+      // carry across.
+      emit(state.copyWith(targetKind: e.kind, selection: const {}));
+    });
+    on<SelectionToggled>((e, emit) {
+      final next = Set<int>.from(state.selection);
+      next.contains(e.index) ? next.remove(e.index) : next.add(e.index);
+      emit(state.copyWith(selection: next));
+    });
+    on<SelectionCleared>(
+      (e, emit) => emit(state.copyWith(selection: const {})),
+    );
     on<AdjustReset>((e, emit) {
       final base = Geometry.polygonArea(state.baseVertices);
       emit(state.copyWith(targetSqm: base));

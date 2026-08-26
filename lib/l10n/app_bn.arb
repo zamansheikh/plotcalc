@@ -297,5 +297,16 @@
   "plotUnitFollowsSettings": "অ্যাপের সেটিং অনুসরণ করুন",
   "plotUnitTitle": "এই প্লট যে এককে দেখাবে",
   "plotUnitSaved": "“{name}” এখন {unit}-এ দেখাবে",
-  "breakdownEditUnits": "একক"
+  "breakdownEditUnits": "একক",
+  "adjustMethodScale": "আকার বদলান",
+  "adjustMethodBoundary": "সীমানা সরান",
+  "adjustPickSides": "বাহু",
+  "adjustPickCorners": "কোণ",
+  "adjustTapToPick": "সরাতে নকশায় একটি বাহুতে ট্যাপ করুন",
+  "adjustTapToPickCorner": "সরাতে নকশায় একটি কোণে ট্যাপ করুন",
+  "adjustMoveOut": "{distance} বাইরে সরান",
+  "adjustMoveIn": "{distance} ভিতরে সরান",
+  "adjustUnreachable": "শুধু এটি সরিয়ে সম্ভব নয় — আরও বাহু বাছুন",
+  "adjustSelectedCount": "{count}টি নির্বাচিত",
+  "actionClearSelection": "বাদ দিন"
 }

@@ -1885,6 +1885,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Units'**
   String get breakdownEditUnits;
+
+  /// No description provided for @adjustMethodScale.
+  ///
+  /// In en, this message translates to:
+  /// **'Resize'**
+  String get adjustMethodScale;
+
+  /// No description provided for @adjustMethodBoundary.
+  ///
+  /// In en, this message translates to:
+  /// **'Move boundary'**
+  String get adjustMethodBoundary;
+
+  /// No description provided for @adjustPickSides.
+  ///
+  /// In en, this message translates to:
+  /// **'Sides'**
+  String get adjustPickSides;
+
+  /// No description provided for @adjustPickCorners.
+  ///
+  /// In en, this message translates to:
+  /// **'Corners'**
+  String get adjustPickCorners;
+
+  /// No description provided for @adjustTapToPick.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a side on the plan to move it'**
+  String get adjustTapToPick;
+
+  /// No description provided for @adjustTapToPickCorner.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a corner on the plan to move it'**
+  String get adjustTapToPickCorner;
+
+  /// No description provided for @adjustMoveOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Move out {distance}'**
+  String adjustMoveOut(String distance);
+
+  /// No description provided for @adjustMoveIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Move in {distance}'**
+  String adjustMoveIn(String distance);
+
+  /// No description provided for @adjustUnreachable.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot reach that by moving this alone — pick more sides'**
+  String get adjustUnreachable;
+
+  /// No description provided for @adjustSelectedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} selected'**
+  String adjustSelectedCount(int count);
+
+  /// No description provided for @actionClearSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get actionClearSelection;
 }
 
 class _AppLocalizationsDelegate

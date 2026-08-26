@@ -4,12 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/geometry/boundary_adjust.dart';
 import '../../../../core/geometry/geometry.dart';
 import '../../../../core/geometry/presets.dart';
 import '../../../../core/geometry/vertex.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/units/area_unit.dart';
+import '../../../../core/units/length_unit.dart';
 import '../../../shared/settings/settings_bloc.dart';
 import '../../../shared/settings/settings_state.dart';
 import '../../../shared/widgets/grid_background.dart';
@@ -58,8 +60,15 @@ class _AdjustView extends StatelessWidget {
               return const SizedBox.shrink();
             }
             final baseSqm = state.baseSqm;
-            final adjustedVerts = state.adjustedVertices;
-            final adjustedSqm = state.adjustedSqm;
+            // Solved once per build: the preview, the labels and the shape
+            // Apply hands back must all be the same answer.
+            final solution = state.method == AdjustMethod.boundary
+                ? state.solveBoundary()
+                : null;
+            final adjustedVerts = state.method == AdjustMethod.boundary
+                ? (solution?.vertices ?? state.baseVertices)
+                : state.adjustedVertices;
+            final adjustedSqm = Geometry.polygonArea(adjustedVerts);
             return Column(
               children: [
                 const SizedBox(height: 8),
@@ -71,6 +80,7 @@ class _AdjustView extends StatelessWidget {
                   areaUnit: settings.areaUnit,
                   accent: settings.accent,
                 ),
+                _MethodRow(state: state, accent: settings.accent),
                 _CanvasArea(
                   state: state,
                   adjustedVerts: adjustedVerts,
@@ -78,9 +88,19 @@ class _AdjustView extends StatelessWidget {
                   accent: settings.accent,
                   gridStyle: settings.gridStyle,
                   areaUnit: settings.areaUnit,
+                  solution: solution,
+                  lengthUnit: settings.lengthUnit,
                 ),
-                _ModeRow(state: state, accent: settings.accent),
-                _AnchorRow(state: state),
+                if (state.method == AdjustMethod.scale) ...[
+                  _ModeRow(state: state, accent: settings.accent),
+                  _AnchorRow(state: state),
+                ] else
+                  _BoundaryControls(
+                    state: state,
+                    solution: solution,
+                    accent: settings.accent,
+                    lengthUnit: settings.lengthUnit,
+                  ),
                 const SizedBox(height: 12),
                 _BottomActions(
                   accent: settings.accent,
@@ -374,6 +394,8 @@ class _CanvasArea extends StatelessWidget {
   final Color accent;
   final GridStyle gridStyle;
   final AreaUnit areaUnit;
+  final BoundarySolution? solution;
+  final LengthUnit lengthUnit;
 
   const _CanvasArea({
     required this.state,
@@ -382,7 +404,49 @@ class _CanvasArea extends StatelessWidget {
     required this.accent,
     required this.gridStyle,
     required this.areaUnit,
+    required this.solution,
+    required this.lengthUnit,
   });
+
+  /// Which side or corner of the *base* outline sits under [p], in canvas
+  /// coordinates, or null when the tap missed everything.
+  int? _hit(Offset p, double scale, Offset center) {
+    final verts = state.baseVertices;
+    if (verts.length < 3) return null;
+    Offset at(Vertex v) =>
+        Offset(center.dx + v.x * scale, center.dy + v.y * scale);
+
+    if (state.targetKind == AdjustTargetKind.corner) {
+      var best = -1;
+      var bestD = 28.0;
+      for (var i = 0; i < verts.length; i++) {
+        final d = (at(verts[i]) - p).distance;
+        if (d < bestD) {
+          bestD = d;
+          best = i;
+        }
+      }
+      return best < 0 ? null : best;
+    }
+
+    var best = -1;
+    var bestD = 26.0;
+    for (var i = 0; i < verts.length; i++) {
+      final a = at(verts[i]);
+      final b = at(verts[(i + 1) % verts.length]);
+      final ab = b - a;
+      final len2 = ab.dx * ab.dx + ab.dy * ab.dy;
+      final t = len2 == 0
+          ? 0.0
+          : (((p - a).dx * ab.dx + (p - a).dy * ab.dy) / len2).clamp(0.0, 1.0);
+      final d = (p - (a + ab * t)).distance;
+      if (d < bestD) {
+        bestD = d;
+        best = i;
+      }
+    }
+    return best < 0 ? null : best;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -403,7 +467,7 @@ class _CanvasArea extends StatelessWidget {
                 final w = constraints.maxWidth, h = constraints.maxHeight;
                 final cx = w / 2, cy = h / 2;
                 final scale = _autoScale(adjustedVerts, w, h);
-                return Stack(
+                final canvas = Stack(
                   children: [
                     GridBackground(style: gridStyle),
                     // Base outline (dashed)
@@ -443,16 +507,32 @@ class _CanvasArea extends StatelessWidget {
                         ),
                       ),
                     ),
-                    // Anchor marker
-                    Positioned.fill(
-                      child: CustomPaint(
-                        painter: _AnchorPainter(
-                          state: state,
-                          scale: scale,
-                          center: Offset(cx, cy),
+                    // Anchor marker (resize mode only)
+                    if (state.method == AdjustMethod.scale)
+                      Positioned.fill(
+                        child: CustomPaint(
+                          painter: _AnchorPainter(
+                            state: state,
+                            scale: scale,
+                            center: Offset(cx, cy),
+                          ),
                         ),
                       ),
-                    ),
+                    // Selection highlight and per-side movement labels
+                    if (state.method == AdjustMethod.boundary)
+                      Positioned.fill(
+                        child: CustomPaint(
+                          painter: _SelectionPainter(
+                            state: state,
+                            solution: solution,
+                            accent: accent,
+                            scale: scale,
+                            center: Offset(cx, cy),
+                            lengthUnit: lengthUnit,
+                            lengthLabel: lengthUnit.labelOf(context.l10n),
+                          ),
+                        ),
+                      ),
                     // Live area chip
                     Positioned(
                       left: 0,
@@ -517,6 +597,17 @@ class _CanvasArea extends StatelessWidget {
                       ),
                     ),
                   ],
+                );
+                if (state.method != AdjustMethod.boundary) return canvas;
+                return GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTapUp: (d) {
+                    final hit = _hit(d.localPosition, scale, Offset(cx, cy));
+                    if (hit != null) {
+                      context.read<AdjustBloc>().add(SelectionToggled(hit));
+                    }
+                  },
+                  child: canvas,
                 );
               },
             ),
@@ -931,4 +1022,327 @@ class _BottomActions extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Chooses between resizing the whole plot and moving individual boundaries.
+class _MethodRow extends StatelessWidget {
+  final AdjustState state;
+  final Color accent;
+  const _MethodRow({required this.state, required this.accent});
+
+  @override
+  Widget build(BuildContext context) {
+    final options = [
+      (AdjustMethod.scale, context.l10n.adjustMethodScale),
+      (AdjustMethod.boundary, context.l10n.adjustMethodBoundary),
+    ];
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+      child: Row(
+        children: [
+          for (var i = 0; i < options.length; i++) ...[
+            if (i > 0) const SizedBox(width: 6),
+            Expanded(
+              child: _Choice(
+                label: options[i].$2,
+                active: state.method == options[i].$1,
+                accent: accent,
+                onTap: () => context.read<AdjustBloc>().add(
+                  MethodChanged(options[i].$1),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Sides-or-corners switch, the running selection, and the answer.
+class _BoundaryControls extends StatelessWidget {
+  final AdjustState state;
+  final BoundarySolution? solution;
+  final Color accent;
+  final LengthUnit lengthUnit;
+
+  const _BoundaryControls({
+    required this.state,
+    required this.solution,
+    required this.accent,
+    required this.lengthUnit,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.l10n;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: _Choice(
+                  label: t.adjustPickSides,
+                  active: state.targetKind == AdjustTargetKind.side,
+                  accent: accent,
+                  onTap: () => context.read<AdjustBloc>().add(
+                    const TargetKindChanged(AdjustTargetKind.side),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: _Choice(
+                  label: t.adjustPickCorners,
+                  active: state.targetKind == AdjustTargetKind.corner,
+                  accent: accent,
+                  onTap: () => context.read<AdjustBloc>().add(
+                    const TargetKindChanged(AdjustTargetKind.corner),
+                  ),
+                ),
+              ),
+              if (state.selection.isNotEmpty) ...[
+                const SizedBox(width: 6),
+                TextButton(
+                  onPressed: () => context.read<AdjustBloc>().add(
+                    const SelectionCleared(),
+                  ),
+                  child: Text(
+                    t.actionClearSelection,
+                    style: AppTypography.mono(
+                      size: 10,
+                      color: AppColors.textDim,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: 10),
+          _Answer(
+            state: state,
+            solution: solution,
+            accent: accent,
+            lengthUnit: lengthUnit,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The line that actually answers the question: how far, and which way.
+class _Answer extends StatelessWidget {
+  final AdjustState state;
+  final BoundarySolution? solution;
+  final Color accent;
+  final LengthUnit lengthUnit;
+
+  const _Answer({
+    required this.state,
+    required this.solution,
+    required this.accent,
+    required this.lengthUnit,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.l10n;
+    final (text, colour) = switch (solution) {
+      null => (
+        state.targetKind == AdjustTargetKind.side
+            ? t.adjustTapToPick
+            : t.adjustTapToPickCorner,
+        AppColors.textDim,
+      ),
+      final s when !s.isExact => (t.adjustUnreachable, AppColors.danger),
+      final s => (
+        s.offsetM >= 0
+            ? t.adjustMoveOut(_distance(context, s.offsetM))
+            : t.adjustMoveIn(_distance(context, s.offsetM.abs())),
+        accent,
+      ),
+    };
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        border: Border.all(
+          color: colour == AppColors.textDim ? AppColors.line : colour,
+        ),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              text,
+              style: AppTypography.sans(
+                size: 13,
+                weight: FontWeight.w600,
+                color: colour,
+              ),
+            ),
+          ),
+          if (state.selection.isNotEmpty)
+            Text(
+              t.adjustSelectedCount(state.selection.length),
+              style: AppTypography.mono(size: 10, color: AppColors.textFaint),
+            ),
+        ],
+      ),
+    );
+  }
+
+  String _distance(BuildContext context, double metres) =>
+      '${lengthUnit.format(metres)} ${lengthUnit.labelOf(context.l10n)}';
+}
+
+class _Choice extends StatelessWidget {
+  final String label;
+  final bool active;
+  final Color accent;
+  final VoidCallback onTap;
+  const _Choice({
+    required this.label,
+    required this.active,
+    required this.accent,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: active ? accent : AppColors.ink,
+          border: Border.all(color: active ? accent : AppColors.line),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Text(
+          label,
+          style: AppTypography.sans(
+            size: 12,
+            weight: FontWeight.w500,
+            color: active ? AppColors.ink : AppColors.text,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Highlights what is selected and writes the movement onto each moved side.
+class _SelectionPainter extends CustomPainter {
+  final AdjustState state;
+  final BoundarySolution? solution;
+  final Color accent;
+  final double scale;
+  final Offset center;
+  final LengthUnit lengthUnit;
+  final String lengthLabel;
+
+  _SelectionPainter({
+    required this.state,
+    required this.solution,
+    required this.accent,
+    required this.scale,
+    required this.center,
+    required this.lengthUnit,
+    required this.lengthLabel,
+  });
+
+  Offset _at(Vertex v) =>
+      Offset(center.dx + v.x * scale, center.dy + v.y * scale);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final verts = state.baseVertices;
+    if (verts.length < 3) return;
+    final n = verts.length;
+
+    if (state.targetKind == AdjustTargetKind.corner) {
+      for (final i in state.selection) {
+        if (i < 0 || i >= n) continue;
+        final p = _at(verts[i]);
+        canvas.drawCircle(p, 9, Paint()..color = accent.withValues(alpha: 0.25));
+        canvas.drawCircle(
+          p,
+          9,
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2
+            ..color = accent,
+        );
+      }
+    } else {
+      for (final i in state.selection) {
+        if (i < 0 || i >= n) continue;
+        canvas.drawLine(
+          _at(verts[i]),
+          _at(verts[(i + 1) % n]),
+          Paint()
+            ..strokeWidth = 4
+            ..strokeCap = StrokeCap.round
+            ..color = accent,
+        );
+      }
+    }
+
+    // The distance to move, written on each side that moves.
+    final s = solution;
+    if (s == null || !s.isExact || s.offsetM == 0) return;
+    final sign = s.offsetM >= 0 ? '+' : '-';
+    final label = '$sign${lengthUnit.format(s.offsetM.abs())} $lengthLabel';
+    for (final i in state.selection) {
+      if (i < 0 || i >= n) continue;
+      final mid = state.targetKind == AdjustTargetKind.corner
+          ? _at(verts[i])
+          : Offset(
+              (_at(verts[i]).dx + _at(verts[(i + 1) % n]).dx) / 2,
+              (_at(verts[i]).dy + _at(verts[(i + 1) % n]).dy) / 2,
+            );
+      final tp = TextPainter(
+        text: TextSpan(
+          text: label,
+          style: AppTypography.mono(
+            size: 10,
+            weight: FontWeight.w600,
+            color: AppColors.ink,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      final rect = Rect.fromCenter(
+        center: mid.translate(0, -14),
+        width: tp.width + 12,
+        height: 17,
+      );
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(rect, const Radius.circular(4)),
+        Paint()..color = accent,
+      );
+      tp.paint(
+        canvas,
+        Offset(rect.center.dx - tp.width / 2, rect.center.dy - tp.height / 2),
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _SelectionPainter old) =>
+      old.state != state ||
+      old.solution?.offsetM != solution?.offsetM ||
+      old.scale != scale ||
+      old.center != center ||
+      old.accent != accent;
 }

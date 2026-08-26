@@ -1070,4 +1070,47 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get breakdownEditUnits => 'একক';
+
+  @override
+  String get adjustMethodScale => 'আকার বদলান';
+
+  @override
+  String get adjustMethodBoundary => 'সীমানা সরান';
+
+  @override
+  String get adjustPickSides => 'বাহু';
+
+  @override
+  String get adjustPickCorners => 'কোণ';
+
+  @override
+  String get adjustTapToPick => 'সরাতে নকশায় একটি বাহুতে ট্যাপ করুন';
+
+  @override
+  String get adjustTapToPickCorner => 'সরাতে নকশায় একটি কোণে ট্যাপ করুন';
+
+  @override
+  String adjustMoveOut(String distance) {
+    return '$distance বাইরে সরান';
+  }
+
+  @override
+  String adjustMoveIn(String distance) {
+    return '$distance ভিতরে সরান';
+  }
+
+  @override
+  String get adjustUnreachable => 'শুধু এটি সরিয়ে সম্ভব নয় — আরও বাহু বাছুন';
+
+  @override
+  String adjustSelectedCount(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countStringটি নির্বাচিত';
+  }
+
+  @override
+  String get actionClearSelection => 'বাদ দিন';
 }

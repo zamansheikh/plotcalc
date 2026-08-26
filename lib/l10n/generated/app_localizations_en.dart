@@ -1072,4 +1072,48 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get breakdownEditUnits => 'Units';
+
+  @override
+  String get adjustMethodScale => 'Resize';
+
+  @override
+  String get adjustMethodBoundary => 'Move boundary';
+
+  @override
+  String get adjustPickSides => 'Sides';
+
+  @override
+  String get adjustPickCorners => 'Corners';
+
+  @override
+  String get adjustTapToPick => 'Tap a side on the plan to move it';
+
+  @override
+  String get adjustTapToPickCorner => 'Tap a corner on the plan to move it';
+
+  @override
+  String adjustMoveOut(String distance) {
+    return 'Move out $distance';
+  }
+
+  @override
+  String adjustMoveIn(String distance) {
+    return 'Move in $distance';
+  }
+
+  @override
+  String get adjustUnreachable =>
+      'Cannot reach that by moving this alone — pick more sides';
+
+  @override
+  String adjustSelectedCount(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString selected';
+  }
+
+  @override
+  String get actionClearSelection => 'Clear';
 }
