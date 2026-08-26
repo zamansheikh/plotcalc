@@ -18,6 +18,7 @@ import '../../../shared/widgets/grid_background.dart';
 import '../../../shared/widgets/plot_thumbnail.dart';
 import '../../../shared/widgets/polygon_painter.dart';
 import '../../../../l10n/l10n.dart';
+import '../../../shared/widgets/tab_header.dart';
 
 class _Lot {
   double pct;
@@ -161,20 +162,7 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 6, 20, 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: AppTypography.heroTitle),
-          const SizedBox(height: 2),
-          Text(
-            subtitle,
-            style: AppTypography.mono(size: 11, color: AppColors.textDim),
-          ),
-        ],
-      ),
-    );
+    return TabHeader(title: title, subtitle: subtitle);
   }
 }
 
@@ -190,48 +178,25 @@ class _SelectedHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 6, 16, 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(context.l10n.subdivideTitle, style: AppTypography.heroTitle),
-                const SizedBox(height: 2),
-                Text(
-                  context.l10n.subdivideSummary(plot.name, lotCount),
-                  style: AppTypography.mono(
-                    size: 11,
-                    color: AppColors.textDim,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
+    return TabHeader(
+      title: context.l10n.subdivideTitle,
+      subtitle: context.l10n.subdivideSummary(plot.name, lotCount),
+      trailing: OutlinedButton.icon(
+        onPressed: onChange,
+        icon: const Icon(Icons.swap_horiz, size: 14),
+        label: Text(
+          context.l10n.actionChange,
+          style: AppTypography.sans(size: 12, weight: FontWeight.w500),
+        ),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.text,
+          backgroundColor: AppColors.surface,
+          side: BorderSide(color: AppColors.line),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
           ),
-          const SizedBox(width: 8),
-          OutlinedButton.icon(
-            onPressed: onChange,
-            icon: const Icon(Icons.swap_horiz, size: 14),
-            label: Text(
-              context.l10n.actionChange,
-              style: AppTypography.sans(size: 12, weight: FontWeight.w500),
-            ),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.text,
-              backgroundColor: AppColors.surface,
-              side: const BorderSide(color: AppColors.line),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

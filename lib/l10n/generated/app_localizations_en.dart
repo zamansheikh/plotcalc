@@ -1128,4 +1128,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adjustSlideSwap => 'Other side';
+
+  @override
+  String get resultEditShape => 'Edit shape';
+
+  @override
+  String plotUpdated(String name) {
+    return '“$name” updated';
+  }
+
+  @override
+  String get resultUnsaved => 'NOT SAVED';
 }

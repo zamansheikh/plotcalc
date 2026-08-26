@@ -25,6 +25,14 @@ import 'package:flutter/rendering.dart';
 import '../../../../core/export/plot_export.dart';
 import '../../../../core/export/plot_summary.dart';
 import '../../../../core/units/area_breakdown.dart';
+import '../../../../core/di/injection.dart';
+import '../../../../core/input_method.dart';
+import '../../../../domain/usecases/get_plots.dart';
+import '../../../../domain/usecases/save_plot.dart';
+import 'package:uuid/uuid.dart';
+
+import '../../../../domain/entities/plot.dart';
+import '../../draw/view/save_plot_sheet.dart';
 
 class ResultArgs {
   final String name;
@@ -33,10 +41,20 @@ class ResultArgs {
   /// Unit this plot is read in; `null` follows the app setting.
   final AreaUnit? unit;
 
-  const ResultArgs({required this.name, required this.vertices, this.unit});
+  /// The saved plot this came from, when it came from one. Without it an
+  /// adjustment can only live until the screen is closed.
+  final String? plotId;
+
+  const ResultArgs({
+    required this.name,
+    required this.vertices,
+    this.unit,
+    this.plotId,
+  });
 
   const ResultArgs.demo()
     : unit = null,
+      plotId = null,
       name = 'Kothrud — Field 04',
       vertices = const [
         Vertex(-22, -18),
@@ -56,6 +74,11 @@ class ResultScreen extends StatefulWidget {
 }
 
 class _ResultScreenState extends State<ResultScreen> {
+  /// Set once this plot exists in history — either it arrived from there,
+  /// or it was saved from this screen.
+  late String? _plotId = widget.args.plotId;
+  late String _name = widget.args.name;
+
   /// Wraps the plot drawing so it can be rasterised for share/PDF.
   final _artKey = GlobalKey();
   /// Which export is running, so the tapped button can show a spinner.
@@ -68,10 +91,99 @@ class _ResultScreenState extends State<ResultScreen> {
   Future<void> _openAdjust() async {
     final result = await context.push<List<Vertex>>(
       AppRoutes.adjust,
-      extra: AdjustArgs(name: widget.args.name, vertices: _verts),
+      extra: AdjustArgs(name: _name, vertices: _verts),
     );
     if (!mounted || result == null || result.isEmpty) return;
     setState(() => _verts = result);
+    await _persist();
+  }
+
+  /// Saves this measurement to history. Until now the only way to keep a
+  /// plot was to save it before calculating, which is the wrong moment —
+  /// you decide it is worth keeping once you have seen the numbers.
+  Future<void> _save() async {
+    final settings = context.read<SettingsBloc>().state;
+    final result = await showSavePlotSheet(
+      context,
+      defaultName: _name,
+      accent: settings.accent,
+    );
+    if (result == null || !mounted) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+    final t = context.l10n;
+    final existingId = _plotId;
+
+    if (existingId != null) {
+      final all = await sl<GetPlots>()();
+      final plot = all.where((p) => p.id == existingId).firstOrNull;
+      if (plot != null) {
+        await sl<SavePlot>()(
+          plot.copyWith(
+            name: result.name,
+            tag: result.tag,
+            vertices: _verts,
+          ),
+        );
+        setState(() => _name = result.name);
+        messenger.showSnackBar(
+          SnackBar(content: Text(t.plotUpdated(result.name))),
+        );
+        return;
+      }
+    }
+
+    final plot = Plot(
+      id: const Uuid().v4(),
+      name: result.name,
+      vertices: _verts,
+      tag: result.tag,
+      createdAt: DateTime.now(),
+      colorValue: settings.accent.toARGB32(),
+      preferredUnit: widget.args.unit,
+    );
+    await sl<SavePlot>()(plot);
+    setState(() {
+      _plotId = plot.id;
+      _name = plot.name;
+    });
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(t.drawSavedToast(plot.name, plot.tag.labelOf(t))),
+      ),
+    );
+  }
+
+  /// Reopens the drawing canvas on this outline so corners can be moved by
+  /// hand, then keeps whatever comes back.
+  Future<void> _openEditor() async {
+    final result = await context.push<List<Vertex>>(
+      AppRoutes.draw,
+      extra: DrawArgs(
+        method: InputMethod.draw,
+        preset: ShapePreset.freeform,
+        vertices: _verts,
+        plotId: _plotId,
+        name: _name,
+      ),
+    );
+    if (!mounted || result == null || result.isEmpty) return;
+    setState(() => _verts = result);
+    await _persist();
+  }
+
+  /// Writes the reshaped outline back to the saved plot. An unsaved plot has
+  /// no id, and simply keeps the change for as long as the screen is open.
+  Future<void> _persist() async {
+    final id = _plotId;
+    if (id == null) return;
+    final messenger = ScaffoldMessenger.of(context);
+    final text = context.l10n.plotUpdated(_name);
+    final existing = await sl<GetPlots>()();
+    final plot = existing.where((p) => p.id == id).firstOrNull;
+    if (plot == null) return;
+    await sl<SavePlot>()(plot.copyWith(vertices: _verts));
+    messenger.showSnackBar(SnackBar(content: Text(text)));
   }
 
   /// Rasterises the plot drawing for the share sheet and the PDF. Returns
@@ -141,7 +253,7 @@ class _ResultScreenState extends State<ResultScreen> {
         child: Column(
           children: [
             const SizedBox(height: 8),
-            _TopBar(),
+            _TopBar(saved: _plotId != null, onSave: _save),
             Expanded(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
@@ -150,6 +262,8 @@ class _ResultScreenState extends State<ResultScreen> {
                     RepaintBoundary(
                       key: _artKey,
                       child: _HeroArea(
+                        saved: _plotId != null,
+                        onEdit: _openEditor,
                         vertices: _verts,
                       areaSqm: areaSqm,
                       accent: accent,
@@ -191,6 +305,10 @@ class _ResultScreenState extends State<ResultScreen> {
 }
 
 class _TopBar extends StatelessWidget {
+  final bool saved;
+  final VoidCallback onSave;
+  const _TopBar({required this.saved, required this.onSave});
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -203,7 +321,16 @@ class _TopBar extends StatelessWidget {
             context.l10n.resultTitle,
             style: AppTypography.sans(size: 14, weight: FontWeight.w600),
           ),
-          SmallIconButton(icon: Icons.ios_share, onTap: () {}),
+          // Was a second, dead share button. Sharing already has a place in
+          // the action row; keeping the measurement did not have one at all,
+          // which is the decision you actually make once you see the numbers.
+          Tooltip(
+            message: context.l10n.actionSave,
+            child: SmallIconButton(
+              icon: saved ? Icons.bookmark : Icons.bookmark_border,
+              onTap: onSave,
+            ),
+          ),
         ],
       ),
     );
@@ -211,6 +338,8 @@ class _TopBar extends StatelessWidget {
 }
 
 class _HeroArea extends StatelessWidget {
+  final bool saved;
+  final VoidCallback onEdit;
   final List<Vertex> vertices;
   final double areaSqm;
   final Color accent;
@@ -218,6 +347,8 @@ class _HeroArea extends StatelessWidget {
   final GridStyle gridStyle;
 
   const _HeroArea({
+    required this.saved,
+    required this.onEdit,
     required this.vertices,
     required this.areaSqm,
     required this.accent,
@@ -241,6 +372,13 @@ class _HeroArea extends StatelessWidget {
           child: Stack(
             children: [
               GridBackground(style: gridStyle),
+              // Reshaping is a thing you do *to the drawing*, so the way in
+              // sits on the drawing rather than in a menu.
+              Positioned(
+                right: 0,
+                bottom: 0,
+                child: _EditChip(accent: accent, onTap: onEdit),
+              ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -270,12 +408,19 @@ class _HeroArea extends StatelessWidget {
                           vertical: 3,
                         ),
                         decoration: BoxDecoration(
-                          border: Border.all(color: accent),
+                          border: Border.all(
+                            color: saved ? accent : AppColors.line,
+                          ),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
-                          context.l10n.resultSaved,
-                          style: AppTypography.mono(size: 9, color: accent),
+                          saved
+                              ? context.l10n.resultSaved
+                              : context.l10n.resultUnsaved,
+                          style: AppTypography.mono(
+                            size: 9,
+                            color: saved ? accent : AppColors.textFaint,
+                          ),
                         ),
                       ),
                     ],
@@ -816,6 +961,42 @@ class _ActionBtn extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EditChip extends StatelessWidget {
+  final Color accent;
+  final VoidCallback onTap;
+  const _EditChip({required this.accent, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(999),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+            color: AppColors.ink.withValues(alpha: 0.85),
+            border: Border.all(color: AppColors.lineMid),
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.edit_outlined, size: 12, color: accent),
+              const SizedBox(width: 5),
+              Text(
+                context.l10n.resultEditShape,
+                style: AppTypography.mono(size: 10, color: accent),
+              ),
+            ],
+          ),
         ),
       ),
     );

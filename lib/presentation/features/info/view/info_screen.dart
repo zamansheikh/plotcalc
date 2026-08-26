@@ -9,6 +9,7 @@ import '../../../shared/settings/settings_bloc.dart';
 import '../data/articles.dart';
 import '../data/land_info_loader.dart';
 import '../../../../l10n/l10n.dart';
+import '../../../shared/widgets/tab_header.dart';
 
 class InfoScreen extends StatelessWidget {
   const InfoScreen({super.key});
@@ -44,19 +45,9 @@ class _Header extends StatelessWidget {
   const _Header();
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 6, 20, 14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(context.l10n.infoTitle, style: AppTypography.heroTitle),
-          const SizedBox(height: 2),
-          Text(
-            context.l10n.infoSubtitle,
-            style: AppTypography.mono(size: 11, color: AppColors.textDim),
-          ),
-        ],
-      ),
+    return TabHeader(
+      title: context.l10n.infoTitle,
+      subtitle: context.l10n.infoSubtitle,
     );
   }
 }

@@ -928,5 +928,17 @@
   "adjustSlideAlong": "Along",
   "@adjustSlideAlong": {},
   "adjustSlideSwap": "Other side",
-  "@adjustSlideSwap": {}
+  "@adjustSlideSwap": {},
+  "resultEditShape": "Edit shape",
+  "@resultEditShape": {},
+  "plotUpdated": "“{name}” updated",
+  "@plotUpdated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "resultUnsaved": "NOT SAVED",
+  "@resultUnsaved": {}
 }

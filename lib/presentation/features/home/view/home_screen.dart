@@ -20,6 +20,7 @@ import '../../result/view/result_screen.dart' show ResultArgs;
 import '../bloc/home_bloc.dart';
 import '../bloc/home_state.dart';
 import '../../../../l10n/l10n.dart';
+import '../../../shared/widgets/tab_header.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -77,59 +78,9 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 6, 16, 18),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  context.l10n.homeBuildBy,
-                  style: AppTypography.mono(
-                    size: 11,
-                    color: AppColors.textFaint,
-                    letterSpacing: 1.32,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(context.l10n.homeTitle, style: AppTypography.heroTitle),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          _MenuButton(accent: accent),
-        ],
-      ),
-    );
-  }
-}
-
-class _MenuButton extends StatelessWidget {
-  final Color accent;
-  const _MenuButton({required this.accent});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () => Scaffold.of(context).openEndDrawer(),
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          width: 44,
-          height: 44,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            border: Border.all(color: AppColors.line),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(Icons.menu, size: 20, color: accent),
-        ),
-      ),
+    return TabHeader(
+      title: context.l10n.homeTitle,
+      subtitle: context.l10n.homeBuildBy,
     );
   }
 }
@@ -477,6 +428,7 @@ class _RecentList extends StatelessWidget {
                 name: p.name,
                 vertices: p.vertices,
                 unit: p.preferredUnit,
+                plotId: p.id,
               ),
             ),
             child: Container(

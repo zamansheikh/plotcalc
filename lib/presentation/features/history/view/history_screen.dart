@@ -13,7 +13,6 @@ import '../../../../domain/entities/plot.dart';
 import '../../../../domain/usecases/clear_all_plots.dart';
 import '../../../../domain/usecases/get_plots.dart';
 import '../../../shared/settings/settings_bloc.dart';
-import '../../../shared/widgets/phone_chrome.dart';
 import '../../../shared/widgets/plot_thumbnail.dart';
 import '../../../../domain/usecases/delete_plot.dart';
 import '../../../../domain/usecases/save_plot.dart';
@@ -22,6 +21,7 @@ import '../bloc/history_bloc.dart';
 import 'filter_sheet.dart';
 import 'plot_actions_sheet.dart';
 import '../../../../l10n/l10n.dart';
+import '../../../shared/widgets/tab_header.dart';
 
 class HistoryScreen extends StatelessWidget {
   const HistoryScreen({super.key});
@@ -78,38 +78,13 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 6, 16, 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(context.l10n.historyTitle, style: AppTypography.heroTitle),
-                const SizedBox(height: 2),
-                Text(
-                  context.l10n.historySubtitle(count, AreaUnit.acre.format(totalSqm)),
-                  style: AppTypography.mono(size: 11, color: AppColors.textDim),
-                ),
-              ],
-            ),
-          ),
-          if (count > 0)
-            SmallIconButton(
-              icon: Icons.delete_outline,
-              onTap: () => _confirmClearAll(context),
-            ),
-        ],
+    return TabHeader(
+      title: context.l10n.historyTitle,
+      subtitle: context.l10n.historySubtitle(
+        count,
+        AreaUnit.acre.format(totalSqm),
       ),
     );
-  }
-
-  Future<void> _confirmClearAll(BuildContext context) async {
-    final bloc = context.read<HistoryBloc>();
-    final ok = await showClearAllConfirm(context, count: count);
-    if (ok) bloc.add(const HistoryClearAllRequested());
   }
 }
 
@@ -422,6 +397,7 @@ class _Tile extends StatelessWidget {
           name: plot.name,
           vertices: plot.vertices,
           unit: plot.preferredUnit,
+          plotId: plot.id,
         ),
       ),
       onLongPress: () =>

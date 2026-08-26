@@ -1125,4 +1125,15 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get adjustSlideSwap => 'অন্য বাহু';
+
+  @override
+  String get resultEditShape => 'আকৃতি সম্পাদনা';
+
+  @override
+  String plotUpdated(String name) {
+    return '“$name” হালনাগাদ হয়েছে';
+  }
+
+  @override
+  String get resultUnsaved => 'সংরক্ষিত নয়';
 }

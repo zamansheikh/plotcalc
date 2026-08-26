@@ -1975,6 +1975,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Other side'**
   String get adjustSlideSwap;
+
+  /// No description provided for @resultEditShape.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit shape'**
+  String get resultEditShape;
+
+  /// No description provided for @plotUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'“{name}” updated'**
+  String plotUpdated(String name);
+
+  /// No description provided for @resultUnsaved.
+  ///
+  /// In en, this message translates to:
+  /// **'NOT SAVED'**
+  String get resultUnsaved;
 }
 
 class _AppLocalizationsDelegate

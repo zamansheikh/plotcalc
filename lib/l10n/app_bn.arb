@@ -312,5 +312,8 @@
   "adjustPickSlide": "পিছলে সরান",
   "adjustTapToSlide": "সীমানা বরাবর সরাতে একটি কোণে ট্যাপ করুন",
   "adjustSlideAlong": "বরাবর",
-  "adjustSlideSwap": "অন্য বাহু"
+  "adjustSlideSwap": "অন্য বাহু",
+  "resultEditShape": "আকৃতি সম্পাদনা",
+  "plotUpdated": "“{name}” হালনাগাদ হয়েছে",
+  "resultUnsaved": "সংরক্ষিত নয়"
 }

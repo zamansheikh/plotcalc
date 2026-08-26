@@ -13,7 +13,7 @@ class DrawBloc extends Bloc<DrawEvent, DrawState> {
       switch (e.args.method) {
         case InputMethod.draw:
           emit(state.copyWith(
-            vertices: List.of(e.args.preset.vertices),
+            vertices: List.of(e.args.vertices ?? e.args.preset.vertices),
             selectedIndex: 0,
             history: const [],
             inputMethod: InputMethod.draw,
