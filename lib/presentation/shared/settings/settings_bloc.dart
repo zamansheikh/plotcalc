@@ -93,6 +93,8 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
         for (final name in savedEnabled)
           if (byName[name] != null) byName[name]!,
       },
-    );
+      // Stored preferences are just data: a file that enables both a standard
+      // and a Mymensingh unit must not produce a mixed-convention reading.
+    ).sanitized();
   }
 }

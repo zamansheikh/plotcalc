@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:plotcalc/core/units/area_breakdown.dart';
 import 'package:plotcalc/core/units/area_unit.dart';
@@ -143,7 +145,7 @@ void main() {
   });
 
   group('losslessness', () {
-    test('parts always sum back to the total', () {
+    test('parts sum back to the total, bar what could not be printed', () {
       final configs = [
         _bd,
         BreakdownConfig.defaults,
@@ -165,7 +167,15 @@ void main() {
           5260.91334912, 9999.99, 123456.789,
         ]) {
           final b = AreaBreakdown.of(sqm, cfg);
-          expect(b.accountedSqm, closeTo(sqm, sqm * 1e-9),
+          // A tail too small to render is dropped rather than shown as
+          // "0.00", so the tolerance is one printable digit of the last
+          // unit — see breakdown_correctness_test.dart.
+          final last = cfg.orderedEnabled.last;
+          final invisible =
+              0.5 * math.pow(10, -last.precision) * last.sqmPerUnit;
+          expect(sqm - b.accountedSqm, greaterThan(-sqm * 1e-9),
+              reason: '$sqm gained area');
+          expect(sqm - b.accountedSqm, lessThan(invisible + sqm * 1e-9),
               reason: '$sqm with ${cfg.orderedEnabled.map((u) => u.name)}');
         }
       }

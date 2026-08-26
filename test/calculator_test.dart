@@ -9,6 +9,7 @@ import 'package:plotcalc/core/units/area_unit.dart';
 import 'package:plotcalc/l10n/l10n.dart';
 import 'package:plotcalc/presentation/features/calculator/view/calculator_screen.dart';
 import 'package:plotcalc/presentation/shared/settings/settings_bloc.dart';
+import 'package:plotcalc/presentation/shared/settings/settings_event.dart';
 import 'package:plotcalc/presentation/shared/widgets/area_breakdown_view.dart';
 import 'package:plotcalc/presentation/shared/widgets/unit_input.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -274,6 +275,41 @@ void main() {
 
     expect(totalText(tester), '');
     expect(find.textContaining('Enter an area'), findsOneWidget);
+  });
+
+  group('breakdown shortcuts', () {
+    testWidgets('the calculator offers Copy and Units on its breakdown', (
+      tester,
+    ) async {
+      await pump(tester);
+      // Nothing to act on until there is a total.
+      expect(find.text('Units'), findsNothing);
+
+      await tester.enterText(totalField(), '25');
+      await tester.pumpAndSettle();
+
+      // Regression: the calculator used framed:false, which skipped the
+      // header entirely — so it had neither shortcut.
+      expect(find.text('Units'), findsOneWidget);
+      expect(find.text('Copy'), findsOneWidget);
+      expect(find.byIcon(Icons.tune), findsOneWidget);
+    });
+
+    testWidgets('editing units changes what the calculator reads', (
+      tester,
+    ) async {
+      await pump(tester);
+      await tester.enterText(totalField(), '25');   // 1 bigha 5 katha
+      await tester.pumpAndSettle();
+      expect(inBreakdown('bigha'), findsOneWidget);
+
+      bloc.add(const BreakdownUnitToggled(AreaUnit.bigha));
+      // The bloc handler is async; let it land before pumping the frame.
+      await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+      await tester.pumpAndSettle();
+      expect(inBreakdown('bigha'), findsNothing);
+      expect(inBreakdown('katha'), findsOneWidget);
+    });
   });
 
   group('design consistency', () {

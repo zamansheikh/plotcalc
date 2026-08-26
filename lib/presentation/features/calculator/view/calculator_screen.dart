@@ -159,19 +159,24 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                 children: [
                   _entryCard(accent, units, settings.breakdown),
                   const SizedBox(height: 18),
-                  _sectionLabel(context.l10n.calcResultLabel),
-                  const SizedBox(height: 8),
-                  _card(
-                    child: _totalSqm > 0
-                        ? AreaBreakdownView(sqm: _totalSqm, framed: false)
-                        : Text(
-                            context.l10n.calcEmpty,
-                            style: AppTypography.sans(
-                              size: 12,
-                              color: AppColors.textDim,
-                            ),
-                          ),
-                  ),
+                  // Framed, so the breakdown brings its own label plus the
+                  // Copy and Units shortcuts — the same card the result
+                  // screen shows.
+                  if (_totalSqm > 0)
+                    AreaBreakdownView(sqm: _totalSqm)
+                  else ...[
+                    _sectionLabel(context.l10n.calcResultLabel),
+                    const SizedBox(height: 8),
+                    _card(
+                      child: Text(
+                        context.l10n.calcEmpty,
+                        style: AppTypography.sans(
+                          size: 12,
+                          color: AppColors.textDim,
+                        ),
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 18),
                   _sectionLabel(context.l10n.calcAdjustLabel),
                   const SizedBox(height: 8),

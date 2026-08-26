@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'area_unit.dart';
 
 /// Which units take part in a compound breakdown, and in what order.
@@ -69,6 +71,20 @@ class BreakdownConfig {
   /// re-apply the `newIndex > oldIndex ? newIndex - 1` correction here — that
   /// belongs to the deprecated `onReorder` callback and double-correcting
   /// drops downward drags one slot short.
+  /// Drops any rival that slipped through — [toggled] prevents the pair from
+  /// being switched on together, but a stored preference is just data and can
+  /// say anything. Whichever of the pair comes first in [order] is kept.
+  BreakdownConfig sanitized() {
+    final kept = <AreaUnit>{};
+    for (final u in order) {
+      if (!enabled.contains(u)) continue;
+      final rival = rivals[u];
+      if (rival != null && kept.contains(rival)) continue;
+      kept.add(u);
+    }
+    return copyWith(enabled: kept);
+  }
+
   BreakdownConfig reordered(int oldIndex, int newIndex) {
     final next = List<AreaUnit>.from(order);
     next.insert(newIndex, next.removeAt(oldIndex));
@@ -90,8 +106,19 @@ class BreakdownPart {
 
   double get sqm => unit.toSqm(value);
 
-  String get formatted =>
-      isRemainder ? unit.formatValue(value) : unit.formatWhole(value);
+  /// True when this term would render as "0", "0.00" and so on at the unit's
+  /// normal precision — i.e. it is real but too small to show.
+  bool get roundsToZero =>
+      value > 0 && value < 0.5 * math.pow(10, -unit.precision);
+
+  String get formatted {
+    if (!isRemainder) return unit.formatWhole(value);
+    if (!roundsToZero) return unit.formatValue(value);
+    // Sole survivor of a tiny area: showing "0.00 chatak" would be a lie, so
+    // widen the precision until the figure actually has a digit in it.
+    final decimals = (-math.log(value) / math.ln10).ceil() + 1;
+    return value.toStringAsFixed(decimals.clamp(unit.precision + 1, 10));
+  }
 }
 
 /// An area expressed as a chain of traditional units.
@@ -117,7 +144,7 @@ class AreaBreakdown {
   static const double _quotientEpsilon = 1e-9;
 
   /// Values below this (in the final unit) are floating-point dust, not a
-  /// real remainder, and are dropped.
+  /// real remainder, and are dropped outright.
   static const double _dust = 1e-9;
 
   static AreaBreakdown of(double totalSqm, BreakdownConfig config) {
@@ -135,7 +162,13 @@ class AreaBreakdown {
         // Smallest enabled unit carries whatever is left, as a fraction.
         final value = remaining / unit.sqmPerUnit;
         if (value > _dust) {
-          parts.add(BreakdownPart(unit, value, isRemainder: true));
+          final tail = BreakdownPart(unit, value, isRemainder: true);
+          // A tail too small to print is noise once there is something else
+          // to show — "1 bigha, 0.00 chatak" reads as a mistake. On its own
+          // it is kept, and printed with enough precision to be meaningful.
+          if (!tail.roundsToZero || parts.isEmpty) {
+            parts.add(tail);
+          }
         }
       } else {
         final count =
