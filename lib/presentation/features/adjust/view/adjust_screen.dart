@@ -274,21 +274,6 @@ class _TargetCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 10),
-                  // Multiplier presets
-                  Wrap(
-                    alignment: WrapAlignment.center,
-                    spacing: 6,
-                    children: [
-                      for (final m in [0.5, 0.75, 1.0, 1.2, 1.5, 2.0])
-                        _MultBtn(
-                          mult: m,
-                          baseSqm: baseSqm,
-                          targetSqm: state.targetSqm,
-                          accent: accent,
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -342,44 +327,6 @@ class _StepBtn extends StatelessWidget {
           style: AppTypography.mono(
             size: 18,
             weight: FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _MultBtn extends StatelessWidget {
-  final double mult;
-  final double baseSqm;
-  final double targetSqm;
-  final Color accent;
-  const _MultBtn({
-    required this.mult,
-    required this.baseSqm,
-    required this.targetSqm,
-    required this.accent,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final active = (targetSqm - baseSqm * mult).abs() < baseSqm * 0.001;
-    return InkWell(
-      onTap: () =>
-          context.read<AdjustBloc>().add(TargetChanged(baseSqm * mult)),
-      borderRadius: BorderRadius.circular(999),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(
-          color: active ? accent : Colors.transparent,
-          border: Border.all(color: active ? accent : AppColors.line),
-          borderRadius: BorderRadius.circular(999),
-        ),
-        child: Text(
-          '$mult×',
-          style: AppTypography.mono(
-            size: 10,
-            color: active ? AppColors.ink : AppColors.textDim,
           ),
         ),
       ),

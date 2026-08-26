@@ -12,8 +12,12 @@ sealed class AdjustEvent extends Equatable {
 
 class AdjustInitialized extends AdjustEvent {
   final List<Vertex> base;
+  /// The target starts at the plot's own area, so the field opens showing
+  /// what it measures now and the user edits it to what they want — 5.2
+  /// becomes 5.5. Anything else would put a number there they never asked
+  /// for.
   final double initialMultiplier;
-  const AdjustInitialized({required this.base, this.initialMultiplier = 1.2});
+  const AdjustInitialized({required this.base, this.initialMultiplier = 1});
   @override
   List<Object?> get props => [base, initialMultiplier];
 }

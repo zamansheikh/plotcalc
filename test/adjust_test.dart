@@ -225,6 +225,17 @@ void main() {
     tearDown(() => bloc.close());
     Future<void> settle() => Future<void>.delayed(Duration.zero);
 
+    test('opens showing the area the plot already has', () async {
+      // The screen is for typing an absolute target — 5.2 becomes 5.5 — so
+      // it must not open on a number the user never asked for.
+      final base = ShapePreset.pentagon.vertices;
+      final baseArea = Geometry.polygonArea(base);
+      bloc.add(AdjustInitialized(base: base));
+      await settle();
+      expect(bloc.state.targetSqm, closeTo(baseArea, 1e-9));
+      expect(bloc.state.adjustedSqm, closeTo(baseArea, 1e-9));
+    });
+
     test('starts at the requested multiple of the base area', () async {
       final base = ShapePreset.pentagon.vertices;
       final baseArea = Geometry.polygonArea(base);
