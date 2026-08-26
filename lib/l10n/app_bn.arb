@@ -247,7 +247,6 @@
   "aboutPlatform": "প্ল্যাটফর্ম",
   "aboutPlatformValue": "অ্যান্ড্রয়েড · আইওএস",
   "aboutCredits": "কৃতজ্ঞতা",
-  "aboutCreditsBody": "তৈরি করেছেন জামান শেখ।\nক্লদ ডিজাইনের প্লটক্যালক হ্যান্ডঅফ বান্ডেল দিয়ে ডিজাইন করা।",
   "pickerQuestionAccent": "শুরু",
   "historyEmptyFiltered": "এই ছাঁকনিতে কোনো প্লট মেলেনি।\nমুছতে “সব” চাপুন।",
   "adjustAnchorN": "উ",
@@ -322,5 +321,10 @@
   "subdivideModePercent": "শতাংশ",
   "subdivideModeArea": "ক্ষেত্রফল",
   "subdivideSavedLots": "“{name}” থেকে {count}টি লট সংরক্ষিত",
-  "subdivideLotsDontSum": "লটের যোগফল {total}, প্লট {plot}"
+  "subdivideLotsDontSum": "লটের যোগফল {total}, প্লট {plot}",
+  "aboutDeveloper": "ডেভেলপার",
+  "aboutDeveloperName": "জামান শেখ",
+  "aboutFacebook": "ফেসবুক",
+  "aboutGithub": "গিটহাব",
+  "aboutOpenLinkFailed": "লিংকটি খোলা যায়নি"
 }

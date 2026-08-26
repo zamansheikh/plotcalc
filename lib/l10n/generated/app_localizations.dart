@@ -1580,12 +1580,6 @@ abstract class AppLocalizations {
   /// **'CREDITS'**
   String get aboutCredits;
 
-  /// No description provided for @aboutCreditsBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Built by Zaman Sheikh.\nDesigned with the PlotCalc handoff bundle from Claude Design.'**
-  String get aboutCreditsBody;
-
   /// No description provided for @pickerQuestionAccent.
   ///
   /// In en, this message translates to:
@@ -2035,6 +2029,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Lots add up to {total}, plot is {plot}'**
   String subdivideLotsDontSum(String total, String plot);
+
+  /// No description provided for @aboutDeveloper.
+  ///
+  /// In en, this message translates to:
+  /// **'Developer'**
+  String get aboutDeveloper;
+
+  /// No description provided for @aboutDeveloperName.
+  ///
+  /// In en, this message translates to:
+  /// **'Zaman Sheikh'**
+  String get aboutDeveloperName;
+
+  /// No description provided for @aboutFacebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Facebook'**
+  String get aboutFacebook;
+
+  /// No description provided for @aboutGithub.
+  ///
+  /// In en, this message translates to:
+  /// **'GitHub'**
+  String get aboutGithub;
+
+  /// No description provided for @aboutOpenLinkFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the link'**
+  String get aboutOpenLinkFailed;
 }
 
 class _AppLocalizationsDelegate

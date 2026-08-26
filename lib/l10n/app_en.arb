@@ -751,8 +751,6 @@
   "@aboutPlatformValue": {},
   "aboutCredits": "CREDITS",
   "@aboutCredits": {},
-  "aboutCreditsBody": "Built by Zaman Sheikh.\nDesigned with the PlotCalc handoff bundle from Claude Design.",
-  "@aboutCreditsBody": {},
   "pickerQuestionAccent": "start",
   "@pickerQuestionAccent": {},
   "historyEmptyFiltered": "No plots match this filter.\nTap “All” to clear.",
@@ -973,5 +971,15 @@
         "type": "String"
       }
     }
-  }
+  },
+  "aboutDeveloper": "Developer",
+  "@aboutDeveloper": {},
+  "aboutDeveloperName": "Zaman Sheikh",
+  "@aboutDeveloperName": {},
+  "aboutFacebook": "Facebook",
+  "@aboutFacebook": {},
+  "aboutGithub": "GitHub",
+  "@aboutGithub": {},
+  "aboutOpenLinkFailed": "Could not open the link",
+  "@aboutOpenLinkFailed": {}
 }

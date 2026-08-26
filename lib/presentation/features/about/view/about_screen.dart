@@ -8,9 +8,28 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../shared/settings/settings_bloc.dart';
 import '../../../shared/widgets/phone_chrome.dart';
 import '../../../../l10n/l10n.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-class AboutScreen extends StatelessWidget {
+class AboutScreen extends StatefulWidget {
   const AboutScreen({super.key});
+
+  @override
+  State<AboutScreen> createState() => _AboutScreenState();
+}
+
+class _AboutScreenState extends State<AboutScreen> {
+  /// Read from the installed package rather than written down here, so it
+  /// cannot drift from pubspec the way the hardcoded "1.0.0" had.
+  PackageInfo? _version;
+
+  @override
+  void initState() {
+    super.initState();
+    PackageInfo.fromPlatform().then((info) {
+      if (mounted) setState(() => _version = info);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +46,7 @@ class AboutScreen extends StatelessWidget {
                 physics: const BouncingScrollPhysics(),
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                 children: [
-                  _HeroCard(accent: accent),
+                  _HeroCard(accent: accent, version: _version),
                   const SizedBox(height: 14),
                   _Section(
                     title: context.l10n.aboutWhatItDoes,
@@ -56,9 +75,15 @@ class AboutScreen extends StatelessWidget {
                     title: context.l10n.aboutBuild,
                     child: Column(
                       children: [
-                        _Row(label: context.l10n.aboutVersion, value: '1.0.0'),
+                        _Row(
+                          label: context.l10n.aboutVersion,
+                          value: _version?.version ?? '…',
+                        ),
                         _Divider(),
-                        _Row(label: context.l10n.aboutBuildLabel, value: '1'),
+                        _Row(
+                          label: context.l10n.aboutBuildLabel,
+                          value: _version?.buildNumber ?? '…',
+                        ),
                         _Divider(),
                         _Row(label: context.l10n.aboutPlatform, value: context.l10n.aboutPlatformValue),
                       ],
@@ -67,13 +92,28 @@ class AboutScreen extends StatelessWidget {
                   const SizedBox(height: 12),
                   _Section(
                     title: context.l10n.aboutCredits,
-                    child: Text(
-                      context.l10n.aboutCreditsBody,
-                      style: AppTypography.sans(
-                        size: 13,
-                        color: AppColors.textDim,
-                        height: 1.5,
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _Row(
+                          label: context.l10n.aboutDeveloper,
+                          value: context.l10n.aboutDeveloperName,
+                        ),
+                        _Divider(),
+                        _LinkRow(
+                          icon: Icons.facebook,
+                          label: context.l10n.aboutFacebook,
+                          url: 'https://www.facebook.com/zamansheikh.404',
+                          accent: accent,
+                        ),
+                        _Divider(),
+                        _LinkRow(
+                          icon: Icons.code,
+                          label: context.l10n.aboutGithub,
+                          url: 'https://github.com/zamansheikh',
+                          accent: accent,
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -131,7 +171,8 @@ class _Header extends StatelessWidget {
 
 class _HeroCard extends StatelessWidget {
   final Color accent;
-  const _HeroCard({required this.accent});
+  final PackageInfo? version;
+  const _HeroCard({required this.accent, required this.version});
 
   @override
   Widget build(BuildContext context) {
@@ -166,7 +207,7 @@ class _HeroCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'v1.0.0',
+                  version == null ? '' : 'v${version!.version}',
                   style: AppTypography.mono(
                     size: 12,
                     color: AppColors.textDim,
@@ -291,5 +332,60 @@ class _Divider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(height: 1, color: AppColors.line);
+  }
+}
+
+/// A credit that opens somewhere.
+class _LinkRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String url;
+  final Color accent;
+
+  const _LinkRow({
+    required this.icon,
+    required this.label,
+    required this.url,
+    required this.accent,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () async {
+        final messenger = ScaffoldMessenger.of(context);
+        final failed = context.l10n.aboutOpenLinkFailed;
+        final ok = await launchUrl(
+          Uri.parse(url),
+          mode: LaunchMode.externalApplication,
+        );
+        if (!ok) {
+          messenger.showSnackBar(SnackBar(content: Text(failed)));
+        }
+      },
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 9),
+        child: Row(
+          children: [
+            Icon(icon, size: 15, color: accent),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                label,
+                style: AppTypography.sans(size: 13),
+              ),
+            ),
+            Text(
+              // The handle, without the scheme and host noise.
+              Uri.parse(url).pathSegments.last,
+              style: AppTypography.mono(size: 10, color: AppColors.textDim),
+            ),
+            const SizedBox(width: 6),
+            Icon(Icons.open_in_new, size: 13, color: AppColors.textFaint),
+          ],
+        ),
+      ),
+    );
   }
 }

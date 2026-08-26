@@ -896,10 +896,6 @@ class AppLocalizationsBn extends AppLocalizations {
   String get aboutCredits => 'কৃতজ্ঞতা';
 
   @override
-  String get aboutCreditsBody =>
-      'তৈরি করেছেন জামান শেখ।\nক্লদ ডিজাইনের প্লটক্যালক হ্যান্ডঅফ বান্ডেল দিয়ে ডিজাইন করা।';
-
-  @override
   String get pickerQuestionAccent => 'শুরু';
 
   @override
@@ -1165,4 +1161,19 @@ class AppLocalizationsBn extends AppLocalizations {
   String subdivideLotsDontSum(String total, String plot) {
     return 'লটের যোগফল $total, প্লট $plot';
   }
+
+  @override
+  String get aboutDeveloper => 'ডেভেলপার';
+
+  @override
+  String get aboutDeveloperName => 'জামান শেখ';
+
+  @override
+  String get aboutFacebook => 'ফেসবুক';
+
+  @override
+  String get aboutGithub => 'গিটহাব';
+
+  @override
+  String get aboutOpenLinkFailed => 'লিংকটি খোলা যায়নি';
 }

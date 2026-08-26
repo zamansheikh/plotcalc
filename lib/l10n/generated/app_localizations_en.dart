@@ -898,10 +898,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aboutCredits => 'CREDITS';
 
   @override
-  String get aboutCreditsBody =>
-      'Built by Zaman Sheikh.\nDesigned with the PlotCalc handoff bundle from Claude Design.';
-
-  @override
   String get pickerQuestionAccent => 'start';
 
   @override
@@ -1168,4 +1164,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String subdivideLotsDontSum(String total, String plot) {
     return 'Lots add up to $total, plot is $plot';
   }
+
+  @override
+  String get aboutDeveloper => 'Developer';
+
+  @override
+  String get aboutDeveloperName => 'Zaman Sheikh';
+
+  @override
+  String get aboutFacebook => 'Facebook';
+
+  @override
+  String get aboutGithub => 'GitHub';
+
+  @override
+  String get aboutOpenLinkFailed => 'Could not open the link';
 }

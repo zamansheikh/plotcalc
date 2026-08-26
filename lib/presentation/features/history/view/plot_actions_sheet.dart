@@ -152,6 +152,12 @@ Future<AreaUnit?> showPlotUnitSheet(
   return showModalBottomSheet<AreaUnit?>(
     context: context,
     backgroundColor: AppColors.surface,
+    // A default sheet stops at nine sixteenths of the screen, which is
+    // cramped for eleven options.
+    isScrollControlled: true,
+    constraints: BoxConstraints(
+      maxHeight: MediaQuery.sizeOf(context).height * 0.8,
+    ),
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
@@ -178,24 +184,36 @@ Future<AreaUnit?> showPlotUnitSheet(
               style: AppTypography.sans(size: 16, weight: FontWeight.w600),
             ),
             const SizedBox(height: 14),
-            _UnitOption(
-              label: sheetContext.l10n.plotUnitFollowsSettings,
-              active: plot.preferredUnit == null,
-              accent: accent,
-              onTap: () => Navigator.of(sheetContext).pop(),
-            ),
-            const Divider(height: 1, color: AppColors.line),
-            for (final u in AreaUnit.values) ...[
-              _UnitOption(
-                label: u.nameOf(sheetContext.l10n),
-                trailing: u.labelOf(sheetContext.l10n),
-                active: plot.preferredUnit == u,
-                accent: accent,
-                onTap: () => Navigator.of(sheetContext).pop(u),
+            // Eleven options do not fit a short screen, and a bottom sheet
+            // that overflows simply clips the last ones out of reach.
+            Flexible(
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _UnitOption(
+                      label: sheetContext.l10n.plotUnitFollowsSettings,
+                      active: plot.preferredUnit == null,
+                      accent: accent,
+                      onTap: () => Navigator.of(sheetContext).pop(),
+                    ),
+                    const Divider(height: 1, color: AppColors.line),
+                    for (final u in AreaUnit.values) ...[
+                      _UnitOption(
+                        label: u.nameOf(sheetContext.l10n),
+                        trailing: u.labelOf(sheetContext.l10n),
+                        active: plot.preferredUnit == u,
+                        accent: accent,
+                        onTap: () => Navigator.of(sheetContext).pop(u),
+                      ),
+                      if (u != AreaUnit.values.last)
+                        const Divider(height: 1, color: AppColors.line),
+                    ],
+                  ],
+                ),
               ),
-              if (u != AreaUnit.values.last)
-                const Divider(height: 1, color: AppColors.line),
-            ],
+            ),
           ],
         ),
       ),
