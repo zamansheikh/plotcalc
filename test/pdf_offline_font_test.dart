@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:bangla_pdf/extract.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:plotcalc/core/export/plot_pdf.dart';
@@ -9,10 +10,11 @@ import 'package:plotcalc/core/units/area_unit.dart';
 
 import 'export_test.dart' show l10nFor;
 
-/// A PDF carries its own fonts. Before the face was bundled it was fetched at
-/// export time, so a Bengali document built offline came out with no Bengali
-/// in it at all — and Bengali is the language the app opens in. Nothing here
-/// touches the network.
+/// A PDF carries its own fonts and its own text layer, and package:pdf does
+/// neither for Bengali: it embeds no Bengali face and lays code points out in
+/// order, which breaks conjuncts and misplaces vowel signs. Bengali is the
+/// language the app opens in, so both matter. Nothing here touches the
+/// network — an export has to work in a field with no signal.
 void main() {
   setUp(PlotPdf.resetFontCacheForTest);
 
@@ -28,49 +30,84 @@ void main() {
     );
   }
 
-  testWidgets('a Bengali document embeds the bundled Bengali face', (
+  Future<String> textOf(WidgetTester tester, String name, Locale locale) async {
+    final t = await l10nFor(tester, locale);
+    final bytes = await PlotPdf.build(summary(name), t);
+    expect(latin1.decode(bytes.sublist(0, 5)), '%PDF-');
+    return BanglaPdfExtractor.extract(bytes).text;
+  }
+
+  testWidgets('the plot name comes back out of the document as typed', (
+    tester,
+  ) async {
+    // Not "does it render" but "is the text really there": a reader can
+    // search the PDF, and a screen reader can speak it.
+    expect(
+      await textOf(tester, 'উত্তরের জমি', const Locale('bn')),
+      contains('উত্তরের জমি'),
+    );
+  });
+
+  testWidgets('conjuncts survive the round trip', (tester) async {
+    // These ligate. Unshaped they come out as a base plus a stray hasanta.
+    for (final word in ['ক্ষেত', 'পশ্চিম', 'দক্ষিণ']) {
+      PlotPdf.resetFontCacheForTest();
+      expect(
+        await textOf(tester, word, const Locale('bn')),
+        contains(word),
+        reason: word,
+      );
+    }
+  });
+
+  testWidgets('a name with reph exports at all', (tester) async {
+    // Reph used to throw a RangeError out of pdf.save(), losing the export
+    // outright rather than merely looking wrong.
+    for (final word in ['কর্ম', 'পূর্ব', 'উত্তর-পূর্ব কোণ']) {
+      PlotPdf.resetFontCacheForTest();
+      expect(
+        await textOf(tester, word, const Locale('bn')),
+        contains(word),
+        reason: word,
+      );
+    }
+  });
+
+  testWidgets('the document reads as Unicode, not Bijoy mojibake', (
     tester,
   ) async {
     final t = await l10nFor(tester, const Locale('bn'));
     final bytes = await PlotPdf.build(summary('উত্তরের জমি'), t);
+    final result = BanglaPdfExtractor.extract(bytes);
+    expect(result.encodingDetected, BanglaTextEncoding.unicode);
+    expect(result.text, isNot(contains('Avgvi')));
+  });
+
+  testWidgets('Bengali digits are preserved, not silently latinised', (
+    tester,
+  ) async {
+    final text = await textOf(tester, 'জমি', const Locale('bn'));
     expect(
-      latin1.decode(bytes, allowInvalid: true),
-      contains('NotoSansBengali'),
-      reason: 'without an embedded face the Bengali text cannot render',
+      text,
+      matches(RegExp('[০-৯]')),
+      reason: 'the figures follow the UI locale',
     );
   });
 
-  testWidgets('an English document does not pay for the Bengali face', (
+  testWidgets('an English document keeps the Latin face and its bold', (
     tester,
   ) async {
     final t = await l10nFor(tester, const Locale('en'));
     final bytes = await PlotPdf.build(summary('North field'), t);
-    expect(latin1.decode(bytes, allowInvalid: true), isNot(contains('NotoSansBengali')));
+    final raw = latin1.decode(bytes, allowInvalid: true);
+    expect(raw, contains('NotoSans'));
+    expect(raw, contains('NotoSans-Bold'));
   });
 
-  testWidgets('the Bengali document carries the extra glyphs, not just the '
-      'font name', (tester) async {
-    final bn = await l10nFor(tester, const Locale('bn'));
-    final bengali = await PlotPdf.build(summary('উত্তরের জমি'), bn);
-    PlotPdf.resetFontCacheForTest();
-    final en = await l10nFor(tester, const Locale('en'));
-    final latin = await PlotPdf.build(summary('North field'), en);
-    // Both embed a subset of the Latin face, so the gap is only the Bengali
-    // glyphs actually used — a few kilobytes, not a whole font.
-    expect(bengali.length, greaterThan(latin.length));
-  });
-
-  testWidgets('both documents still build and are valid PDFs', (tester) async {
-    for (final locale in [const Locale('en'), const Locale('bn')]) {
-      PlotPdf.resetFontCacheForTest();
-      final t = await l10nFor(tester, locale);
-      final bytes = await PlotPdf.build(summary('জমি / field'), t);
-      expect(bytes.length, greaterThan(1000), reason: locale.languageCode);
-      expect(
-        latin1.decode(bytes.sublist(0, 5)),
-        '%PDF-',
-        reason: locale.languageCode,
-      );
-    }
+  testWidgets('a mixed name keeps both scripts', (tester) async {
+    expect(
+      await textOf(tester, 'Plot 12 — উত্তরের জমি', const Locale('bn')),
+      contains('উত্তরের জমি'),
+    );
   });
 }

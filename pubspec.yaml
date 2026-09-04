@@ -2,7 +2,7 @@ name: plotcalc
 description: "Offline land measurement — draw, calculate, convert across 10 area units."
 publish_to: "none"
 
-version: 2.1.0+15
+version: 2.1.0+16
 
 environment:
   sdk: ^3.11.5
@@ -45,6 +45,7 @@ dependencies:
   printing: ^5.15.0
   path_provider: ^2.1.6
   package_info_plus: ^10.2.1
+  bangla_pdf: ^1.2.0
 
 dev_dependencies:
   flutter_test:
@@ -63,7 +64,7 @@ flutter:
     # Bundled so a PDF exported offline still renders: a PDF carries its own
     # fonts and has no system fallback the way the on-screen UI does. The
     # built-in Helvetica is ASCII-only, so even an em dash goes missing.
-    # Noto Sans, OFL-1.1.
+    # Noto Sans, OFL-1.1. Bengali is not here — bangla_pdf shapes it and
+    # carries its own face.
     - assets/fonts/NotoSans-Regular.ttf
     - assets/fonts/NotoSans-Bold.ttf
-    - assets/fonts/NotoSansBengali-Regular.ttf
