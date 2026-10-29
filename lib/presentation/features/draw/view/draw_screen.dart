@@ -26,6 +26,7 @@ import '../bloc/draw_event.dart';
 import '../bloc/draw_state.dart';
 import '../../result/view/result_screen.dart';
 import 'edge_edit_dialog.dart';
+import 'plot_labels.dart';
 import 'save_plot_sheet.dart';
 import 'type_input_sheet.dart';
 import '../../../../l10n/l10n.dart';
@@ -346,6 +347,9 @@ class _CanvasState extends State<_Canvas> {
                 cx = w / 2 - polyCx * scale;
                 cy = h / 2 - polyCy * scale;
               }
+              // One placement for drawing and for tapping, so a tap on a
+              // label always lands on the label the user sees.
+              final labels = _labelLayout(Size(w, h), scale, Offset(cx, cy));
               return Stack(
                 children: [
                   GridBackground(style: gridStyle),
@@ -418,12 +422,7 @@ class _CanvasState extends State<_Canvas> {
                         // Diagonal label hit (only when overlay is on).
                         if (widget.state.showDiagonals &&
                             widget.state.vertices.length >= 4) {
-                          final hitD = _hitDiagonalMidpoint(
-                            d.localPosition,
-                            widget.state.vertices,
-                            scale,
-                            Offset(cx, cy),
-                          );
+                          final hitD = labels?.diagonalAt(d.localPosition);
                           if (hitD != null) {
                             _openEdgeEdit(
                               fromIdx: hitD.$1,
@@ -433,12 +432,14 @@ class _CanvasState extends State<_Canvas> {
                             return;
                           }
                         }
-                        final hitE = _hitEdgeMidpoint(
-                          d.localPosition,
-                          widget.state.vertices,
-                          scale,
-                          Offset(cx, cy),
-                        );
+                        final hitE =
+                            labels?.sideAt(d.localPosition) ??
+                            _hitEdgeMidpoint(
+                              d.localPosition,
+                              widget.state.vertices,
+                              scale,
+                              Offset(cx, cy),
+                            );
                         if (hitE != null) {
                           final n = widget.state.vertices.length;
                           _openEdgeEdit(
@@ -467,6 +468,7 @@ class _CanvasState extends State<_Canvas> {
                             context.l10n,
                           ),
                           isPlacing: widget.state.isPlacingTaps,
+                          labels: labels,
                         ),
                       ),
                     ),
@@ -575,23 +577,50 @@ class _CanvasState extends State<_Canvas> {
     return null;
   }
 
-  static (int, int)? _hitDiagonalMidpoint(
-    Offset p,
-    List<Vertex> verts,
-    double scale,
-    Offset center,
-  ) {
-    for (final (i, j) in _diagonalPairs(verts.length)) {
-      final a = verts[i];
-      final b = verts[j];
-      final pa = Offset(center.dx + a.x * scale, center.dy + a.y * scale);
-      final pb = Offset(center.dx + b.x * scale, center.dy + b.y * scale);
-      // Mirror the perpendicular offset that the painter applies, so taps
-      // land where the label is actually drawn.
-      final labelCenter = _DrawCanvasPainter._diagonalLabelCenter(pa, pb);
-      if ((labelCenter - p).distance <= 22) return (i, j);
-    }
-    return null;
+  static final _sideStyle = AppTypography.mono(
+    size: 10,
+    weight: FontWeight.w500,
+  );
+  static final _diagonalStyle = AppTypography.mono(size: 9);
+  static final _angleStyle = AppTypography.mono(size: 9);
+
+  /// Places every measurement label so none overlaps another, a corner, or
+  /// the canvas's buttons. Null while corners are still being placed.
+  PlotLabelLayout? _labelLayout(Size size, double scale, Offset center) {
+    final verts = widget.state.vertices;
+    if (widget.state.isPlacingTaps || verts.length < 3) return null;
+    final pts = [
+      for (final v in verts)
+        Offset(center.dx + v.x * scale, center.dy + v.y * scale),
+    ];
+    final unit = widget.settings.lengthUnit;
+    final label = unit.labelOf(context.l10n);
+    String length(int i, int j) =>
+        '${unit.format(Geometry.sideLength(verts[i], verts[j]))} $label';
+    final diagonals = widget.state.showDiagonals && verts.length >= 4;
+    return PlotLabelLayout.compute(
+      pts: pts,
+      bounds: size,
+      sideSize: (i) =>
+          labelPillSize(length(i, (i + 1) % verts.length), _sideStyle),
+      diagonalPairs: diagonals ? _diagonalPairs(verts.length) : const [],
+      diagonalSize: diagonals
+          ? (i, j) => labelPillSize(length(i, j), _diagonalStyle)
+          : null,
+      angleSize: widget.state.showAngles
+          ? (i) => labelPillSize(
+              '${Geometry.interiorAngle(verts, i).round()}°',
+              _angleStyle,
+            )
+          : null,
+      // Compass (top left), diagonals switch (top right), scale bar
+      // (bottom left): labels under them would be hidden.
+      reserved: [
+        const Rect.fromLTWH(0, 0, 64, 64),
+        Rect.fromLTWH(size.width - 120, 0, 120, 58),
+        Rect.fromLTWH(0, size.height - 48, 240, 48),
+      ],
+    );
   }
 
   /// Opens the length-adjust dialog for any pair of vertices. When the pair
@@ -666,6 +695,9 @@ class _DrawCanvasPainter extends CustomPainter {
   final LengthUnit lengthUnit;
   final bool isPlacing;
 
+  /// Where each label goes; see [PlotLabelLayout].
+  final PlotLabelLayout? labels;
+
   _DrawCanvasPainter({
     required this.vertices,
     required this.selectedIndex,
@@ -678,6 +710,7 @@ class _DrawCanvasPainter extends CustomPainter {
     required this.lengthUnit,
     required this.lengthLabel,
     this.isPlacing = false,
+    this.labels,
   });
 
   @override
@@ -705,69 +738,39 @@ class _DrawCanvasPainter extends CustomPainter {
       _paintDiagonals(canvas);
     }
 
-    // Side length labels
-    for (var i = 0; i < vertices.length; i++) {
-      final a = vertices[i];
-      final b = vertices[(i + 1) % vertices.length];
-      final mid = Offset(
-        center.dx + ((a.x + b.x) / 2) * scale,
-        center.dy + ((a.y + b.y) / 2) * scale,
-      );
-      final ang = math.atan2(b.y - a.y, b.x - a.x);
-      final ox = -math.sin(ang) * 12;
-      final oy = math.cos(ang) * 12;
-      final isSelected =
-          selectedIndex == i || selectedIndex == (i + 1) % vertices.length;
-      final rect = Rect.fromCenter(
-        center: Offset(mid.dx + ox, mid.dy + oy),
-        width: 56,
-        height: 18,
-      );
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(rect, const Radius.circular(4)),
-        Paint()
-          ..color = isSelected ? accent : AppColors.ink.withValues(alpha: 0.85),
-      );
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(rect, const Radius.circular(4)),
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 0.6
-          ..color = isSelected ? accent : AppColors.lineMid,
-      );
-      final len = Geometry.sideLength(a, b);
-      final tp = TextPainter(
-        text: TextSpan(
-          text: '${lengthUnit.format(len)} $lengthLabel',
+    // Side length labels, where the layout put them.
+    final placed = labels;
+    if (placed != null) {
+      for (final e in placed.sides.entries) {
+        final i = e.key;
+        final a = vertices[i];
+        final b = vertices[(i + 1) % vertices.length];
+        final isSelected =
+            selectedIndex == i || selectedIndex == (i + 1) % vertices.length;
+        _pill(
+          canvas,
+          e.value,
+          '${lengthUnit.format(Geometry.sideLength(a, b))} $lengthLabel',
           style: AppTypography.mono(
             size: 10,
             weight: FontWeight.w500,
             color: isSelected ? AppColors.ink : AppColors.text,
           ),
-        ),
-        textDirection: TextDirection.ltr,
-      )..layout();
-      tp.paint(
-        canvas,
-        Offset(rect.center.dx - tp.width / 2, rect.center.dy - tp.height / 2),
-      );
-    }
+          fill: isSelected ? accent : AppColors.ink.withValues(alpha: 0.85),
+          border: isSelected ? accent : AppColors.lineMid,
+        );
+      }
 
-    // Angle labels
-    if (showAngles) {
-      for (var i = 0; i < vertices.length; i++) {
-        final v = vertices[i];
-        final px = center.dx + v.x * scale;
-        final py = center.dy + v.y * scale;
-        final angle = Geometry.interiorAngle(vertices, i);
+      // Corner angles.
+      for (final e in placed.angles.entries) {
         final tp = TextPainter(
           text: TextSpan(
-            text: '${angle.round()}°',
+            text: '${Geometry.interiorAngle(vertices, e.key).round()}°',
             style: AppTypography.mono(size: 9, color: AppColors.textDim),
           ),
           textDirection: TextDirection.ltr,
         )..layout();
-        tp.paint(canvas, Offset(px - tp.width / 2, py - 22));
+        tp.paint(canvas, e.value.center - Offset(tp.width / 2, tp.height / 2));
       }
     }
 
@@ -819,53 +822,50 @@ class _DrawCanvasPainter extends CustomPainter {
       final pa = Offset(center.dx + a.x * scale, center.dy + a.y * scale);
       final pb = Offset(center.dx + b.x * scale, center.dy + b.y * scale);
       _drawDashedLine(canvas, pa, pb, stroke);
-      // Label sits beside the line, not on it — perpendicular offset based
-      // on the diagonal's angle. Two diagonals that share a midpoint (e.g.
-      // a rectangle's pair) end up with labels in different regions because
-      // their perpendicular vectors point different ways.
-      final mid = _diagonalLabelCenter(pa, pb);
-      final rect = Rect.fromCenter(center: mid, width: 56, height: 16);
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(rect, const Radius.circular(3)),
-        Paint()..color = AppColors.ink.withValues(alpha: 0.9),
-      );
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(rect, const Radius.circular(3)),
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 0.5
-          ..color = accent.withValues(alpha: 0.55),
-      );
-      final len = Geometry.sideLength(a, b);
-      final tp = TextPainter(
-        text: TextSpan(
-          text: '${lengthUnit.format(len)} $lengthLabel',
-          style: AppTypography.mono(
-            size: 9,
-            color: accent.withValues(alpha: 0.85),
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-      )..layout();
-      tp.paint(
+    }
+    // Labels after every line, so no line runs across a label. A diagonal
+    // with no free spot for its label simply shows none.
+    for (final e
+        in labels?.diagonals.entries ?? const <MapEntry<(int, int), Rect>>[]) {
+      final (i, j) = e.key;
+      _pill(
         canvas,
-        Offset(rect.center.dx - tp.width / 2, rect.center.dy - tp.height / 2),
+        e.value,
+        '${lengthUnit.format(Geometry.sideLength(vertices[i], vertices[j]))} '
+        '$lengthLabel',
+        style: AppTypography.mono(
+          size: 9,
+          color: accent.withValues(alpha: 0.9),
+        ),
+        fill: AppColors.ink.withValues(alpha: 0.92),
+        border: accent.withValues(alpha: 0.55),
       );
     }
   }
 
-  /// Where to place a diagonal's length label. Pulls the label off the line
-  /// perpendicular to it, so two crossing diagonals don't end up with
-  /// overlapping labels at the shared midpoint.
-  static Offset _diagonalLabelCenter(Offset a, Offset b) {
-    final midX = (a.dx + b.dx) / 2;
-    final midY = (a.dy + b.dy) / 2;
-    final dx = b.dx - a.dx;
-    final dy = b.dy - a.dy;
-    final dist = math.sqrt(dx * dx + dy * dy);
-    if (dist == 0) return Offset(midX, midY);
-    const offset = 14.0;
-    return Offset(midX + (-dy / dist) * offset, midY + (dx / dist) * offset);
+  static void _pill(
+    Canvas canvas,
+    Rect rect,
+    String text, {
+    required TextStyle style,
+    required Color fill,
+    required Color border,
+  }) {
+    final rr = RRect.fromRectAndRadius(rect, const Radius.circular(4));
+    canvas
+      ..drawRRect(rr, Paint()..color = fill)
+      ..drawRRect(
+        rr,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 0.6
+          ..color = border,
+      );
+    final tp = TextPainter(
+      text: TextSpan(text: text, style: style),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    tp.paint(canvas, rect.center - Offset(tp.width / 2, tp.height / 2));
   }
 
   static void _drawDashedLine(Canvas canvas, Offset a, Offset b, Paint paint) {
@@ -1168,7 +1168,10 @@ class _TapHint extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: Text(context.l10n.actionUndo, style: AppTypography.mono(size: 10)),
+                child: Text(
+                  context.l10n.actionUndo,
+                  style: AppTypography.mono(size: 10),
+                ),
               ),
           ],
         ),
@@ -1253,7 +1256,10 @@ class _VertexInfo extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              child: Text(context.l10n.actionRemove, style: AppTypography.mono(size: 10)),
+              child: Text(
+                context.l10n.actionRemove,
+                style: AppTypography.mono(size: 10),
+              ),
             ),
           ],
         ),
@@ -1294,7 +1300,10 @@ class _BottomActions extends StatelessWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          context.l10n.drawSavedToast(result.name, result.tag.labelOf(context.l10n)),
+          context.l10n.drawSavedToast(
+            result.name,
+            result.tag.labelOf(context.l10n),
+          ),
         ),
       ),
     );
