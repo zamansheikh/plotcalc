@@ -450,7 +450,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String get historySearch => 'প্লট খুঁজুন…';
 
   @override
-  String get historyFilter => 'ছাঁকনি';
+  String get historyFilter => 'ফিল্টার';
 
   @override
   String historyChip(String label, int count) {
@@ -494,7 +494,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String get historyCompare2 => '২টি প্লট তুলনা করুন';
 
   @override
-  String get filterTitle => 'শ্রেণি অনুযায়ী ছাঁকুন';
+  String get filterTitle => 'শ্রেণি অনুযায়ী ফিল্টার করুন';
 
   @override
   String get filterAllPlots => 'সব প্লট';
@@ -900,7 +900,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get historyEmptyFiltered =>
-      'এই ছাঁকনিতে কোনো প্লট মেলেনি।\nমুছতে “সব” চাপুন।';
+      'এই ফিল্টারে কোনো প্লট মেলেনি।\nমুছতে “সব” চাপুন।';
 
   @override
   String get adjustAnchorN => 'উ';
