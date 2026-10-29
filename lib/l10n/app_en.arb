@@ -381,7 +381,7 @@
       }
     }
   },
-  "historySelected": "{count} SELECTED FOR COMPARE",
+  "historySelected": "{count} SELECTED",
   "@historySelected": {
     "placeholders": {
       "count": {
@@ -981,5 +981,149 @@
   "aboutGithub": "GitHub",
   "@aboutGithub": {},
   "aboutOpenLinkFailed": "Could not open the link",
-  "@aboutOpenLinkFailed": {}
+  "@aboutOpenLinkFailed": {},
+  "historyTabPlots": "Plots",
+  "@historyTabPlots": {},
+  "historyTabSheets": "Sheets",
+  "@historyTabSheets": {},
+  "historySelectHint": "LONG-PRESS PLOTS TO SELECT",
+  "@historySelectHint": {},
+  "historyCompareShort": "Compare",
+  "@historyCompareShort": {},
+  "historySum": "Sum {count} plots",
+  "@historySum": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "sheetTitle": "Land sheet",
+  "@sheetTitle": {},
+  "sheetNameTitle": "Name this sheet",
+  "@sheetNameTitle": {},
+  "sheetDefaultName": "Sheet {number}",
+  "@sheetDefaultName": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "sheetTotalLabel": "TOTAL AREA",
+  "@sheetTotalLabel": {},
+  "sheetTotalArea": "Total · {count} plots",
+  "@sheetTotalArea": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "sheetCount": "{count} plots",
+  "@sheetCount": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "sheetPriceLabel": "PRICE",
+  "@sheetPriceLabel": {},
+  "sheetPricePer": "per {unit}",
+  "@sheetPricePer": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "sheetRate": "Rate",
+  "@sheetRate": {},
+  "sheetTotalValue": "Total value",
+  "@sheetTotalValue": {},
+  "sheetPlotsHeader": "PLOTS IN THIS SHEET",
+  "@sheetPlotsHeader": {},
+  "sheetAddPlots": "Add plots",
+  "@sheetAddPlots": {},
+  "sheetAllAdded": "Every saved plot is already in this sheet.",
+  "@sheetAllAdded": {},
+  "sheetEmpty": "No plots in this sheet yet.",
+  "@sheetEmpty": {},
+  "sheetsEmpty": "No sheets yet.\nLong-press plots to select them, then tap Sum.",
+  "@sheetsEmpty": {},
+  "sheetMissing": "{count} plots in this sheet were deleted.",
+  "@sheetMissing": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "sheetDeleteTitle": "Delete sheet?",
+  "@sheetDeleteTitle": {},
+  "sheetDeleteBody": "“{name}” will be deleted. Its plots stay saved.",
+  "@sheetDeleteBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sheetColPlot": "Plot",
+  "@sheetColPlot": {},
+  "sheetColShare": "Share",
+  "@sheetColShare": {},
+  "sheetColValue": "Value",
+  "@sheetColValue": {},
+  "sheetPrepared": "Prepared {date}",
+  "@sheetPrepared": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "sheetUnitTitle": "Read this sheet in",
+  "@sheetUnitTitle": {},
+  "sheetPriceUnitTitle": "Price is quoted per",
+  "@sheetPriceUnitTitle": {},
+  "sheetPlotRemoved": "“{name}” removed from the sheet",
+  "@sheetPlotRemoved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sheetLayoutHeader": "LAYOUT",
+  "@sheetLayoutHeader": {},
+  "sheetArrange": "Arrange",
+  "@sheetArrange": {},
+  "sheetArrangeTitle": "Arrange plots",
+  "@sheetArrangeTitle": {},
+  "sheetArrangeHint": "Drag a plot to move it · pinch to zoom",
+  "@sheetArrangeHint": {},
+  "sheetTurnLeft": "Turn left",
+  "@sheetTurnLeft": {},
+  "sheetTurnRight": "Turn right",
+  "@sheetTurnRight": {},
+  "sheetFitView": "Fit to screen",
+  "@sheetFitView": {},
+  "sheetAutoArrange": "Arrange automatically",
+  "@sheetAutoArrange": {},
+  "sheetLayoutSaved": "Layout saved",
+  "@sheetLayoutSaved": {},
+  "sheetDiscardTitle": "Discard changes?",
+  "@sheetDiscardTitle": {},
+  "sheetDiscardBody": "This arrangement has not been saved.",
+  "@sheetDiscardBody": {},
+  "sheetDiscard": "Discard",
+  "@sheetDiscard": {},
+  "sheetTapToSelect": "Tap a plot to select it",
+  "@sheetTapToSelect": {}
 }

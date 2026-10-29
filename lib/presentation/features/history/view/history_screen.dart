@@ -12,11 +12,13 @@ import '../../../../core/units/area_unit.dart';
 import '../../../../domain/entities/plot.dart';
 import '../../../../domain/usecases/clear_all_plots.dart';
 import '../../../../domain/usecases/get_plots.dart';
+import '../../../../domain/usecases/get_sheets.dart';
 import '../../../shared/settings/settings_bloc.dart';
 import '../../../shared/widgets/plot_thumbnail.dart';
 import '../../../../domain/usecases/delete_plot.dart';
 import '../../../../domain/usecases/save_plot.dart';
 import '../../result/view/result_screen.dart' show ResultArgs;
+import '../../sheet/view/sheet_screen.dart' show SheetTile, createSheet;
 import '../bloc/history_bloc.dart';
 import 'filter_sheet.dart';
 import 'plot_actions_sheet.dart';
@@ -29,7 +31,8 @@ class HistoryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => HistoryBloc(sl<GetPlots>(), sl<ClearAllPlots>()),
+      create: (_) =>
+          HistoryBloc(sl<GetPlots>(), sl<ClearAllPlots>(), sl<GetSheets>()),
       child: const _HistoryView(),
     );
   }
@@ -49,20 +52,29 @@ class _HistoryView extends StatelessWidget {
             0,
             (acc, p) => acc + Geometry.polygonArea(p.vertices),
           );
+          final header = [
+            const SizedBox(height: 8),
+            _Header(count: state.plots.length, totalSqm: totalSqm),
+            _Tabs(state: state, accent: accent),
+          ];
+          if (state.tab == HistoryTab.sheets) {
+            return Column(
+              children: [
+                ...header,
+                Expanded(child: _SheetList(state: state)),
+              ],
+            );
+          }
           return Column(
             children: [
-              const SizedBox(height: 8),
-              _Header(count: state.plots.length, totalSqm: totalSqm),
+              ...header,
               _Search(query: state.query, accent: accent),
               _FilterChips(filter: state.filter, accent: accent),
               _SelectionRow(count: state.selectedIds.length, accent: accent),
               Expanded(
                 child: _List(plots: visible, state: state),
               ),
-              _CompareCta(
-                accent: accent,
-                enabled: state.selectedIds.length == 2,
-              ),
+              _SelectionActions(state: state, accent: accent),
             ],
           );
         },
@@ -222,7 +234,9 @@ class _FilterChips extends StatelessWidget {
             itemBuilder: (context, i) {
               final tag = tags[i];
               final active = tag == filter;
-              final label = tag == null ? context.l10n.labelAll : tag.labelOf(context.l10n);
+              final label = tag == null
+                  ? context.l10n.labelAll
+                  : tag.labelOf(context.l10n);
               return InkWell(
                 onTap: () =>
                     context.read<HistoryBloc>().add(HistoryFilterChanged(tag)),
@@ -267,26 +281,29 @@ class _SelectionRow extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            context.l10n.historySelected(count),
+            count == 0
+                ? context.l10n.historySelectHint
+                : context.l10n.historySelected(count),
             style: AppTypography.mono(
               size: 10,
-              color: AppColors.textFaint,
+              color: count == 0 ? AppColors.textFaint : accent,
               letterSpacing: 1.2,
             ),
           ),
-          GestureDetector(
-            onTap: () => context.read<HistoryBloc>().add(
-              const HistorySelectionCleared(),
-            ),
-            child: Text(
-              context.l10n.actionClear,
-              style: AppTypography.mono(
-                size: 10,
-                color: accent,
-                letterSpacing: 1.2,
+          if (count > 0)
+            GestureDetector(
+              onTap: () => context.read<HistoryBloc>().add(
+                const HistorySelectionCleared(),
+              ),
+              child: Text(
+                context.l10n.actionClear,
+                style: AppTypography.mono(
+                  size: 10,
+                  color: accent,
+                  letterSpacing: 1.2,
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
@@ -390,16 +407,22 @@ class _Tile extends StatelessWidget {
     final areaSqm = Geometry.polygonArea(plot.vertices);
     final unit =
         plot.preferredUnit ?? context.watch<SettingsBloc>().state.areaUnit;
+    final selecting = context.read<HistoryBloc>().state.selectedIds.isNotEmpty;
     return InkWell(
-      onTap: () => context.push(
-        AppRoutes.result,
-        extra: ResultArgs(
-          name: plot.name,
-          vertices: plot.vertices,
-          unit: plot.preferredUnit,
-          plotId: plot.id,
-        ),
-      ),
+      // While picking plots, a tap picks one more instead of opening it.
+      onTap: selecting
+          ? () => context.read<HistoryBloc>().add(
+              HistorySelectionToggled(plot.id),
+            )
+          : () => context.push(
+              AppRoutes.result,
+              extra: ResultArgs(
+                name: plot.name,
+                vertices: plot.vertices,
+                unit: plot.preferredUnit,
+                plotId: plot.id,
+              ),
+            ),
       onLongPress: () =>
           context.read<HistoryBloc>().add(HistorySelectionToggled(plot.id)),
       borderRadius: BorderRadius.circular(14),
@@ -430,8 +453,7 @@ class _Tile extends StatelessWidget {
                         color: selected ? accent : AppColors.line,
                       ),
                     ),
-                    child:
-                        PlotThumbnail(vertices: plot.vertices, color: color),
+                    child: PlotThumbnail(vertices: plot.vertices, color: color),
                   ),
                   if (selected)
                     Positioned(
@@ -444,10 +466,7 @@ class _Tile extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: accent,
                           shape: BoxShape.circle,
-                          border: Border.all(
-                            color: AppColors.ink,
-                            width: 2,
-                          ),
+                          border: Border.all(color: AppColors.ink, width: 2),
                         ),
                         child: const Icon(
                           Icons.check,
@@ -483,7 +502,10 @@ class _Tile extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        context.l10n.historyPlotMeta(plot.vertices.length, _when(context, plot.createdAt)),
+                        context.l10n.historyPlotMeta(
+                          plot.vertices.length,
+                          _when(context, plot.createdAt),
+                        ),
                         style: AppTypography.mono(
                           size: 10,
                           color: AppColors.textDim,
@@ -547,49 +569,200 @@ class _Tile extends StatelessWidget {
   }
 }
 
-class _CompareCta extends StatelessWidget {
+/// Plots | Sheets switch under the header.
+class _Tabs extends StatelessWidget {
+  final HistoryState state;
   final Color accent;
-  final bool enabled;
-  const _CompareCta({required this.accent, required this.enabled});
+  const _Tabs({required this.state, required this.accent});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
-      child: SizedBox(
-        width: double.infinity,
-        child: FilledButton(
-          onPressed: enabled ? () => context.push(AppRoutes.compare) : null,
-          style: FilledButton.styleFrom(
-            backgroundColor: accent,
-            disabledBackgroundColor: AppColors.surface,
-            foregroundColor: AppColors.ink,
-            disabledForegroundColor: AppColors.textDim,
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
+    final t = context.l10n;
+    Widget tab(HistoryTab tab, String label, int count) {
+      final active = state.tab == tab;
+      return Expanded(
+        child: InkWell(
+          onTap: () => context.read<HistoryBloc>().add(HistoryTabChanged(tab)),
+          borderRadius: BorderRadius.circular(10),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 9),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: active ? accent : Colors.transparent,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Text(
+              t.historyChip(label, count),
+              style: AppTypography.sans(
+                size: 13,
+                weight: FontWeight.w600,
+                color: active ? AppColors.ink : AppColors.textDim,
+              ),
             ),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.compare_arrows,
-                size: 16,
-                color: enabled ? AppColors.ink : AppColors.textDim,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                context.l10n.historyCompare2,
-                style: AppTypography.sans(
-                  size: 14,
-                  weight: FontWeight.w600,
-                  color: enabled ? AppColors.ink : AppColors.textDim,
-                ),
-              ),
-            ],
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+      child: Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          border: Border.all(color: AppColors.line),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(
+          children: [
+            tab(HistoryTab.plots, t.historyTabPlots, state.plots.length),
+            const SizedBox(width: 4),
+            tab(HistoryTab.sheets, t.historyTabSheets, state.sheets.length),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SheetList extends StatelessWidget {
+  final HistoryState state;
+  const _SheetList({required this.state});
+
+  @override
+  Widget build(BuildContext context) {
+    if (state.sheets.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Text(
+            context.l10n.sheetsEmpty,
+            textAlign: TextAlign.center,
+            style: AppTypography.bodyDim,
           ),
         ),
+      );
+    }
+    return ListView.separated(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+      itemCount: state.sheets.length,
+      separatorBuilder: (_, _) => const SizedBox(height: 8),
+      itemBuilder: (_, i) =>
+          SheetTile(sheet: state.sheets[i], plots: state.plots),
+    );
+  }
+}
+
+/// Compare (exactly two plots) and Sum (two or more, into a new sheet).
+class _SelectionActions extends StatelessWidget {
+  final HistoryState state;
+  final Color accent;
+  const _SelectionActions({required this.state, required this.accent});
+
+  Future<void> _sum(BuildContext context) async {
+    final bloc = context.read<HistoryBloc>();
+    final ids = [for (final p in state.selectedPlots) p.id];
+    final made = await createSheet(context, ids);
+    if (!made) return;
+    bloc
+      ..add(const HistorySelectionCleared())
+      ..add(const HistoryTabChanged(HistoryTab.sheets));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final picked = state.selectedPlots;
+    final canCompare = picked.length == 2;
+    final canSum = picked.length >= 2;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+      child: Row(
+        children: [
+          Expanded(
+            child: _ActionButton(
+              icon: Icons.compare_arrows,
+              label: context.l10n.historyCompareShort,
+              accent: accent,
+              primary: false,
+              onPressed: canCompare
+                  ? () => context.push(
+                      AppRoutes.compare,
+                      extra: [for (final p in picked) p.id],
+                    )
+                  : null,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            flex: 2,
+            child: _ActionButton(
+              icon: Icons.functions,
+              label: context.l10n.historySum(
+                picked.length < 2 ? 2 : picked.length,
+              ),
+              accent: accent,
+              primary: true,
+              onPressed: canSum ? () => _sum(context) : null,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ActionButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color accent;
+  final bool primary;
+  final VoidCallback? onPressed;
+  const _ActionButton({
+    required this.icon,
+    required this.label,
+    required this.accent,
+    required this.primary,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = onPressed != null;
+    final fg = !enabled
+        ? AppColors.textDim
+        : (primary ? AppColors.ink : AppColors.text);
+    return FilledButton(
+      onPressed: onPressed,
+      style: FilledButton.styleFrom(
+        backgroundColor: primary ? accent : AppColors.surfaceHi,
+        disabledBackgroundColor: AppColors.surface,
+        foregroundColor: fg,
+        disabledForegroundColor: AppColors.textDim,
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+          side: primary || !enabled
+              ? BorderSide.none
+              : const BorderSide(color: AppColors.lineMid),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 16, color: fg),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              label,
+              overflow: TextOverflow.ellipsis,
+              style: AppTypography.sans(
+                size: 14,
+                weight: FontWeight.w600,
+                color: fg,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

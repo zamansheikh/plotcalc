@@ -467,7 +467,7 @@ class AppLocalizationsBn extends AppLocalizations {
         intl.NumberFormat.decimalPattern(localeName);
     final String countString = countNumberFormat.format(count);
 
-    return 'তুলনার জন্য $countStringটি নির্বাচিত';
+    return '$countStringটি নির্বাচিত';
   }
 
   @override
@@ -1176,4 +1176,168 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get aboutOpenLinkFailed => 'লিংকটি খোলা যায়নি';
+
+  @override
+  String get historyTabPlots => 'প্লট';
+
+  @override
+  String get historyTabSheets => 'শিট';
+
+  @override
+  String get historySelectHint => 'বাছাই করতে প্লটে লম্বা চাপ দিন';
+
+  @override
+  String get historyCompareShort => 'তুলনা';
+
+  @override
+  String historySum(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countStringটি প্লট যোগ';
+  }
+
+  @override
+  String get sheetTitle => 'জমির শিট';
+
+  @override
+  String get sheetNameTitle => 'শিটের নাম দিন';
+
+  @override
+  String sheetDefaultName(String number) {
+    return 'শিট $number';
+  }
+
+  @override
+  String get sheetTotalLabel => 'মোট জমি';
+
+  @override
+  String sheetTotalArea(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'মোট · $countStringটি প্লট';
+  }
+
+  @override
+  String sheetCount(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countStringটি প্লট';
+  }
+
+  @override
+  String get sheetPriceLabel => 'দর';
+
+  @override
+  String sheetPricePer(String unit) {
+    return 'প্রতি $unit';
+  }
+
+  @override
+  String get sheetRate => 'দর';
+
+  @override
+  String get sheetTotalValue => 'মোট মূল্য';
+
+  @override
+  String get sheetPlotsHeader => 'এই শিটের প্লট';
+
+  @override
+  String get sheetAddPlots => 'প্লট যোগ করুন';
+
+  @override
+  String get sheetAllAdded => 'সব প্লট ইতিমধ্যে এই শিটে আছে।';
+
+  @override
+  String get sheetEmpty => 'এই শিটে এখনো কোনো প্লট নেই।';
+
+  @override
+  String get sheetsEmpty =>
+      'এখনো কোনো শিট নেই।\nপ্লটে লম্বা চাপ দিয়ে বাছাই করুন, তারপর ‘যোগ’ চাপুন।';
+
+  @override
+  String sheetMissing(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'এই শিটের $countStringটি প্লট মুছে ফেলা হয়েছে।';
+  }
+
+  @override
+  String get sheetDeleteTitle => 'শিট মুছবেন?';
+
+  @override
+  String sheetDeleteBody(String name) {
+    return '“$name” মুছে যাবে। প্লটগুলো সংরক্ষিত থাকবে।';
+  }
+
+  @override
+  String get sheetColPlot => 'প্লট';
+
+  @override
+  String get sheetColShare => 'অংশ';
+
+  @override
+  String get sheetColValue => 'মূল্য';
+
+  @override
+  String sheetPrepared(String date) {
+    return 'তৈরি: $date';
+  }
+
+  @override
+  String get sheetUnitTitle => 'শিটটি কোন এককে দেখাবে';
+
+  @override
+  String get sheetPriceUnitTitle => 'দর কোন এককে';
+
+  @override
+  String sheetPlotRemoved(String name) {
+    return '“$name” শিট থেকে সরানো হয়েছে';
+  }
+
+  @override
+  String get sheetLayoutHeader => 'নকশা';
+
+  @override
+  String get sheetArrange => 'সাজান';
+
+  @override
+  String get sheetArrangeTitle => 'প্লট সাজান';
+
+  @override
+  String get sheetArrangeHint => 'প্লট টেনে সরান · দুই আঙুলে জুম';
+
+  @override
+  String get sheetTurnLeft => 'বামে ঘোরান';
+
+  @override
+  String get sheetTurnRight => 'ডানে ঘোরান';
+
+  @override
+  String get sheetFitView => 'পুরোটা দেখুন';
+
+  @override
+  String get sheetAutoArrange => 'নিজে থেকে সাজান';
+
+  @override
+  String get sheetLayoutSaved => 'নকশা সংরক্ষিত হয়েছে';
+
+  @override
+  String get sheetDiscardTitle => 'পরিবর্তন বাদ দেবেন?';
+
+  @override
+  String get sheetDiscardBody => 'এই সাজানো নকশা সংরক্ষণ করা হয়নি।';
+
+  @override
+  String get sheetDiscard => 'বাদ দিন';
+
+  @override
+  String get sheetTapToSelect => 'বাছতে একটি প্লটে চাপ দিন';
 }

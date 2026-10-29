@@ -274,6 +274,7 @@ Future<String?> showRenameDialog(
   BuildContext context, {
   required String currentName,
   required Color accent,
+  String? title,
 }) {
   final controller = TextEditingController(text: currentName);
   return showDialog<String>(
@@ -284,7 +285,7 @@ Future<String?> showRenameDialog(
         borderRadius: BorderRadius.circular(18),
       ),
       title: Text(
-        context.l10n.plotRenameTitle,
+        title ?? context.l10n.plotRenameTitle,
         style: AppTypography.sans(size: 16, weight: FontWeight.w600),
       ),
       content: Container(

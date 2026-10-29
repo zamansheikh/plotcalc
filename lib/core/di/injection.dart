@@ -2,11 +2,16 @@ import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../data/repositories/plot_repository_impl.dart';
+import '../../data/repositories/sheet_repository_impl.dart';
 import '../../domain/repositories/plot_repository.dart';
+import '../../domain/repositories/sheet_repository.dart';
 import '../../domain/usecases/clear_all_plots.dart';
 import '../../domain/usecases/delete_plot.dart';
+import '../../domain/usecases/delete_sheet.dart';
 import '../../domain/usecases/get_plots.dart';
+import '../../domain/usecases/get_sheets.dart';
 import '../../domain/usecases/save_plot.dart';
+import '../../domain/usecases/save_sheet.dart';
 
 final GetIt sl = GetIt.instance;
 
@@ -25,6 +30,11 @@ Future<void> configureDependencies() async {
   sl.registerFactory<SavePlot>(() => SavePlot(sl()));
   sl.registerFactory<DeletePlot>(() => DeletePlot(sl()));
   sl.registerFactory<ClearAllPlots>(() => ClearAllPlots(sl()));
+
+  sl.registerSingleton<SheetRepository>(SheetRepositoryImpl(prefs));
+  sl.registerFactory<GetSheets>(() => GetSheets(sl()));
+  sl.registerFactory<SaveSheet>(() => SaveSheet(sl()));
+  sl.registerFactory<DeleteSheet>(() => DeleteSheet(sl()));
 }
 
 /// Removes demo plots (id prefix `seed-`) left over from earlier builds.

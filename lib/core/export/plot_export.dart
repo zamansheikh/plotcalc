@@ -6,8 +6,12 @@ import 'package:printing/printing.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../l10n/l10n.dart';
+import '../geometry/sheet_layout.dart';
+import '../units/length_unit.dart';
 import 'plot_pdf.dart';
 import 'plot_summary.dart';
+import 'sheet_pdf.dart';
+import 'sheet_summary.dart';
 
 /// The three ways a measurement leaves the app: clipboard, share sheet, PDF.
 ///
@@ -89,12 +93,38 @@ class PlotExport {
     return file.path;
   }
 
+  /// Opens the share sheet with a sheet's plots and totals as text.
+  static Future<void> shareSheet(SheetSummary sheet, AppLocalizations t) {
+    return SharePlus.instance.share(
+      ShareParams(text: sheet.asText(t), subject: sheet.name),
+    );
+  }
+
+  /// Builds the sheet PDF and hands it to the platform's print/share dialog.
+  static Future<void> shareSheetPdf(
+    SheetSummary sheet,
+    AppLocalizations t, {
+    Map<String, PlotPlacement> layout = const {},
+    LengthUnit lengthUnit = LengthUnit.ft,
+  }) async {
+    final bytes = await SheetPdf.build(
+      sheet,
+      t,
+      layout: layout,
+      lengthUnit: lengthUnit,
+    );
+    await Printing.sharePdf(
+      bytes: bytes,
+      filename: '${_slug(sheet.name, fallback: 'sheet')}.pdf',
+    );
+  }
+
   /// Filenames reach other apps and filesystems, so keep them boring.
-  static String _slug(String name) {
+  static String _slug(String name, {String fallback = 'plot'}) {
     final s = name
         .toLowerCase()
         .replaceAll(RegExp(r'[^a-z0-9]+'), '-')
         .replaceAll(RegExp(r'^-+|-+$'), '');
-    return s.isEmpty ? 'plot' : s;
+    return s.isEmpty ? fallback : s;
   }
 }

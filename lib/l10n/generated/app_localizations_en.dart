@@ -467,7 +467,7 @@ class AppLocalizationsEn extends AppLocalizations {
         intl.NumberFormat.decimalPattern(localeName);
     final String countString = countNumberFormat.format(count);
 
-    return '$countString SELECTED FOR COMPARE';
+    return '$countString SELECTED';
   }
 
   @override
@@ -1179,4 +1179,168 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aboutOpenLinkFailed => 'Could not open the link';
+
+  @override
+  String get historyTabPlots => 'Plots';
+
+  @override
+  String get historyTabSheets => 'Sheets';
+
+  @override
+  String get historySelectHint => 'LONG-PRESS PLOTS TO SELECT';
+
+  @override
+  String get historyCompareShort => 'Compare';
+
+  @override
+  String historySum(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'Sum $countString plots';
+  }
+
+  @override
+  String get sheetTitle => 'Land sheet';
+
+  @override
+  String get sheetNameTitle => 'Name this sheet';
+
+  @override
+  String sheetDefaultName(String number) {
+    return 'Sheet $number';
+  }
+
+  @override
+  String get sheetTotalLabel => 'TOTAL AREA';
+
+  @override
+  String sheetTotalArea(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'Total · $countString plots';
+  }
+
+  @override
+  String sheetCount(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString plots';
+  }
+
+  @override
+  String get sheetPriceLabel => 'PRICE';
+
+  @override
+  String sheetPricePer(String unit) {
+    return 'per $unit';
+  }
+
+  @override
+  String get sheetRate => 'Rate';
+
+  @override
+  String get sheetTotalValue => 'Total value';
+
+  @override
+  String get sheetPlotsHeader => 'PLOTS IN THIS SHEET';
+
+  @override
+  String get sheetAddPlots => 'Add plots';
+
+  @override
+  String get sheetAllAdded => 'Every saved plot is already in this sheet.';
+
+  @override
+  String get sheetEmpty => 'No plots in this sheet yet.';
+
+  @override
+  String get sheetsEmpty =>
+      'No sheets yet.\nLong-press plots to select them, then tap Sum.';
+
+  @override
+  String sheetMissing(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString plots in this sheet were deleted.';
+  }
+
+  @override
+  String get sheetDeleteTitle => 'Delete sheet?';
+
+  @override
+  String sheetDeleteBody(String name) {
+    return '“$name” will be deleted. Its plots stay saved.';
+  }
+
+  @override
+  String get sheetColPlot => 'Plot';
+
+  @override
+  String get sheetColShare => 'Share';
+
+  @override
+  String get sheetColValue => 'Value';
+
+  @override
+  String sheetPrepared(String date) {
+    return 'Prepared $date';
+  }
+
+  @override
+  String get sheetUnitTitle => 'Read this sheet in';
+
+  @override
+  String get sheetPriceUnitTitle => 'Price is quoted per';
+
+  @override
+  String sheetPlotRemoved(String name) {
+    return '“$name” removed from the sheet';
+  }
+
+  @override
+  String get sheetLayoutHeader => 'LAYOUT';
+
+  @override
+  String get sheetArrange => 'Arrange';
+
+  @override
+  String get sheetArrangeTitle => 'Arrange plots';
+
+  @override
+  String get sheetArrangeHint => 'Drag a plot to move it · pinch to zoom';
+
+  @override
+  String get sheetTurnLeft => 'Turn left';
+
+  @override
+  String get sheetTurnRight => 'Turn right';
+
+  @override
+  String get sheetFitView => 'Fit to screen';
+
+  @override
+  String get sheetAutoArrange => 'Arrange automatically';
+
+  @override
+  String get sheetLayoutSaved => 'Layout saved';
+
+  @override
+  String get sheetDiscardTitle => 'Discard changes?';
+
+  @override
+  String get sheetDiscardBody => 'This arrangement has not been saved.';
+
+  @override
+  String get sheetDiscard => 'Discard';
+
+  @override
+  String get sheetTapToSelect => 'Tap a plot to select it';
 }
