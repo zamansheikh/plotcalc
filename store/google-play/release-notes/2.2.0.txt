@@ -1,0 +1,18 @@
+<bn-BD>
+নতুন সংস্করণ ২.২.০
+• মৌজা ম্যাপ: ম্যাপের ছবি থেকেই দাগের মাপ — স্কেল দিন, কোণায় চাপ দিন
+• প্যান্টোগ্রাফ: CS আর RS ম্যাপ মিলিয়ে দেখুন কোন দাগের কতটুকু মিলেছে
+• বিভাজন: ওয়ারিশদের নাম আর অংশ (আনা, ভগ্নাংশ, শতাংশ) দিয়ে জমি ভাগ, রাস্তা রেখে; চৌহদ্দিসহ বণ্টননামা পিডিএফে
+• জমির শিট: কয়েকটি দাগ এক শিটে, দর দিলে মোট দাম; নকশায় সাজানো যায়
+• নকশায় বাহুর মাপ এখন আরও পরিষ্কার, একটির উপর আরেকটি পড়ে না
+• তুলনা খুলতে গেলে বন্ধ হয়ে যাওয়ার সমস্যা ঠিক করা হয়েছে
+</bn-BD>
+<en-US>
+New in 2.2.0
+• Mouza map: measure a plot from a photo of the map — set the scale, tap the corners
+• Pantograph: lay CS and RS maps over each other and see how much of each plot matches
+• Division: split land among heirs by name and share (ana, fraction, %), keep a road, get the boundaries and a PDF
+• Land sheets: total area and value of several plots, arranged on a canvas
+• Side lengths on drawings are clearer and never overlap
+• Fixed: Compare closed on open
+</en-US>
