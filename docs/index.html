@@ -1,760 +1,610 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="PlotCalc - Professional Land Measurement Calculator. Calculate land area with precision for surveying, real estate, farming, and more.">
-    <meta name="keywords" content="land calculator, area measurement, surveyor, real estate, farming, geometry calculator">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#0D1108">
+    <title>প্লটক্যালক — জমির মাপ, মৌজা ম্যাপ আর বণ্টন | PlotCalc</title>
+    <meta name="description" content="প্লটক্যালক: বাহুর মাপ থেকে শতক, বিঘা, কাঠা, ছটাক; মৌজা ম্যাপের ছবি থেকে দাগের মাপ; CS আর RS মিলিয়ে দেখা (প্যান্টোগ্রাফ); ওয়ারিশদের মধ্যে রাস্তা রেখে জমি ভাগ, চৌহদ্দিসহ বণ্টননামা। PlotCalc is an offline land measurement app for Bangladesh.">
+    <meta name="keywords" content="জমির মাপ, শতক, বিঘা, কাঠা, মৌজা ম্যাপ, প্যান্টোগ্রাফ, বণ্টননামা, চৌহদ্দি, land calculator Bangladesh, PlotCalc">
     <meta name="author" content="Md. Shamsuzzaman - Programmer Nexus">
-    <meta property="og:title" content="PlotCalc - Land Area Calculator">
-    <meta property="og:description" content="Calculate land area with precision. Professional measurement calculator for surveyors, real estate, and farmers.">
-    <meta property="og:image" content="https://raw.githubusercontent.com/zamansheikh/plotcalc/main/assets/icon/icon.png">
-    <meta property="og:url" content="https://github.com/zamansheikh/plotcalc">
-    <title>PlotCalc - Professional Land Area Calculator</title>
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="প্লটক্যালক — জমির মাপ, মৌজা ম্যাপ আর বণ্টন, এক অ্যাপে">
+    <meta property="og:description" content="শতক, বিঘা, কাঠার হিসাব, মৌজা ম্যাপ থেকে দাগের মাপ, CS ↔ RS প্যান্টোগ্রাফ আর ওয়ারিশদের মধ্যে জমি ভাগ। অফলাইনে চলে।">
+    <meta property="og:image" content="https://zamansheikh.github.io/plotcalc/media/og.jpg">
+    <meta property="og:image:width" content="1024">
+    <meta property="og:image:height" content="500">
+    <meta property="og:url" content="https://zamansheikh.github.io/plotcalc/">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" href="media/icon.webp">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@600;700;800&family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --ink: #0D1108;
+            --ink-deep: #080B05;
+            --surface: #151A10;
+            --surface-hi: #1D2316;
+            --line: rgba(200, 255, 90, .12);
+            --line-mid: rgba(200, 255, 90, .22);
+            --lime: #C8FF5A;
+            --lime-soft: rgba(200, 255, 90, .10);
+            --soil: #D4A574;
+            --text: #F4F1EA;
+            --text-dim: rgba(244, 241, 234, .70);
+            --text-faint: rgba(244, 241, 234, .45);
+            --sans: 'Hind Siliguri', 'Inter', system-ui, sans-serif;
+            --display: 'Baloo Da 2', 'Hind Siliguri', system-ui, sans-serif;
+            --latin: 'Inter', system-ui, sans-serif;
         }
 
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: var(--sans);
+            font-size: 18px;
             line-height: 1.6;
-            color: #333;
-            background: #f8f9fa;
+            color: var(--text);
+            background: var(--ink);
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+        img, video { max-width: 100%; display: block; }
+        a { color: var(--lime); }
+
+        /* The survey grid the app draws plots on. */
+        .grid-bg { position: relative; isolation: isolate; }
+        .grid-bg::before {
+            content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+            background-image:
+                linear-gradient(rgba(200,255,90,.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(200,255,90,.08) 1px, transparent 1px),
+                linear-gradient(rgba(200,255,90,.035) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(200,255,90,.035) 1px, transparent 1px);
+            background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px;
+            mask-image: radial-gradient(80% 70% at 30% 25%, #000 0%, transparent 80%);
+            -webkit-mask-image: radial-gradient(80% 70% at 30% 25%, #000 0%, transparent 80%);
         }
 
-        /* Header & Navigation */
+        .wrap { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
+
+        /* Header */
         header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 1rem 0;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky; top: 0; z-index: 50;
+            background: rgba(13, 17, 8, .82);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--line);
         }
-
-        nav {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 1.8rem;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .logo img {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-        }
-
-        nav ul {
-            display: flex;
-            list-style: none;
-            gap: 2rem;
-        }
-
-        nav a {
-            color: white;
-            text-decoration: none;
-            transition: opacity 0.3s;
-            font-weight: 500;
-        }
-
-        nav a:hover {
-            opacity: 0.8;
-        }
-
-        /* Hero Section */
-        .hero {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 6rem 2rem;
-            text-align: center;
-        }
-
-        .hero-content {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .hero-icon {
-            width: 120px;
-            height: 120px;
-            margin: 0 auto 2rem;
-            border-radius: 50%;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-
-        .hero-icon img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .hero h1 {
-            font-size: 3.5rem;
-            margin-bottom: 1rem;
-            font-weight: 700;
-        }
-
-        .hero p {
-            font-size: 1.3rem;
-            margin-bottom: 2rem;
-            opacity: 0.95;
-        }
-
-        .cta-buttons {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
+        nav { display: flex; align-items: center; justify-content: space-between; gap: 16px; height: 68px; }
+        .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text); }
+        .brand img { width: 40px; height: 40px; border-radius: 10px; }
+        .brand b { font-family: var(--latin); font-weight: 800; font-size: 20px; letter-spacing: -.01em; display: block; line-height: 1.1; }
+        .brand small { font-size: 13px; color: var(--lime); font-weight: 600; display: block; line-height: 1.2; }
+        nav ul { display: flex; gap: 26px; list-style: none; }
+        nav ul a { color: var(--text-dim); text-decoration: none; font-weight: 500; font-size: 16px; transition: color .2s; }
+        nav ul a:hover { color: var(--lime); }
 
         .btn {
-            padding: 0.8rem 2rem;
-            border: none;
-            border-radius: 50px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-decoration: none;
-            display: inline-block;
-            font-weight: 600;
+            display: inline-flex; align-items: center; gap: 10px;
+            padding: 12px 24px; border-radius: 999px;
+            font-family: var(--sans); font-weight: 700; font-size: 17px;
+            text-decoration: none; transition: transform .2s, box-shadow .2s, background .2s;
+            white-space: nowrap;
         }
+        .btn svg { width: 20px; height: 20px; flex: none; }
+        .btn-lime { background: var(--lime); color: var(--ink); box-shadow: 0 10px 30px -10px rgba(200,255,90,.55); }
+        .btn-lime:hover { transform: translateY(-2px); box-shadow: 0 16px 36px -12px rgba(200,255,90,.7); }
+        .btn-ghost { color: var(--text); border: 1.5px solid var(--line-mid); background: rgba(255,255,255,.02); }
+        .btn-ghost:hover { border-color: var(--lime); color: var(--lime); }
+        .btn-sm { padding: 9px 18px; font-size: 15px; }
 
-        .btn-primary {
-            background: white;
-            color: #667eea;
+        .chip {
+            display: inline-flex; align-items: center; gap: 10px;
+            padding: 6px 16px 6px 12px; border-radius: 999px;
+            background: var(--lime-soft); border: 1px solid rgba(200,255,90,.35);
+            color: var(--lime); font-weight: 600; font-size: 15px;
         }
+        .chip i { width: 9px; height: 9px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 0 4px rgba(200,255,90,.18); }
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        }
+        h1, h2, h3 { font-family: var(--display); font-weight: 800; line-height: 1.22; letter-spacing: 0; }
+        h1 em, h2 em, h3 em { font-style: normal; color: var(--lime); display: block; }
 
-        .btn-secondary {
-            background: transparent;
-            color: white;
-            border: 2px solid white;
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255,255,255,0.1);
-            transform: translateY(-2px);
-        }
-
-        /* Features Section */
-        .features {
-            max-width: 1200px;
-            margin: -3rem auto 3rem;
-            padding: 0 2rem;
-            position: relative;
-            z-index: 10;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-        }
-
-        .feature-card {
-            background: white;
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            text-align: center;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
-        }
-
-        .feature-icon {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .feature-card h3 {
-            color: #667eea;
-            margin-bottom: 0.5rem;
-        }
-
-        /* Section Styling */
-        section {
-            padding: 4rem 2rem;
-        }
-
-        section.light {
-            background: white;
-        }
-
-        section.dark {
-            background: #f8f9fa;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        h2 {
-            font-size: 2.5rem;
-            margin-bottom: 2rem;
-            color: #333;
-            text-align: center;
-        }
-
-        /* Screenshots Section */
-        .screenshots-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin-top: 2rem;
-        }
-
-        .screenshot-item {
-            position: relative;
-            border-radius: 20px;
+        /* Hero */
+        .hero {
+            background:
+                radial-gradient(60% 55% at 15% 0%, rgba(200,255,90,.18) 0%, rgba(200,255,90,0) 70%),
+                radial-gradient(50% 50% at 100% 100%, rgba(212,165,116,.12) 0%, rgba(212,165,116,0) 70%),
+                linear-gradient(170deg, #161D0E 0%, var(--ink) 60%);
+            padding: 72px 0 40px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .hero .wrap { display: grid; grid-template-columns: 1.05fr .95fr; gap: 40px; align-items: center; }
+        .hero h1 { font-size: clamp(32px, 4.1vw, 50px); margin: 22px 0 18px; }
+        .hero .wrap.stats-wrap { display: block; }
+        .hero p.lead { color: var(--text-dim); font-size: 19px; max-width: 560px; }
+        .hero .en { font-family: var(--latin); color: var(--text-faint); font-size: 14px; margin-top: 14px; }
+        .cta { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 30px; }
+        .hero-phones { position: relative; height: 600px; }
+        .hero-phones .phone:nth-child(1) { left: 2%; top: 60px; width: 52%; transform: rotate(-6deg); }
+        .hero-phones .phone:nth-child(2) { right: 2%; top: 0; width: 56%; transform: rotate(5deg); }
+
+        .stats {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+            margin-top: 48px;
+        }
+        .stat { background: rgba(21,26,16,.75); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; }
+        .stat b { display: block; font-family: var(--display); font-size: 30px; color: var(--lime); line-height: 1.1; }
+        .stat span { color: var(--text-dim); font-size: 15px; }
+
+        /* Phone mockup (as in the store screenshots) */
+        .phone {
+            position: absolute; background: #050704; padding: 2.4%;
+            border-radius: 13% / 6%;
+            box-shadow: 0 50px 90px -30px rgba(0,0,0,.9), 0 0 0 1.5px rgba(200,255,90,.16), inset 0 0 0 2px rgba(255,255,255,.07);
+        }
+        .phone .screen { position: relative; overflow: hidden; border-radius: 11% / 5.2%; background: var(--ink); }
+        .phone .status {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 3.2% 7% 1.2%; font-family: var(--latin); font-weight: 600; font-size: 11px; color: var(--text);
+        }
+        .phone .status svg { height: 10px; width: auto; }
+        .phone .status span:last-child { display: flex; gap: 5px; }
+        .phone img { width: 100%; height: auto; }
+
+        /* Sections */
+        section { padding: 96px 0; }
+        .section-head { text-align: center; max-width: 720px; margin: 0 auto 56px; }
+        .section-head h2 { font-size: clamp(30px, 4vw, 44px); margin-top: 16px; }
+        .section-head p { color: var(--text-dim); margin-top: 12px; }
+
+        /* Feature rows */
+        .feature {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center;
+            padding: 40px 0;
+        }
+        .feature + .feature { border-top: 1px solid var(--line); }
+        .feature.flip .copy { order: 2; }
+        .feature h3 { font-size: clamp(28px, 3.4vw, 40px); margin: 16px 0 12px; }
+        .feature p { color: var(--text-dim); font-size: 18px; max-width: 480px; }
+        .feature ul { list-style: none; margin-top: 18px; display: grid; gap: 8px; }
+        .feature li { display: flex; gap: 10px; color: var(--text-dim); font-size: 16px; }
+        .feature li::before { content: ''; flex: none; width: 8px; height: 8px; margin-top: 10px; border-radius: 2px; background: var(--lime); transform: rotate(45deg); }
+        .shots { position: relative; height: 560px; }
+        .shots .phone { width: 270px; left: 50%; top: 10px; transform: translateX(-50%); }
+        .shots.two .phone:nth-child(1) { left: 22%; top: 30px; transform: translateX(-50%) rotate(-5deg); width: 250px; }
+        .shots.two .phone:nth-child(2) { left: 70%; top: 0; transform: translateX(-50%) rotate(5deg); width: 250px; }
+        .shots::before {
+            content: ''; position: absolute; left: 10%; right: 10%; top: 12%; bottom: 8%;
+            background: radial-gradient(closest-side, rgba(200,255,90,.14), transparent);
+            filter: blur(10px);
         }
 
-        .screenshot-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        /* Video */
+        .video { background: var(--surface); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+        .player {
+            max-width: 960px; margin: 0 auto; border-radius: 20px; overflow: hidden;
+            border: 1px solid var(--line-mid); box-shadow: 0 40px 80px -30px rgba(0,0,0,.8);
+            background: #000; aspect-ratio: 16 / 9;
         }
+        .player iframe, .player .yt { display: block; width: 100%; height: 100%; border: 0; }
+        .player .yt { position: relative; }
+        .player .yt img { width: 100%; height: 100%; object-fit: cover; }
+        .yt-play {
+            position: absolute; left: 50%; bottom: 9%; transform: translateX(-50%);
+            width: 76px; height: 76px; border-radius: 50%; display: grid; place-items: center;
+            background: var(--lime); color: var(--ink);
+            box-shadow: 0 0 0 10px rgba(200,255,90,.18), 0 20px 40px -10px rgba(0,0,0,.8);
+            transition: transform .2s;
+        }
+        .yt-play svg { width: 34px; height: 34px; margin-left: 4px; }
+        .yt:hover .yt-play { transform: translateX(-50%) scale(1.06); }
+        @media (max-width: 560px) { .yt-play { width: 52px; height: 52px; bottom: 6%; } .yt-play svg { width: 24px; height: 24px; } }
 
-        .screenshot-item img {
-            width: 100%;
-            height: auto;
-            display: block;
+        /* Play screenshots strip */
+        .strip {
+            display: grid; grid-auto-flow: column; grid-auto-columns: 250px; gap: 18px;
+            overflow-x: auto; scroll-snap-type: x mandatory; padding: 4px 24px 20px;
+            max-width: 1160px; margin: 0 auto;
+            scrollbar-color: var(--line-mid) transparent;
         }
+        .strip img { width: 250px; height: auto; border-radius: 16px; scroll-snap-align: start; border: 1px solid var(--line); }
 
-        .screenshot-label {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
-            color: white;
-            padding: 1rem;
-            text-align: center;
-            font-weight: 600;
+        /* More tools, units */
+        .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+        .card {
+            background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 24px;
         }
+        .card h4 { font-family: var(--display); font-size: 22px; font-weight: 700; margin: 12px 0 6px; }
+        .card p { color: var(--text-dim); font-size: 16px; }
+        .card .ico {
+            width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center;
+            background: var(--lime-soft); border: 1px solid rgba(200,255,90,.3); color: var(--lime);
+        }
+        .card .ico svg { width: 22px; height: 22px; }
+        .units { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 8px; }
+        .units span {
+            padding: 10px 18px; border-radius: 12px; background: var(--surface-hi);
+            border: 1px solid var(--line); font-weight: 600; font-size: 17px;
+        }
+        .units span small { color: var(--text-faint); font-weight: 500; font-size: 13px; margin-left: 6px; font-family: var(--latin); }
 
-        /* Shapes Support */
-        .shapes-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
+        /* Privacy */
+        .privacy {
+            display: grid; grid-template-columns: auto 1fr; gap: 28px; align-items: center;
+            background: linear-gradient(135deg, rgba(200,255,90,.08), rgba(200,255,90,.02));
+            border: 1px solid rgba(200,255,90,.28); border-radius: 24px; padding: 36px;
         }
+        .privacy .shield { width: 72px; height: 72px; color: var(--lime); }
+        .privacy h3 { font-size: 30px; }
+        .privacy p { color: var(--text-dim); margin-top: 8px; }
 
-        .shape-item {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 1.5rem;
-            border-radius: 8px;
-            text-align: center;
-            font-weight: 600;
-            font-size: 1.1rem;
-        }
-
-        /* Units Support */
-        .units-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
-        }
-
-        .unit-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 8px;
-            border: 2px solid #667eea;
-            text-align: center;
-        }
-
-        .unit-card h4 {
-            color: #667eea;
-            margin-bottom: 0.5rem;
-        }
-
-        /* Use Cases */
-        .use-cases {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
-        }
-
-        .use-case {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 8px;
-            border-left: 4px solid #667eea;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
-        }
-
-        .use-case h4 {
-            color: #667eea;
-            margin-bottom: 0.5rem;
-        }
+        /* Download band */
+        .download { text-align: center; }
+        .download img.icon { width: 104px; height: 104px; border-radius: 24px; margin: 0 auto 22px; box-shadow: 0 20px 50px -18px rgba(0,0,0,.9), 0 0 0 2px rgba(200,255,90,.25); }
+        .download h2 { font-size: clamp(30px, 4.4vw, 48px); }
+        .download .cta { justify-content: center; }
 
         /* Footer */
-        footer {
-            background: #333;
-            color: white;
-            padding: 3rem 2rem 1rem;
-        }
-
-        .footer-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin-bottom: 2rem;
-        }
-
-        .footer-section h4 {
-            margin-bottom: 1rem;
-            color: #667eea;
-        }
-
-        .footer-section ul {
-            list-style: none;
-        }
-
-        .footer-section li {
-            margin-bottom: 0.5rem;
-        }
-
-        .footer-section a {
-            color: #ccc;
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-
-        .footer-section a:hover {
-            color: #667eea;
-        }
-
-        .footer-bottom {
-            border-top: 1px solid #555;
-            padding-top: 1.5rem;
-            text-align: center;
-            color: #999;
-            font-size: 0.9rem;
-        }
+        footer { border-top: 1px solid var(--line); padding: 48px 0 32px; background: var(--ink-deep); }
+        .foot { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 28px; }
+        .foot h5 { font-family: var(--sans); font-size: 15px; font-weight: 700; color: var(--lime); margin-bottom: 10px; }
+        .foot p, .foot li { color: var(--text-dim); font-size: 15px; }
+        .foot ul { list-style: none; display: grid; gap: 6px; }
+        .foot a { color: var(--text-dim); text-decoration: none; }
+        .foot a:hover { color: var(--lime); }
+        .copy-line { margin-top: 36px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--text-faint); font-size: 14px; text-align: center; }
 
         /* Responsive */
-        @media (max-width: 768px) {
-            .hero h1 {
-                font-size: 2rem;
-            }
-
-            .hero p {
-                font-size: 1rem;
-            }
-
-            nav ul {
-                gap: 1rem;
-                font-size: 0.9rem;
-            }
-
-            h2 {
-                font-size: 1.8rem;
-            }
-
-            .cta-buttons {
-                flex-direction: column;
-            }
-
-            .hero-icon {
-                width: 80px;
-                height: 80px;
-            }
-
-            .screenshots-grid {
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            }
+        @media (max-width: 900px) {
+            nav ul { display: none; }
+            .hero { padding-top: 48px; }
+            .hero .wrap { grid-template-columns: 1fr; }
+            .hero-phones { height: 520px; max-width: 460px; margin: 0 auto; width: 100%; }
+            .stats { grid-template-columns: repeat(2, 1fr); }
+            .feature, .feature.flip { grid-template-columns: 1fr; gap: 24px; }
+            .feature.flip .copy { order: 0; }
+            .cards { grid-template-columns: 1fr 1fr; }
+            .foot { grid-template-columns: 1fr 1fr; }
         }
-
-        /* Highlight */
-        .highlight {
-            color: #667eea;
-            font-weight: 600;
-        }
-
-        /* Stats */
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 1rem;
-            margin: 2rem 0;
-        }
-
-        .stat {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 8px;
-            text-align: center;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
-        }
-
-        .stat-number {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #667eea;
-        }
-
-        .stat-label {
-            color: #666;
-            font-size: 0.9rem;
-        }
-
-        /* Privacy Badge */
-        .privacy-badge {
-            background: #e8f5e9;
-            border: 2px solid #4caf50;
-            padding: 1rem;
-            border-radius: 8px;
-            text-align: center;
-            color: #2e7d32;
-            margin: 2rem 0;
+        @media (max-width: 560px) {
+            body { font-size: 17px; }
+            .wrap { padding: 0 16px; }
+            section { padding: 64px 0; }
+            .hero-phones { height: 430px; }
+            .shots { height: 470px; }
+            .shots .phone { width: 225px; }
+            .shots.two .phone:nth-child(1), .shots.two .phone:nth-child(2) { width: 190px; }
+            .shots.two .phone:nth-child(1) { left: 30%; }
+            .shots.two .phone:nth-child(2) { left: 70%; }
+            .cards { grid-template-columns: 1fr; }
+            .privacy { grid-template-columns: 1fr; padding: 26px; }
+            .foot { grid-template-columns: 1fr; }
+            .btn { font-size: 16px; padding: 12px 20px; }
+            .strip { padding: 4px 16px 20px; grid-auto-columns: 210px; }
+            .strip img { width: 210px; }
         }
     </style>
 </head>
 <body>
-    <!-- Header -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+        <symbol id="status" viewBox="0 0 74 16"><path fill="currentColor" d="M1 15h3v-4H1zM6 15h3V8H6zM11 15h3V4h-3zM16 15h3V0h-3z"/><path fill="currentColor" d="M37 16 48 4.6A15.6 15.6 0 0 0 37 0 15.6 15.6 0 0 0 26 4.6z"/><rect x="45" y="1" width="24" height="14" rx="3.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="48" y="4" width="16" height="8" rx="1.5" fill="currentColor"/><rect x="70.5" y="5" width="2.5" height="6" rx="1" fill="currentColor"/></symbol>
+        <symbol id="play" viewBox="0 0 24 24"><path fill="currentColor" d="M4.2 2.3c-.3.3-.5.8-.5 1.4v16.6c0 .6.2 1.1.5 1.4l.1.1 9.3-9.3v-.2L4.3 2.2zM16.7 15.6l-3.1-3.1v-.2l3.1-3.1.1.1 3.7 2.1c1 .6 1 1.6 0 2.2l-3.7 2.1zM16.8 15.5 13.6 12.3 4.2 21.7c.4.4.9.4 1.6.1l11-6.3M16.8 9.1 5.8 2.8c-.7-.4-1.2-.3-1.6.1l9.4 9.4z"/></symbol>
+    </svg>
+
     <header>
-        <nav>
-            <div class="logo">
-                <img src="icon.png" alt="PlotCalc Logo">
-                PlotCalc
-            </div>
+        <nav class="wrap">
+            <a class="brand" href="#">
+                <img src="media/icon.webp" alt="" width="40" height="40">
+                <span><b>PlotCalc</b><small>প্লটক্যালক</small></span>
+            </a>
             <ul>
-                <li><a href="#features">Features</a></li>
-                <li><a href="#screenshots">Screenshots</a></li>
-                <li><a href="#shapes">Shapes</a></li>
-                <li><a href="#units">Units</a></li>
-                <li><a href="#contact">Contact</a></li>
-                <li><a href="privacy.html">Privacy</a></li>
+                <li><a href="#features">বৈশিষ্ট্য</a></li>
+                <li><a href="#video">ভিডিও</a></li>
+                <li><a href="#screens">স্ক্রিনশট</a></li>
+                <li><a href="#units">একক</a></li>
+                <li><a href="privacy.html">গোপনীয়তা</a></li>
             </ul>
+            <a class="btn btn-lime btn-sm" href="https://play.google.com/store/apps/details?id=com.programmernexus.plotcalc">
+                <svg><use href="#play"/></svg>ডাউনলোড
+            </a>
         </nav>
     </header>
 
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="hero-content">
-            <div class="hero-icon">
-                <img src="icon.png" alt="PlotCalc Icon">
+    <!-- Hero -->
+    <section class="hero grid-bg">
+        <div class="wrap">
+            <div>
+                <span class="chip"><i></i>অফলাইন ভূমি পরিমাপ</span>
+                <h1>জমির মাপ, মৌজা ম্যাপ<em>আর বণ্টন — এক অ্যাপে</em></h1>
+                <p class="lead">বাহুর মাপ দিলেই শতক, বিঘা, কাঠা, ছটাকের হিসাব। মৌজা ম্যাপের ছবি থেকে দাগের মাপ, CS আর RS মিলিয়ে দেখা, আর ওয়ারিশদের মধ্যে রাস্তা রেখে জমি ভাগ — চৌহদ্দিসহ।</p>
+                <div class="cta">
+                    <a class="btn btn-lime" href="https://play.google.com/store/apps/details?id=com.programmernexus.plotcalc">
+                        <svg><use href="#play"/></svg>গুগল প্লে থেকে নিন
+                    </a>
+                    <a class="btn btn-ghost" href="#video">ভিডিও দেখুন</a>
+                </div>
+                <p class="en">PlotCalc — land measurement for Bangladesh, in Bangla and English.</p>
             </div>
-            <h1>PlotCalc</h1>
-            <p>Professional Land Measurement Calculator</p>
-            <p style="font-size: 1.1rem; opacity: 0.9;">Calculate land area with precision for surveying, real estate, farming, and more</p>
-            <div class="cta-buttons">
-                <a href="https://github.com/zamansheikh/plotcalc" class="btn btn-primary">View on GitHub</a>
-                <a href="https://play.google.com/store/apps/details?id=com.programmernexus.plotcalc" class="btn btn-secondary">Download APP</a>
+            <div class="hero-phones" aria-hidden="true">
+                <div class="phone"><div class="screen"><div class="status"><span>১০:০৫</span><svg viewBox="0 0 74 16"><use href="#status"/></svg></div><img src="media/screens/07-division.webp" alt="" width="600" height="1299"></div></div>
+                <div class="phone"><div class="screen"><div class="status"><span>১০:০৫</span><svg viewBox="0 0 74 16"><use href="#status"/></svg></div><img src="media/screens/05-mouza.webp" alt="" width="600" height="1299"></div></div>
+            </div>
+        </div>
+        <div class="wrap stats-wrap">
+            <div class="stats">
+                <div class="stat"><b>১০টি</b><span>জমির একক, শতক থেকে একর</span></div>
+                <div class="stat"><b>অফলাইন</b><span>ইন্টারনেট ছাড়াই চলে</span></div>
+                <div class="stat"><b>বাংলা</b><span>আর ইংরেজি, দুই ভাষায়</span></div>
+                <div class="stat"><b>পিডিএফ</b><span>মাপ, শিট আর বণ্টননামা</span></div>
             </div>
         </div>
     </section>
 
-    <!-- Quick Features -->
-    <div class="features">
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-icon">📏</div>
-                <h3>Accurate Measurements</h3>
-                <p>Professional-grade calculations for all plot types</p>
+    <!-- Features -->
+    <section id="features">
+        <div class="wrap">
+            <div class="section-head">
+                <span class="chip"><i></i>যা যা পারে</span>
+                <h2>জমির হিসাবের সব কাজ<em>এক জায়গায়</em></h2>
+                <p>আমিন, জমির মালিক, ক্রেতা-বিক্রেতা — যার যা দরকার।</p>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon">🌍</div>
-                <h3>Multiple Units</h3>
-                <p>Meters, Feet, Acres, and more measurement options</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">💾</div>
-                <h3>Save History</h3>
-                <p>Keep track of all your measurements</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">🔒</div>
-                <h3>100% Private</h3>
-                <p>All data stored locally on your device</p>
-            </div>
-        </div>
-    </div>
 
-    <!-- Features Section -->
-    <section class="light" id="features">
-        <div class="container">
-            <h2>✨ Key Features</h2>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;">
-                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px;">
-                    <h4 style="color: #667eea; margin-bottom: 1rem;">🎯 Multiple Shape Support</h4>
-                    <p>Calculate areas for rectangles, circles, triangles, and complex polygons with automatic validation</p>
+            <article class="feature">
+                <div class="copy">
+                    <span class="chip"><i></i>জমির মাপ</span>
+                    <h3>বাহুর মাপ দিন,<em>হিসাব সাথে সাথে</em></h3>
+                    <p>নকশায় আঁকুন অথবা বাহুর মাপ লিখুন। প্রতিটি বাহু আর কোণের মাপ নকশাতেই দেখা যায়।</p>
+                    <ul>
+                        <li>শতক, বিঘা, কাঠা, ছটাক — একসাথে, ভেঙে ভেঙে</li>
+                        <li>যত কোণের জমিই হোক, কর্ণের মাপ দিয়ে নির্ভুল</li>
+                        <li>ফলাফল কপি, শেয়ার বা পিডিএফ</li>
+                    </ul>
                 </div>
-                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px;">
-                    <h4 style="color: #667eea; margin-bottom: 1rem;">🔄 Flexible Unit System</h4>
-                    <p>Switch between Meters and Feet with automatic conversion and calculation</p>
+                <div class="shots two" aria-hidden="true">
+                    <div class="phone"><div class="screen"><div class="status"><span>১০:০৫</span><svg viewBox="0 0 74 16"><use href="#status"/></svg></div><img src="media/screens/04-draw.webp" alt="" width="600" height="1299" loading="lazy"></div></div>
+                    <div class="phone"><div class="screen"><div class="status"><span>১০:০৫</span><svg viewBox="0 0 74 16"><use href="#status"/></svg></div><img src="media/screens/03-result.webp" alt="" width="600" height="1299" loading="lazy"></div></div>
                 </div>
-                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px;">
-                    <h4 style="color: #667eea; margin-bottom: 1rem;">📊 Advanced Calculations</h4>
-                    <p>Smart diagonal calculations for complex polygons and unit conversions</p>
+            </article>
+
+            <article class="feature flip">
+                <div class="copy">
+                    <span class="chip"><i></i>মৌজা ম্যাপ</span>
+                    <h3>মৌজা ম্যাপের ছবি থেকেই<em>দাগের মাপ</em></h3>
+                    <p>ম্যাপের ছবি তুলুন, স্কেলের দুটি বিন্দু দেখিয়ে দূরত্ব দিন, তারপর দাগের কোণাগুলোতে চাপ দিন।</p>
+                    <ul>
+                        <li>চেইন, লিংক, ফুট বা মিটারে স্কেল</li>
+                        <li>বড় করে দেখার লেন্স, কোণা টেনে ঠিক করা যায়</li>
+                        <li>মাপা দাগ সরাসরি সংরক্ষণ</li>
+                    </ul>
                 </div>
-                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px;">
-                    <h4 style="color: #667eea; margin-bottom: 1rem;">💾 Measurement History</h4>
-                    <p>Save all calculations automatically with timestamps and details</p>
+                <div class="shots" aria-hidden="true">
+                    <div class="phone"><div class="screen"><div class="status"><span>১০:০৫</span><svg viewBox="0 0 74 16"><use href="#status"/></svg></div><img src="media/screens/05-mouza.webp" alt="" width="600" height="1299" loading="lazy"></div></div>
                 </div>
-                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px;">
-                    <h4 style="color: #667eea; margin-bottom: 1rem;">🎨 Professional Interface</h4>
-                    <p>Intuitive drawing canvas with responsive design for all screens</p>
+            </article>
+
+            <article class="feature">
+                <div class="copy">
+                    <span class="chip"><i></i>প্যান্টোগ্রাফ</span>
+                    <h3>CS আর RS ম্যাপ<em>মিলিয়ে দেখুন</em></h3>
+                    <p>পুরনো আর নতুন জরিপের ম্যাপ একটির উপর আরেকটি বসান। দুই ম্যাপেই আছে এমন কয়েকটি জায়গা দেখালেই মিলে যায়।</p>
+                    <ul>
+                        <li>কোন দাগের কতটুকু মিলেছে, শতকে আর শতাংশে</li>
+                        <li>ভুল চিহ্ন থাকলে অ্যাপ নিজেই জানিয়ে দেয়</li>
+                        <li>তুলনার রিপোর্ট পিডিএফে</li>
+                    </ul>
                 </div>
-                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px;">
-                    <h4 style="color: #667eea; margin-bottom: 1rem;">🌐 Multi-Language Support</h4>
-                    <p>Available in English, Bengali, Spanish, French, and German</p>
+                <div class="shots" aria-hidden="true">
+                    <div class="phone"><div class="screen"><div class="status"><span>১০:০৫</span><svg viewBox="0 0 74 16"><use href="#status"/></svg></div><img src="media/screens/06-pantograph.webp" alt="" width="600" height="1299" loading="lazy"></div></div>
                 </div>
+            </article>
+
+            <article class="feature flip">
+                <div class="copy">
+                    <span class="chip"><i></i>বিভাজন</span>
+                    <h3>ওয়ারিশদের মধ্যে<em>জমি ভাগ করুন</em></h3>
+                    <p>নাম আর অংশ লিখুন — আনা, ভগ্নাংশ, শতাংশ বা নির্দিষ্ট শতক। প্রত্যেকের ভাগ আলাদা রঙে এঁকে দেয়।</p>
+                    <ul>
+                        <li>সামনের দিক বেছে দিন, সবাই রাস্তার মুখ পাবেন</li>
+                        <li>চলাচলের রাস্তা আগে আলাদা করে রাখা যায়</li>
+                        <li>ভাগের রেখা টেনে সরানো বা ঘোরানো যায়</li>
+                    </ul>
+                </div>
+                <div class="shots two" aria-hidden="true">
+                    <div class="phone"><div class="screen"><div class="status"><span>১০:০৫</span><svg viewBox="0 0 74 16"><use href="#status"/></svg></div><img src="media/screens/07-division.webp" alt="" width="600" height="1299" loading="lazy"></div></div>
+                    <div class="phone"><div class="screen"><div class="status"><span>১০:০৫</span><svg viewBox="0 0 74 16"><use href="#status"/></svg></div><img src="media/screens/07-division-road.webp" alt="" width="600" height="1299" loading="lazy"></div></div>
+                </div>
+            </article>
+
+            <article class="feature">
+                <div class="copy">
+                    <span class="chip"><i></i>চৌহদ্দি ও বণ্টননামা</span>
+                    <h3>প্রতিটি ভাগের<em>চৌহদ্দি, এক চাপে</em></h3>
+                    <p>উত্তর, দক্ষিণ, পূর্ব, পশ্চিম — কোন দিকে কে বা কী আছে, প্রতিটি বাহুর মাপসহ। পুরোটা বণ্টননামা হিসেবে পিডিএফে।</p>
+                    <ul>
+                        <li>প্রত্যেকের অংশ, পরিমাণ আর স্থানীয় এককে মাপ</li>
+                        <li>সংরক্ষণ করলে পরে আবার খুলে বদলানো যায়</li>
+                    </ul>
+                </div>
+                <div class="shots" aria-hidden="true">
+                    <div class="phone"><div class="screen"><div class="status"><span>১০:০৫</span><svg viewBox="0 0 74 16"><use href="#status"/></svg></div><img src="media/screens/07-division-bounds.webp" alt="" width="600" height="1299" loading="lazy"></div></div>
+                </div>
+            </article>
+
+            <article class="feature flip">
+                <div class="copy">
+                    <span class="chip"><i></i>জমির শিট ও নকশা</span>
+                    <h3>সব জমি এক শিটে,<em>মোট দামসহ</em></h3>
+                    <p>কয়েকটি দাগ এক শিটে রাখুন, দর দিন — মোট জমি আর মোট মূল্য এক নজরে। জমিগুলো টেনে সাজিয়ে নিজের নকশাও বানানো যায়।</p>
+                    <ul>
+                        <li>প্রতি শতক, কাঠা বা বিঘা হিসেবে দর</li>
+                        <li>শিটের হিসাব পিডিএফে, নকশাসহ</li>
+                    </ul>
+                </div>
+                <div class="shots two" aria-hidden="true">
+                    <div class="phone"><div class="screen"><div class="status"><span>১০:০৫</span><svg viewBox="0 0 74 16"><use href="#status"/></svg></div><img src="media/screens/08-sheet.webp" alt="" width="600" height="1299" loading="lazy"></div></div>
+                    <div class="phone"><div class="screen"><div class="status"><span>১০:০৫</span><svg viewBox="0 0 74 16"><use href="#status"/></svg></div><img src="media/screens/09-arrange.webp" alt="" width="600" height="1299" loading="lazy"></div></div>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <!-- Video -->
+    <section class="video grid-bg" id="video">
+        <div class="wrap">
+            <div class="section-head">
+                <span class="chip"><i></i>এক মিনিটে দেখুন</span>
+                <h2>প্লটক্যালক<em>কীভাবে কাজ করে</em></h2>
+            </div>
+            <div class="player">
+                <!-- Nothing loads from YouTube until the visitor presses play. -->
+                <a class="yt" href="https://youtu.be/OLWfDWof4os" data-id="OLWfDWof4os" aria-label="ভিডিও চালান">
+                    <img src="media/promo-poster.jpg" alt="প্লটক্যালক ভিডিও" width="1280" height="720" loading="lazy">
+                    <span class="yt-play"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M8 5.5v13l11-6.5z"/></svg></span>
+                </a>
             </div>
         </div>
     </section>
 
-    <!-- Screenshots Section -->
-    <section class="dark" id="screenshots">
-        <div class="container">
-            <h2>📱 App Screenshots</h2>
-            <p style="text-align: center; color: #666; margin-bottom: 2rem;">See PlotCalc in action</p>
-            <div class="screenshots-grid">
-                <div class="screenshot-item">
-                    <img src="screenshots/flutter_01.png" alt="Home Screen">
-                    <div class="screenshot-label">Home Screen</div>
+    <!-- Play screenshots -->
+    <section id="screens">
+        <div class="wrap">
+            <div class="section-head">
+                <span class="chip"><i></i>স্ক্রিনশট</span>
+                <h2>এক নজরে<em>পুরো অ্যাপ</em></h2>
+                <p>পাশে সরিয়ে দেখুন।</p>
+            </div>
+        </div>
+        <div class="strip">
+            <img src="media/play/phone-01.webp" alt="বাহুর মাপ দিন, হিসাব সাথে সাথে" width="540" height="960" loading="lazy">
+            <img src="media/play/phone-02.webp" alt="মৌজা ম্যাপের ছবি থেকেই দাগের মাপ" width="540" height="960" loading="lazy">
+            <img src="media/play/phone-03.webp" alt="CS আর RS ম্যাপ মিলিয়ে দেখুন" width="540" height="960" loading="lazy">
+            <img src="media/play/phone-04.webp" alt="ওয়ারিশদের মধ্যে জমি ভাগ করুন" width="540" height="960" loading="lazy">
+            <img src="media/play/phone-05.webp" alt="রাস্তা রেখে ভাগ, সাথে চৌহদ্দি" width="540" height="960" loading="lazy">
+            <img src="media/play/phone-06.webp" alt="সব জমি এক শিটে, মোট দামসহ" width="540" height="960" loading="lazy">
+            <img src="media/play/phone-07.webp" alt="জমিগুলো সাজিয়ে নকশা বানান" width="540" height="960" loading="lazy">
+            <img src="media/play/phone-08.webp" alt="ইন্টারনেট ছাড়াই চলে, সব মাপ থাকে জমা" width="540" height="960" loading="lazy">
+        </div>
+    </section>
+
+    <!-- More tools and units -->
+    <section class="grid-bg" id="units" style="background: var(--surface); border-top: 1px solid var(--line);">
+        <div class="wrap">
+            <div class="section-head">
+                <span class="chip"><i></i>আরও যা আছে</span>
+                <h2>ছোট ছোট কাজের<em>দরকারি টুল</em></h2>
+            </div>
+            <div class="cards">
+                <div class="card">
+                    <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h13l-3-3M17 17H4l3 3"/></svg></div>
+                    <h4>একক রূপান্তর</h4>
+                    <p>যেকোনো এককের মাপ অন্য সব এককে, সাথে সাথে।</p>
                 </div>
-                <div class="screenshot-item">
-                    <img src="screenshots/flutter_02.png" alt="Input Measurements">
-                    <div class="screenshot-label">Input Measurements</div>
+                <div class="card">
+                    <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg></div>
+                    <h4>খতিয়ান ও ভূমি তথ্য</h4>
+                    <p>খতিয়ানের চিহ্ন আর জমির কাগজপত্রের সহজ বাংলা ব্যাখ্যা।</p>
                 </div>
-                <div class="screenshot-item">
-                    <img src="screenshots/flutter_03.png" alt="Polygon">
-                    <div class="screenshot-label">Polygon</div>
+                <div class="card">
+                    <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></div>
+                    <h4>তুলনা ও ইতিহাস</h4>
+                    <p>আগের সব মাপ খুঁজুন, দুটি জমি পাশাপাশি তুলনা করুন।</p>
                 </div>
-                <div class="screenshot-item">
-                    <img src="screenshots/flutter_04.png" alt="View Results">
-                    <div class="screenshot-label">View Results</div>
-                </div>
-                <div class="screenshot-item">
-                    <img src="screenshots/flutter_05.png" alt="Rectangle">
-                    <div class="screenshot-label">Rectangle</div>
-                </div>
-                <div class="screenshot-item">
-                    <img src="screenshots/flutter_06.png" alt="Edit Measurements">
-                    <div class="screenshot-label">Edit Measurements</div>
-                </div>
-                <div class="screenshot-item">
-                    <img src="screenshots/flutter_07.png" alt="Measurement Result">
-                    <div class="screenshot-label">Measurement Result</div>
-                </div>
-                <div class="screenshot-item">
-                    <img src="screenshots/flutter_08.png" alt="Result Display">
-                    <div class="screenshot-label">Result Display</div>
-                </div>
-                <div class="screenshot-item">
-                    <img src="screenshots/flutter_09.png" alt="Settings & Preferences">
-                    <div class="screenshot-label">Settings & Preferences</div>
-                </div>
+            </div>
+
+            <div class="section-head" style="margin: 72px auto 24px;">
+                <h2 style="font-size: clamp(26px, 3.2vw, 34px);">যে এককে চান<em>সেই এককে</em></h2>
+            </div>
+            <div class="units">
+                <span>শতক<small>decimal</small></span>
+                <span>বিঘা<small>bigha</small></span>
+                <span>কাঠা<small>katha</small></span>
+                <span>ছটাক<small>chatak</small></span>
+                <span>একর<small>acre</small></span>
+                <span>হেক্টর<small>hectare</small></span>
+                <span>বর্গফুট<small>sq ft</small></span>
+                <span>বর্গমিটার<small>m²</small></span>
+                <span>বিঘা — ময়মনসিংহ</span>
+                <span>কাঠা — ময়মনসিংহ</span>
             </div>
         </div>
     </section>
 
-    <!-- Shapes Section -->
-    <section class="light" id="shapes">
-        <div class="container">
-            <h2>📐 Supported Shapes</h2>
-            <p style="text-align: center; color: #666; margin-bottom: 2rem;">Calculate area for various plot shapes with precision</p>
-            <div class="shapes-grid">
-                <div class="shape-item">▭ Rectangle</div>
-                <div class="shape-item">● Circle</div>
-                <div class="shape-item">△ Triangle</div>
-                <div class="shape-item">⬠ Pentagon</div>
-                <div class="shape-item">⬡ Hexagon</div>
-                <div class="shape-item">⬢ Polygon</div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Units Section -->
-    <section class="dark" id="units">
-        <div class="container">
-            <h2>🌍 Supported Units</h2>
-            <p style="text-align: center; color: #666; margin-bottom: 2rem;">Calculate in your preferred measurement units</p>
-            <div class="units-grid">
-                <div class="unit-card">
-                    <h4>International Standard</h4>
-                    <p>• Square Meters (m²)<br>• Square Feet (ft²)<br>• Acres</p>
-                </div>
-                <div class="unit-card">
-                    <h4>Bangladesh Regional</h4>
-                    <p>• একর (Acre)<br>• বিঘা (Bigha)<br>• কাঠা (Katha)<br>• শতাংশ (Shatak)<br>• ছটাক (Chotak)</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Use Cases Section -->
-    <section class="light">
-        <div class="container">
-            <h2>👥 Perfect For</h2>
-            <div class="use-cases">
-                <div class="use-case">
-                    <h4>🏗️ Surveyors</h4>
-                    <p>Professional measurements for property documentation and land surveys</p>
-                </div>
-                <div class="use-case">
-                    <h4>🏢 Real Estate Agents</h4>
-                    <p>Quick area calculations during site visits and property evaluations</p>
-                </div>
-                <div class="use-case">
-                    <h4>🌾 Farmers</h4>
-                    <p>Calculate agricultural plot areas efficiently for crop planning</p>
-                </div>
-                <div class="use-case">
-                    <h4>🏛️ Architects</h4>
-                    <p>Design land planning measurements and layout calculations</p>
-                </div>
-                <div class="use-case">
-                    <h4>📚 Students</h4>
-                    <p>Learn geometry with practical applications and real-world calculations</p>
-                </div>
-                <div class="use-case">
-                    <h4>🏡 Property Owners</h4>
-                    <p>Verify land documentation and understand your property details</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Privacy Section -->
-    <section class="dark">
-        <div class="container">
-            <h2>🔒 Privacy & Security</h2>
-            <div class="privacy-badge">
-                <h3 style="margin-bottom: 0.5rem;">✓ Your Data, Your Device</h3>
-                <p>All calculations and measurements are processed locally on your device. No data is sent to external servers. No tracking, no ads, no unwanted permissions.</p>
-            </div>
-            <p style="text-align: center; color: #666;">
-                PlotCalc is an <span class="highlight">open-source project</span> for complete transparency. Review the source code anytime on <a href="https://github.com/zamansheikh/plotcalc" style="color: #667eea;">GitHub</a>.
-            </p>
-        </div>
-    </section>
-
-    <!-- How to Use -->
-    <section class="light">
-        <div class="container">
-            <h2>🚀 How to Use</h2>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-top: 2rem;">
-                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #667eea;">
-                    <strong style="font-size: 1.2rem; color: #667eea;">1️⃣ Select Unit</strong>
-                    <p style="margin-top: 0.5rem;">Choose between Meters or Feet as your default measurement unit</p>
-                </div>
-                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #667eea;">
-                    <strong style="font-size: 1.2rem; color: #667eea;">2️⃣ Choose Shape</strong>
-                    <p style="margin-top: 0.5rem;">Select the shape of your plot (Rectangle, Circle, Triangle, Polygon)</p>
-                </div>
-                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #667eea;">
-                    <strong style="font-size: 1.2rem; color: #667eea;">3️⃣ Input Dimensions</strong>
-                    <p style="margin-top: 0.5rem;">Draw on canvas or input dimensions directly</p>
-                </div>
-                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #667eea;">
-                    <strong style="font-size: 1.2rem; color: #667eea;">4️⃣ Add Diagonals</strong>
-                    <p style="margin-top: 0.5rem;">Provide diagonal measurements for complex polygons</p>
-                </div>
-                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #667eea;">
-                    <strong style="font-size: 1.2rem; color: #667eea;">5️⃣ Get Results</strong>
-                    <p style="margin-top: 0.5rem;">View instant calculations in multiple units</p>
-                </div>
-                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #667eea;">
-                    <strong style="font-size: 1.2rem; color: #667eea;">6️⃣ Save History</strong>
-                    <p style="margin-top: 0.5rem;">Measurements are automatically saved for future reference</p>
+    <!-- Privacy -->
+    <section>
+        <div class="wrap">
+            <div class="privacy">
+                <svg class="shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg>
+                <div>
+                    <h3>আপনার জমির তথ্য<em>আপনার ফোনেই থাকে</em></h3>
+                    <p>কোনো অ্যাকাউন্ট লাগে না। মাপ, নকশা আর শিট সব আপনার ফোনে সংরক্ষিত থাকে, কোনো সার্ভারে যায় না। বিস্তারিত পড়ুন <a href="privacy.html">গোপনীয়তা নীতিতে</a>। অ্যাপের পুরো সোর্স কোড <a href="https://github.com/zamansheikh/plotcalc">গিটহাবে</a> খোলা।</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Contact Section -->
-    <section class="dark" id="contact">
-        <div class="container">
-            <h2>📧 Get in Touch</h2>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-top: 2rem;">
-                <div style="text-align: center; background: #333; padding: 2rem; border-radius: 8px; border: 2px solid #667eea;">
-                    <h4 style="color: #667eea; margin-bottom: 0.5rem;">✉️ Email</h4>
-                    <p><a href="mailto:zaman6545@gmail.com" style="color: #00BCD4; text-decoration: none;">zaman6545@gmail.com</a></p>
-                </div>
-                <div style="text-align: center; background: #333; padding: 2rem; border-radius: 8px; border: 2px solid #667eea;">
-                    <h4 style="color: #667eea; margin-bottom: 0.5rem;">🌐 Website</h4>
-                    <p><a href="https://zamansheikh.com" style="color: #00BCD4; text-decoration: none;">zamansheikh.com</a></p>
-                </div>
-                <div style="text-align: center; background: #333; padding: 2rem; border-radius: 8px; border: 2px solid #667eea;">
-                    <h4 style="color: #667eea; margin-bottom: 0.5rem;">💼 Company</h4>
-                    <p><a href="https://programmernexus.com" style="color: #00BCD4; text-decoration: none;">Programmer Nexus</a></p>
-                </div>
+    <!-- Download -->
+    <section class="download grid-bg" style="padding-top: 24px;">
+        <div class="wrap">
+            <img class="icon" src="media/icon.webp" alt="প্লটক্যালক" width="104" height="104">
+            <h2>আজই শুরু করুন<em>গুগল প্লেতে ফ্রি</em></h2>
+            <div class="cta">
+                <a class="btn btn-lime" href="https://play.google.com/store/apps/details?id=com.programmernexus.plotcalc">
+                    <svg><use href="#play"/></svg>গুগল প্লে থেকে নিন
+                </a>
+                <a class="btn btn-ghost" href="https://github.com/zamansheikh/plotcalc">গিটহাবে দেখুন</a>
             </div>
         </div>
     </section>
 
-    <!-- Footer -->
     <footer>
-        <div class="footer-content">
-            <div class="footer-section">
-                <h4>📐 PlotCalc</h4>
-                <p>Professional land measurement calculator for accurate area calculations.</p>
+        <div class="wrap">
+            <div class="foot">
+                <div>
+                    <a class="brand" href="#"><img src="media/icon.webp" alt="" width="40" height="40"><span><b>PlotCalc</b><small>প্লটক্যালক</small></span></a>
+                    <p style="margin-top: 12px;">বাংলাদেশের জমির মাপ, মৌজা ম্যাপ আর বণ্টনের অ্যাপ।</p>
+                </div>
+                <div>
+                    <h5>অ্যাপ</h5>
+                    <ul>
+                        <li><a href="#features">বৈশিষ্ট্য</a></li>
+                        <li><a href="#video">ভিডিও</a></li>
+                        <li><a href="#screens">স্ক্রিনশট</a></li>
+                        <li><a href="privacy.html">গোপনীয়তা নীতি</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5>নির্মাতা</h5>
+                    <ul>
+                        <li><a href="https://zamansheikh.com">zamansheikh.com</a></li>
+                        <li><a href="https://github.com/zamansheikh">GitHub</a></li>
+                        <li><a href="https://programmernexus.com">Programmer Nexus</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5>যোগাযোগ</h5>
+                    <ul>
+                        <li><a href="mailto:zaman6545@gmail.com">zaman6545@gmail.com</a></li>
+                        <li><a href="https://github.com/zamansheikh/plotcalc/issues">সমস্যা জানান</a></li>
+                    </ul>
+                </div>
             </div>
-            <div class="footer-section">
-                <h4>Quick Links</h4>
-                <ul>
-                    <li><a href="#features">Features</a></li>
-                    <li><a href="#screenshots">Screenshots</a></li>
-                    <li><a href="#shapes">Shapes</a></li>
-                    <li><a href="#units">Units</a></li>
-                    <li><a href="privacy.html">Privacy Policy</a></li>
-                </ul>
-            </div>
-            <div class="footer-section">
-                <h4>Developer</h4>
-                <ul>
-                    <li><a href="https://github.com/zamansheikh">GitHub</a></li>
-                    <li><a href="https://zamansheikh.com">Website</a></li>
-                    <li><a href="https://github.com/zamansheikh/plotcalc">Project Repo</a></li>
-                </ul>
-            </div>
-            <div class="footer-section">
-                <h4>Organization</h4>
-                <ul>
-                    <li><a href="https://programmernexus.com">Programmer Nexus</a></li>
-                    <li><a href="mailto:zaman6545@gmail.com">Contact Us</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2025 PlotCalc by Md. Shamsuzzaman. All rights reserved. | <a href="privacy.html" style="color: #667eea;">Privacy Policy</a></p>
+            <p class="copy-line">© ২০২৫–২০২৬ PlotCalc · Md. Shamsuzzaman, Programmer Nexus</p>
         </div>
     </footer>
+    <script>
+        // Swap the preview for the YouTube player on the first tap.
+        document.querySelectorAll('a.yt').forEach((a) => a.addEventListener('click', (e) => {
+            e.preventDefault();
+            const f = document.createElement('iframe');
+            f.src = `https://www.youtube-nocookie.com/embed/${a.dataset.id}?autoplay=1&rel=0`;
+            f.title = 'প্লটক্যালক ভিডিও';
+            f.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+            f.allowFullscreen = true;
+            a.replaceWith(f);
+        }));
+    </script>
 </body>
 </html>
