@@ -11,6 +11,7 @@ import '../../../shared/settings/settings_bloc.dart';
 import '../../../shared/settings/settings_state.dart';
 import '../../../shared/widgets/grid_background.dart';
 import '../../../shared/widgets/phone_chrome.dart';
+import '../../mouza/view/mouza_entry_card.dart';
 import '../../../../l10n/l10n.dart';
 
 class PickerScreen extends StatefulWidget {
@@ -39,6 +40,10 @@ class _PickerScreenState extends State<PickerScreen> {
               selected: _method,
               accent: accent,
               onChanged: (m) => setState(() => _method = m),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+              child: MouzaEntryCard(accent: accent),
             ),
             const SizedBox(height: 14),
             if (_method == InputMethod.tap)
