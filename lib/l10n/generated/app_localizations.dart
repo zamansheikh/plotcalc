@@ -2803,6 +2803,354 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Place {n}: tap the right spot, or drag its mark, on either map.'**
   String overlayMovePlace(String n);
+
+  /// No description provided for @divisionOwnersTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Owners'**
+  String get divisionOwnersTab;
+
+  /// No description provided for @divisionSidesTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Side & road'**
+  String get divisionSidesTab;
+
+  /// No description provided for @divisionBoundsTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Boundaries'**
+  String get divisionBoundsTab;
+
+  /// No description provided for @divisionHowLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'HOW TO DIVIDE'**
+  String get divisionHowLabel;
+
+  /// No description provided for @divisionModeEqual.
+  ///
+  /// In en, this message translates to:
+  /// **'Equal'**
+  String get divisionModeEqual;
+
+  /// No description provided for @divisionModeShares.
+  ///
+  /// In en, this message translates to:
+  /// **'By share'**
+  String get divisionModeShares;
+
+  /// No description provided for @divisionModeAreas.
+  ///
+  /// In en, this message translates to:
+  /// **'By area'**
+  String get divisionModeAreas;
+
+  /// No description provided for @divisionShareHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 1/3'**
+  String get divisionShareHint;
+
+  /// No description provided for @divisionShareHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Write shares as parts — 1/3, 6 anna, 25% — or as counts: 2 for a son, 1 for a daughter.'**
+  String get divisionShareHelp;
+
+  /// No description provided for @divisionAreaHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave an area blank and that owner shares what is left.'**
+  String get divisionAreaHelp;
+
+  /// No description provided for @divisionAreaHint.
+  ///
+  /// In en, this message translates to:
+  /// **'rest'**
+  String get divisionAreaHint;
+
+  /// No description provided for @divisionNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get divisionNameHint;
+
+  /// No description provided for @divisionAddOwner.
+  ///
+  /// In en, this message translates to:
+  /// **'Add one more'**
+  String get divisionAddOwner;
+
+  /// No description provided for @divisionRest.
+  ///
+  /// In en, this message translates to:
+  /// **'Unassigned'**
+  String get divisionRest;
+
+  /// No description provided for @divisionRoad.
+  ///
+  /// In en, this message translates to:
+  /// **'Road'**
+  String get divisionRoad;
+
+  /// No description provided for @divisionRoadWidth.
+  ///
+  /// In en, this message translates to:
+  /// **'Road · {width}'**
+  String divisionRoadWidth(String width);
+
+  /// No description provided for @divisionIssueSharesOver.
+  ///
+  /// In en, this message translates to:
+  /// **'Shares add up to more than the whole land.'**
+  String get divisionIssueSharesOver;
+
+  /// No description provided for @divisionIssueSharesMixed.
+  ///
+  /// In en, this message translates to:
+  /// **'Write all shares the same way — either parts (1/3, 6 anna) or counts (2, 1).'**
+  String get divisionIssueSharesMixed;
+
+  /// No description provided for @divisionIssueShareUnreadable.
+  ///
+  /// In en, this message translates to:
+  /// **'A share could not be read — write it like 1/3, 6 anna, 25% or 2.'**
+  String get divisionIssueShareUnreadable;
+
+  /// No description provided for @divisionIssueAreasOver.
+  ///
+  /// In en, this message translates to:
+  /// **'The areas add up to more than the land.'**
+  String get divisionIssueAreasOver;
+
+  /// No description provided for @divisionIssueAreaUnreadable.
+  ///
+  /// In en, this message translates to:
+  /// **'An area could not be read.'**
+  String get divisionIssueAreaUnreadable;
+
+  /// No description provided for @divisionIssueRoadTooWide.
+  ///
+  /// In en, this message translates to:
+  /// **'The road is as deep as the whole plot.'**
+  String get divisionIssueRoadTooWide;
+
+  /// No description provided for @divisionRestNote.
+  ///
+  /// In en, this message translates to:
+  /// **'{area} is not given to anyone yet.'**
+  String divisionRestNote(String area);
+
+  /// No description provided for @divisionGiveRest.
+  ///
+  /// In en, this message translates to:
+  /// **'Add an owner for it'**
+  String get divisionGiveRest;
+
+  /// No description provided for @divisionFrontTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'WHICH SIDE SHOULD EVERY LOT TOUCH?'**
+  String get divisionFrontTitle;
+
+  /// No description provided for @divisionFrontHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Usually the road side: every lot gets its own stretch of it. Tap a side on the drawing, or pick one here.'**
+  String get divisionFrontHint;
+
+  /// No description provided for @divisionFrontAny.
+  ///
+  /// In en, this message translates to:
+  /// **'Free'**
+  String get divisionFrontAny;
+
+  /// No description provided for @divisionSideN.
+  ///
+  /// In en, this message translates to:
+  /// **'Side {n} · {length}'**
+  String divisionSideN(String n, String length);
+
+  /// No description provided for @divisionRoadTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'COMMON ROAD ALONG THAT SIDE'**
+  String get divisionRoadTitle;
+
+  /// No description provided for @divisionRoadHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Taken out first; every lot opens onto it.'**
+  String get divisionRoadHint;
+
+  /// No description provided for @divisionRoadNone.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get divisionRoadNone;
+
+  /// No description provided for @divisionRoadNeedsFront.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the side first.'**
+  String get divisionRoadNeedsFront;
+
+  /// No description provided for @divisionStraighten.
+  ///
+  /// In en, this message translates to:
+  /// **'Straighten dividers'**
+  String get divisionStraighten;
+
+  /// No description provided for @divisionFront.
+  ///
+  /// In en, this message translates to:
+  /// **'Front'**
+  String get divisionFront;
+
+  /// No description provided for @divisionNorth.
+  ///
+  /// In en, this message translates to:
+  /// **'N'**
+  String get divisionNorth;
+
+  /// No description provided for @cardinalNorth.
+  ///
+  /// In en, this message translates to:
+  /// **'North'**
+  String get cardinalNorth;
+
+  /// No description provided for @cardinalEast.
+  ///
+  /// In en, this message translates to:
+  /// **'East'**
+  String get cardinalEast;
+
+  /// No description provided for @cardinalSouth.
+  ///
+  /// In en, this message translates to:
+  /// **'South'**
+  String get cardinalSouth;
+
+  /// No description provided for @cardinalWest.
+  ///
+  /// In en, this message translates to:
+  /// **'West'**
+  String get cardinalWest;
+
+  /// No description provided for @divisionOutside.
+  ///
+  /// In en, this message translates to:
+  /// **'plot boundary'**
+  String get divisionOutside;
+
+  /// No description provided for @divisionSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved as a sheet'**
+  String get divisionSaved;
+
+  /// No description provided for @divisionOpenSheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get divisionOpenSheet;
+
+  /// No description provided for @divisionSheetName.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} — division'**
+  String divisionSheetName(String name);
+
+  /// No description provided for @divisionPdfTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'DIVISION'**
+  String get divisionPdfTitle;
+
+  /// No description provided for @divisionPdfTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Total land'**
+  String get divisionPdfTotal;
+
+  /// No description provided for @divisionPdfNorth.
+  ///
+  /// In en, this message translates to:
+  /// **'The top of the drawing is north.'**
+  String get divisionPdfNorth;
+
+  /// No description provided for @divisionPdfDisclaimer.
+  ///
+  /// In en, this message translates to:
+  /// **'Drawn for measurement — not a legal deed.'**
+  String get divisionPdfDisclaimer;
+
+  /// No description provided for @divisionColShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get divisionColShare;
+
+  /// No description provided for @divisionColSide.
+  ///
+  /// In en, this message translates to:
+  /// **'Side'**
+  String get divisionColSide;
+
+  /// No description provided for @divisionColLength.
+  ///
+  /// In en, this message translates to:
+  /// **'Length'**
+  String get divisionColLength;
+
+  /// No description provided for @divisionColBeyond.
+  ///
+  /// In en, this message translates to:
+  /// **'Beyond'**
+  String get divisionColBeyond;
+
+  /// No description provided for @divisionSlid.
+  ///
+  /// In en, this message translates to:
+  /// **'Sizes changed to areas.'**
+  String get divisionSlid;
+
+  /// No description provided for @divisionEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Change division'**
+  String get divisionEdit;
+
+  /// No description provided for @divisionParentGone.
+  ///
+  /// In en, this message translates to:
+  /// **'The plot this was divided from has been deleted.'**
+  String get divisionParentGone;
+
+  /// No description provided for @divisionPeople.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} · {count} owners'**
+  String divisionPeople(String name, int count);
+
+  /// No description provided for @divisionDragHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag a divider to shift land, or its end to turn it.'**
+  String get divisionDragHint;
+
+  /// No description provided for @divisionBoundsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to show until the division works out.'**
+  String get divisionBoundsEmpty;
+
+  /// No description provided for @divisionColLocal.
+  ///
+  /// In en, this message translates to:
+  /// **'In local units'**
+  String get divisionColLocal;
 }
 
 class _AppLocalizationsDelegate

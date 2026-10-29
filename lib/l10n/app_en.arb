@@ -1357,5 +1357,158 @@
         "type": "String"
       }
     }
-  }
+  },
+  "divisionOwnersTab": "Owners",
+  "@divisionOwnersTab": {},
+  "divisionSidesTab": "Side & road",
+  "@divisionSidesTab": {},
+  "divisionBoundsTab": "Boundaries",
+  "@divisionBoundsTab": {},
+  "divisionHowLabel": "HOW TO DIVIDE",
+  "@divisionHowLabel": {},
+  "divisionModeEqual": "Equal",
+  "@divisionModeEqual": {},
+  "divisionModeShares": "By share",
+  "@divisionModeShares": {},
+  "divisionModeAreas": "By area",
+  "@divisionModeAreas": {},
+  "divisionShareHint": "e.g. 1/3",
+  "@divisionShareHint": {},
+  "divisionShareHelp": "Write shares as parts — 1/3, 6 anna, 25% — or as counts: 2 for a son, 1 for a daughter.",
+  "@divisionShareHelp": {},
+  "divisionAreaHelp": "Leave an area blank and that owner shares what is left.",
+  "@divisionAreaHelp": {},
+  "divisionAreaHint": "rest",
+  "@divisionAreaHint": {},
+  "divisionNameHint": "Name",
+  "@divisionNameHint": {},
+  "divisionAddOwner": "Add one more",
+  "@divisionAddOwner": {},
+  "divisionRest": "Unassigned",
+  "@divisionRest": {},
+  "divisionRoad": "Road",
+  "@divisionRoad": {},
+  "divisionRoadWidth": "Road · {width}",
+  "@divisionRoadWidth": {
+    "placeholders": {
+      "width": {
+        "type": "String"
+      }
+    }
+  },
+  "divisionIssueSharesOver": "Shares add up to more than the whole land.",
+  "@divisionIssueSharesOver": {},
+  "divisionIssueSharesMixed": "Write all shares the same way — either parts (1/3, 6 anna) or counts (2, 1).",
+  "@divisionIssueSharesMixed": {},
+  "divisionIssueShareUnreadable": "A share could not be read — write it like 1/3, 6 anna, 25% or 2.",
+  "@divisionIssueShareUnreadable": {},
+  "divisionIssueAreasOver": "The areas add up to more than the land.",
+  "@divisionIssueAreasOver": {},
+  "divisionIssueAreaUnreadable": "An area could not be read.",
+  "@divisionIssueAreaUnreadable": {},
+  "divisionIssueRoadTooWide": "The road is as deep as the whole plot.",
+  "@divisionIssueRoadTooWide": {},
+  "divisionRestNote": "{area} is not given to anyone yet.",
+  "@divisionRestNote": {
+    "placeholders": {
+      "area": {
+        "type": "String"
+      }
+    }
+  },
+  "divisionGiveRest": "Add an owner for it",
+  "@divisionGiveRest": {},
+  "divisionFrontTitle": "WHICH SIDE SHOULD EVERY LOT TOUCH?",
+  "@divisionFrontTitle": {},
+  "divisionFrontHint": "Usually the road side: every lot gets its own stretch of it. Tap a side on the drawing, or pick one here.",
+  "@divisionFrontHint": {},
+  "divisionFrontAny": "Free",
+  "@divisionFrontAny": {},
+  "divisionSideN": "Side {n} · {length}",
+  "@divisionSideN": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      },
+      "length": {
+        "type": "String"
+      }
+    }
+  },
+  "divisionRoadTitle": "COMMON ROAD ALONG THAT SIDE",
+  "@divisionRoadTitle": {},
+  "divisionRoadHint": "Taken out first; every lot opens onto it.",
+  "@divisionRoadHint": {},
+  "divisionRoadNone": "None",
+  "@divisionRoadNone": {},
+  "divisionRoadNeedsFront": "Choose the side first.",
+  "@divisionRoadNeedsFront": {},
+  "divisionStraighten": "Straighten dividers",
+  "@divisionStraighten": {},
+  "divisionFront": "Front",
+  "@divisionFront": {},
+  "divisionNorth": "N",
+  "@divisionNorth": {},
+  "cardinalNorth": "North",
+  "@cardinalNorth": {},
+  "cardinalEast": "East",
+  "@cardinalEast": {},
+  "cardinalSouth": "South",
+  "@cardinalSouth": {},
+  "cardinalWest": "West",
+  "@cardinalWest": {},
+  "divisionOutside": "plot boundary",
+  "@divisionOutside": {},
+  "divisionSaved": "Saved as a sheet",
+  "@divisionSaved": {},
+  "divisionOpenSheet": "Open",
+  "@divisionOpenSheet": {},
+  "divisionSheetName": "{name} — division",
+  "@divisionSheetName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "divisionPdfTitle": "DIVISION",
+  "@divisionPdfTitle": {},
+  "divisionPdfTotal": "Total land",
+  "@divisionPdfTotal": {},
+  "divisionPdfNorth": "The top of the drawing is north.",
+  "@divisionPdfNorth": {},
+  "divisionPdfDisclaimer": "Drawn for measurement — not a legal deed.",
+  "@divisionPdfDisclaimer": {},
+  "divisionColShare": "Share",
+  "@divisionColShare": {},
+  "divisionColSide": "Side",
+  "@divisionColSide": {},
+  "divisionColLength": "Length",
+  "@divisionColLength": {},
+  "divisionColBeyond": "Beyond",
+  "@divisionColBeyond": {},
+  "divisionSlid": "Sizes changed to areas.",
+  "@divisionSlid": {},
+  "divisionEdit": "Change division",
+  "@divisionEdit": {},
+  "divisionParentGone": "The plot this was divided from has been deleted.",
+  "@divisionParentGone": {},
+  "divisionPeople": "{name} · {count} owners",
+  "@divisionPeople": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "divisionDragHint": "Drag a divider to shift land, or its end to turn it.",
+  "@divisionDragHint": {},
+  "divisionBoundsEmpty": "Nothing to show until the division works out.",
+  "@divisionBoundsEmpty": {},
+  "divisionColLocal": "In local units",
+  "@divisionColLocal": {}
 }

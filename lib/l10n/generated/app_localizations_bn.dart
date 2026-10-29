@@ -1630,4 +1630,199 @@ class AppLocalizationsBn extends AppLocalizations {
   String overlayMovePlace(String n) {
     return '$n নম্বর জায়গা: যেকোনো ম্যাপে সঠিক জায়গায় চাপুন, বা চিহ্নটি টেনে মেলান।';
   }
+
+  @override
+  String get divisionOwnersTab => 'মালিক';
+
+  @override
+  String get divisionSidesTab => 'দিক ও রাস্তা';
+
+  @override
+  String get divisionBoundsTab => 'চৌহদ্দি';
+
+  @override
+  String get divisionHowLabel => 'কীভাবে ভাগ';
+
+  @override
+  String get divisionModeEqual => 'সমান';
+
+  @override
+  String get divisionModeShares => 'অংশে';
+
+  @override
+  String get divisionModeAreas => 'মাপে';
+
+  @override
+  String get divisionShareHint => 'যেমন ১/৩';
+
+  @override
+  String get divisionShareHelp =>
+      'অংশ লিখুন ভাগ হিসেবে — ১/৩, ৬ আনা, ২৫% — অথবা সংখ্যায়: ছেলের ২, মেয়ের ১।';
+
+  @override
+  String get divisionAreaHelp =>
+      'কারো মাপ খালি রাখলে বাকি জমি তারা ভাগ করে নেবেন।';
+
+  @override
+  String get divisionAreaHint => 'বাকি';
+
+  @override
+  String get divisionNameHint => 'নাম';
+
+  @override
+  String get divisionAddOwner => 'আরও একজন';
+
+  @override
+  String get divisionRest => 'অবণ্টিত';
+
+  @override
+  String get divisionRoad => 'রাস্তা';
+
+  @override
+  String divisionRoadWidth(String width) {
+    return 'রাস্তা · $width';
+  }
+
+  @override
+  String get divisionIssueSharesOver => 'অংশের যোগফল পুরো জমির চেয়ে বেশি।';
+
+  @override
+  String get divisionIssueSharesMixed =>
+      'সব অংশ একইভাবে লিখুন — হয় ভাগ (১/৩, ৬ আনা), নয় সংখ্যা (২, ১)।';
+
+  @override
+  String get divisionIssueShareUnreadable =>
+      'একটি অংশ বোঝা যায়নি — ১/৩, ৬ আনা, ২৫% বা ২ এভাবে লিখুন।';
+
+  @override
+  String get divisionIssueAreasOver => 'মাপের যোগফল জমির চেয়ে বেশি।';
+
+  @override
+  String get divisionIssueAreaUnreadable => 'একটি মাপ বোঝা যায়নি।';
+
+  @override
+  String get divisionIssueRoadTooWide => 'রাস্তা পুরো জমির সমান গভীর।';
+
+  @override
+  String divisionRestNote(String area) {
+    return '$area এখনো কাউকে দেওয়া হয়নি।';
+  }
+
+  @override
+  String get divisionGiveRest => 'এর জন্য একজন যোগ করুন';
+
+  @override
+  String get divisionFrontTitle => 'সব লট কোন বাহু ছুঁয়ে থাকবে?';
+
+  @override
+  String get divisionFrontHint =>
+      'সাধারণত রাস্তার দিক — প্রত্যেকে সেই দিকে নিজের অংশ পাবেন। নকশায় বাহুতে চাপ দিন, বা এখান থেকে বাছুন।';
+
+  @override
+  String get divisionFrontAny => 'যেকোনো';
+
+  @override
+  String divisionSideN(String n, String length) {
+    return 'বাহু $n · $length';
+  }
+
+  @override
+  String get divisionRoadTitle => 'সেই বাহু ঘেঁষে চলাচলের রাস্তা';
+
+  @override
+  String get divisionRoadHint =>
+      'আগে রাস্তা আলাদা হবে, প্রতিটি লট রাস্তায় মুখ করে থাকবে।';
+
+  @override
+  String get divisionRoadNone => 'নেই';
+
+  @override
+  String get divisionRoadNeedsFront => 'আগে বাহু বাছুন।';
+
+  @override
+  String get divisionStraighten => 'রেখা সোজা করুন';
+
+  @override
+  String get divisionFront => 'সামনে';
+
+  @override
+  String get divisionNorth => 'উ';
+
+  @override
+  String get cardinalNorth => 'উত্তর';
+
+  @override
+  String get cardinalEast => 'পূর্ব';
+
+  @override
+  String get cardinalSouth => 'দক্ষিণ';
+
+  @override
+  String get cardinalWest => 'পশ্চিম';
+
+  @override
+  String get divisionOutside => 'জমির সীমানা';
+
+  @override
+  String get divisionSaved => 'শিট হিসেবে সংরক্ষিত';
+
+  @override
+  String get divisionOpenSheet => 'খুলুন';
+
+  @override
+  String divisionSheetName(String name) {
+    return '$name — বণ্টন';
+  }
+
+  @override
+  String get divisionPdfTitle => 'বণ্টননামা';
+
+  @override
+  String get divisionPdfTotal => 'মোট জমি';
+
+  @override
+  String get divisionPdfNorth => 'নকশার উপরের দিক উত্তর।';
+
+  @override
+  String get divisionPdfDisclaimer => 'মাপের জন্য আঁকা — আইনি দলিল নয়।';
+
+  @override
+  String get divisionColShare => 'অংশ';
+
+  @override
+  String get divisionColSide => 'দিক';
+
+  @override
+  String get divisionColLength => 'দৈর্ঘ্য';
+
+  @override
+  String get divisionColBeyond => 'পাশে';
+
+  @override
+  String get divisionSlid => 'মাপ অনুযায়ী বদলানো হলো।';
+
+  @override
+  String get divisionEdit => 'বিভাজন বদলান';
+
+  @override
+  String get divisionParentGone =>
+      'যে প্লট ভাগ করা হয়েছিল সেটি মুছে ফেলা হয়েছে।';
+
+  @override
+  String divisionPeople(String name, int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$name · $countString জনে';
+  }
+
+  @override
+  String get divisionDragHint => 'রেখা টেনে জমি সরান, রেখার মাথা টেনে ঘোরান।';
+
+  @override
+  String get divisionBoundsEmpty => 'ভাগ ঠিক হলে এখানে দেখাবে।';
+
+  @override
+  String get divisionColLocal => 'স্থানীয় মাপে';
 }

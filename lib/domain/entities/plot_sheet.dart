@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+import '../../core/geometry/division_plan.dart';
 import '../../core/geometry/sheet_layout.dart';
 import '../../core/units/area_unit.dart';
 
@@ -32,6 +33,10 @@ class PlotSheet extends Equatable {
   /// an entry are laid out automatically until someone arranges them.
   final Map<String, PlotPlacement> layout;
 
+  /// How the plots were made, when this sheet is a saved division of one
+  /// plot: kept so the division can be opened and changed again.
+  final DivisionSpec? division;
+
   const PlotSheet({
     required this.id,
     required this.name,
@@ -41,6 +46,7 @@ class PlotSheet extends Equatable {
     this.pricePerUnit,
     this.priceUnit = AreaUnit.shotok,
     this.layout = const {},
+    this.division,
   });
 
   PlotSheet copyWith({
@@ -52,6 +58,7 @@ class PlotSheet extends Equatable {
     bool clearPrice = false,
     AreaUnit? priceUnit,
     Map<String, PlotPlacement>? layout,
+    DivisionSpec? division,
   }) => PlotSheet(
     id: id,
     name: name ?? this.name,
@@ -61,6 +68,7 @@ class PlotSheet extends Equatable {
     pricePerUnit: clearPrice ? null : (pricePerUnit ?? this.pricePerUnit),
     priceUnit: priceUnit ?? this.priceUnit,
     layout: layout ?? this.layout,
+    division: division ?? this.division,
   );
 
   Map<String, dynamic> toJson() => {
@@ -73,6 +81,7 @@ class PlotSheet extends Equatable {
     'priceUnit': priceUnit.name,
     if (layout.isNotEmpty)
       'layout': {for (final e in layout.entries) e.key: e.value.toJson()},
+    if (division != null) 'division': division!.toJson(),
   };
 
   factory PlotSheet.fromJson(Map<String, dynamic> j) => PlotSheet(
@@ -89,6 +98,9 @@ class PlotSheet extends Equatable {
           (e.value as Map).cast<String, dynamic>(),
         ),
     },
+    division: j['division'] == null
+        ? null
+        : DivisionSpec.fromJson((j['division'] as Map).cast<String, dynamic>()),
   );
 
   static AreaUnit? _unitOrNull(Object? key) {
@@ -109,5 +121,6 @@ class PlotSheet extends Equatable {
     priceUnit,
     createdAt,
     layout,
+    division?.toJson().toString(),
   ];
 }

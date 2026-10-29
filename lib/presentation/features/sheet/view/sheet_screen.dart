@@ -381,6 +381,16 @@ class _SheetScreenState extends State<SheetScreen> {
                     onChanged: _onPriceChanged,
                     onUnit: _pickPriceUnit,
                   ),
+                  if (sheet.division != null) ...[
+                    const SizedBox(height: 8),
+                    _DivisionCard(
+                      accent: accent,
+                      onEdit: () {
+                        FocusScope.of(context).unfocus();
+                        context.push(AppRoutes.divide, extra: sheet.id);
+                      },
+                    ),
+                  ],
                   if (s.rows.isNotEmpty) ...[
                     const SizedBox(height: 8),
                     _LayoutCard(
@@ -585,6 +595,41 @@ class _TotalCard extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Shown on a sheet saved from বিভাজন: the way back into it.
+class _DivisionCard extends StatelessWidget {
+  final Color accent;
+  final VoidCallback onEdit;
+  const _DivisionCard({required this.accent, required this.onEdit});
+
+  @override
+  Widget build(BuildContext context) => InkWell(
+    key: const ValueKey('edit-division'),
+    onTap: onEdit,
+    borderRadius: BorderRadius.circular(14),
+    child: Container(
+      padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        border: Border.all(color: accent.withValues(alpha: 0.45)),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.call_split, size: 20, color: accent),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              context.l10n.divisionEdit,
+              style: AppTypography.sans(size: 14, weight: FontWeight.w600),
+            ),
+          ),
+          Icon(Icons.chevron_right, size: 20, color: accent),
+        ],
+      ),
+    ),
+  );
 }
 
 /// The arrangement at a glance, with the way into the canvas editor.

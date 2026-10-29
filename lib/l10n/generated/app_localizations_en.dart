@@ -1636,4 +1636,204 @@ class AppLocalizationsEn extends AppLocalizations {
   String overlayMovePlace(String n) {
     return 'Place $n: tap the right spot, or drag its mark, on either map.';
   }
+
+  @override
+  String get divisionOwnersTab => 'Owners';
+
+  @override
+  String get divisionSidesTab => 'Side & road';
+
+  @override
+  String get divisionBoundsTab => 'Boundaries';
+
+  @override
+  String get divisionHowLabel => 'HOW TO DIVIDE';
+
+  @override
+  String get divisionModeEqual => 'Equal';
+
+  @override
+  String get divisionModeShares => 'By share';
+
+  @override
+  String get divisionModeAreas => 'By area';
+
+  @override
+  String get divisionShareHint => 'e.g. 1/3';
+
+  @override
+  String get divisionShareHelp =>
+      'Write shares as parts — 1/3, 6 anna, 25% — or as counts: 2 for a son, 1 for a daughter.';
+
+  @override
+  String get divisionAreaHelp =>
+      'Leave an area blank and that owner shares what is left.';
+
+  @override
+  String get divisionAreaHint => 'rest';
+
+  @override
+  String get divisionNameHint => 'Name';
+
+  @override
+  String get divisionAddOwner => 'Add one more';
+
+  @override
+  String get divisionRest => 'Unassigned';
+
+  @override
+  String get divisionRoad => 'Road';
+
+  @override
+  String divisionRoadWidth(String width) {
+    return 'Road · $width';
+  }
+
+  @override
+  String get divisionIssueSharesOver =>
+      'Shares add up to more than the whole land.';
+
+  @override
+  String get divisionIssueSharesMixed =>
+      'Write all shares the same way — either parts (1/3, 6 anna) or counts (2, 1).';
+
+  @override
+  String get divisionIssueShareUnreadable =>
+      'A share could not be read — write it like 1/3, 6 anna, 25% or 2.';
+
+  @override
+  String get divisionIssueAreasOver =>
+      'The areas add up to more than the land.';
+
+  @override
+  String get divisionIssueAreaUnreadable => 'An area could not be read.';
+
+  @override
+  String get divisionIssueRoadTooWide =>
+      'The road is as deep as the whole plot.';
+
+  @override
+  String divisionRestNote(String area) {
+    return '$area is not given to anyone yet.';
+  }
+
+  @override
+  String get divisionGiveRest => 'Add an owner for it';
+
+  @override
+  String get divisionFrontTitle => 'WHICH SIDE SHOULD EVERY LOT TOUCH?';
+
+  @override
+  String get divisionFrontHint =>
+      'Usually the road side: every lot gets its own stretch of it. Tap a side on the drawing, or pick one here.';
+
+  @override
+  String get divisionFrontAny => 'Free';
+
+  @override
+  String divisionSideN(String n, String length) {
+    return 'Side $n · $length';
+  }
+
+  @override
+  String get divisionRoadTitle => 'COMMON ROAD ALONG THAT SIDE';
+
+  @override
+  String get divisionRoadHint => 'Taken out first; every lot opens onto it.';
+
+  @override
+  String get divisionRoadNone => 'None';
+
+  @override
+  String get divisionRoadNeedsFront => 'Choose the side first.';
+
+  @override
+  String get divisionStraighten => 'Straighten dividers';
+
+  @override
+  String get divisionFront => 'Front';
+
+  @override
+  String get divisionNorth => 'N';
+
+  @override
+  String get cardinalNorth => 'North';
+
+  @override
+  String get cardinalEast => 'East';
+
+  @override
+  String get cardinalSouth => 'South';
+
+  @override
+  String get cardinalWest => 'West';
+
+  @override
+  String get divisionOutside => 'plot boundary';
+
+  @override
+  String get divisionSaved => 'Saved as a sheet';
+
+  @override
+  String get divisionOpenSheet => 'Open';
+
+  @override
+  String divisionSheetName(String name) {
+    return '$name — division';
+  }
+
+  @override
+  String get divisionPdfTitle => 'DIVISION';
+
+  @override
+  String get divisionPdfTotal => 'Total land';
+
+  @override
+  String get divisionPdfNorth => 'The top of the drawing is north.';
+
+  @override
+  String get divisionPdfDisclaimer =>
+      'Drawn for measurement — not a legal deed.';
+
+  @override
+  String get divisionColShare => 'Share';
+
+  @override
+  String get divisionColSide => 'Side';
+
+  @override
+  String get divisionColLength => 'Length';
+
+  @override
+  String get divisionColBeyond => 'Beyond';
+
+  @override
+  String get divisionSlid => 'Sizes changed to areas.';
+
+  @override
+  String get divisionEdit => 'Change division';
+
+  @override
+  String get divisionParentGone =>
+      'The plot this was divided from has been deleted.';
+
+  @override
+  String divisionPeople(String name, int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$name · $countString owners';
+  }
+
+  @override
+  String get divisionDragHint =>
+      'Drag a divider to shift land, or its end to turn it.';
+
+  @override
+  String get divisionBoundsEmpty =>
+      'Nothing to show until the division works out.';
+
+  @override
+  String get divisionColLocal => 'In local units';
 }

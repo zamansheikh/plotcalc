@@ -4,42 +4,62 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart' show NumberFormat;
+import 'package:printing/printing.dart';
 
 import '../../../../core/di/injection.dart';
+import '../../../../core/export/division_pdf.dart';
+import '../../../../core/export/sheet_summary.dart';
+import '../../../../core/geometry/division_plan.dart';
 import '../../../../core/geometry/geometry.dart';
+import '../../../../core/geometry/lot_division.dart';
 import '../../../../core/geometry/vertex.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/units/area_unit.dart';
-import '../../../../domain/entities/plot.dart';
-import '../../../../domain/usecases/get_plots.dart';
-import '../../../shared/settings/settings_bloc.dart';
-import '../../../shared/widgets/grid_background.dart';
-import '../../../shared/widgets/plot_thumbnail.dart';
-import '../../../../l10n/l10n.dart';
-import '../../../shared/widgets/tab_header.dart';
-import 'package:uuid/uuid.dart';
-
-import '../../../../core/geometry/lot_division.dart';
-import '../../../../domain/usecases/save_plot.dart';
 import '../../../../core/units/length_unit.dart';
+import '../../../../domain/entities/plot.dart';
+import '../../../../domain/entities/plot_sheet.dart';
+import '../../../../domain/usecases/get_plots.dart';
+import '../../../../domain/usecases/get_sheets.dart';
+import '../../../../l10n/l10n.dart';
+import '../../../shared/settings/settings_bloc.dart';
+import '../../../shared/widgets/phone_chrome.dart';
+import '../../../shared/widgets/plot_thumbnail.dart';
+import '../../../shared/widgets/tab_header.dart';
+import '../division_store.dart';
+import 'division_canvas.dart';
 
-/// How the lots are being sized.
-enum _SplitMode { equal, percent, area }
+/// One owner's row: its text fields outlive rebuilds, and its key outlives
+/// reordering.
+class _OwnerRow {
+  final int key;
+  final TextEditingController name;
+  final TextEditingController amount;
+  _OwnerRow(this.key, String name, String amount)
+    : name = TextEditingController(text: name),
+      amount = TextEditingController(text: amount);
 
-const _lotColours = [
-  AppColors.lime,
-  AppColors.soil,
-  AppColors.sky,
-  AppColors.amber,
-  AppColors.violet,
-  AppColors.emerald,
-  AppColors.rose,
-];
+  void dispose() {
+    name.dispose();
+    amount.dispose();
+  }
+}
 
+/// Divide a plot among owners — equally, by share, or by area — with every
+/// lot facing a chosen side, a common road kept out first if needed, each
+/// lot's boundaries worked out, and the whole saved as a sheet that can be
+/// opened and changed again.
+///
+/// The drawing is always the live result; the three tabs below it each ask
+/// one plain question: who gets what, which side and road, and what bounds
+/// each lot.
 class SubdivideScreen extends StatefulWidget {
-  const SubdivideScreen({super.key});
+  /// A saved division to open again, by its sheet's id.
+  final String? editSheetId;
+
+  const SubdivideScreen({super.key, this.editSheetId});
 
   @override
   State<SubdivideScreen> createState() => _SubdivideScreenState();
@@ -47,240 +67,499 @@ class SubdivideScreen extends StatefulWidget {
 
 class _SubdivideScreenState extends State<SubdivideScreen> {
   Plot? _plot;
+  DivisionSpec? _spec;
+  final List<_OwnerRow> _rows = [];
+  int _nextKey = 0;
+  int _tab = 0;
+  PlotSheet? _editing;
+  bool _loading = false;
+  String? _error;
+  bool _busy = false;
+  bool _slid = false;
 
-  /// Shares of the parent plot, normalised to 1. Percent and area entry are
-  /// both just different ways of writing a share down.
-  List<double> _shares = LotDivision.equalShares(2);
-
-  /// One angle per divider. A divider is a chord, not a vertical line —
-  /// dragging either end pivots it about the other.
-  List<double> _angles = [LotDivision.defaultAngle];
-  _SplitMode _mode = _SplitMode.equal;
-
-  List<Vertex> get _verts => _plot?.vertices ?? const [];
-  double get _totalSqm => Geometry.polygonArea(_verts);
-
-  List<Lot> get _lots =>
-      LotDivision.divide(_verts, _shares, angles: _angles);
-
-  List<CutLine> get _cutLines =>
-      LotDivision.cutLines(_verts, _shares, angles: _angles);
-
-  Color _colourFor(int i) => _lotColours[i % _lotColours.length];
-
-  void _setShares(List<double> next) {
-    final sum = next.fold<double>(0, (a, b) => a + b);
-    if (sum <= 0) return;
-    setState(() => _shares = [for (final s in next) s / sum]);
+  @override
+  void initState() {
+    super.initState();
+    if (widget.editSheetId != null) _loadEdit(widget.editSheetId!);
   }
 
-  void _addLot() {
-    // The new lot takes an even share and everyone gives up a little.
-    final next = [..._shares, 1 / (_shares.length + 1)];
-    setState(() => _angles = [..._angles, LotDivision.defaultAngle]);
-    _setShares(next);
-    setState(() => _mode = _SplitMode.percent);
-  }
-
-  void _removeLot(int index) {
-    if (_shares.length <= 2) return;
-    final next = [..._shares]..removeAt(index);
-    setState(() {
-      if (index < _angles.length) _angles = [..._angles]..removeAt(index);
-    });
-    _setShares(next);
-  }
-
-  void _makeEqual() {
-    setState(() {
-      _mode = _SplitMode.equal;
-      _shares = LotDivision.equalShares(_shares.length);
-    });
-  }
-
-  void _resetAngles() => setState(
-    () => _angles = List.filled(_shares.length, LotDivision.defaultAngle),
-  );
-
-  /// Sets one lot's share, taking the difference from the others in
-  /// proportion so the plot still adds up.
-  void _setShare(int index, double share) {
-    final clamped = share.clamp(0.01, 0.99);
-    final others = [
-      for (var i = 0; i < _shares.length; i++)
-        if (i != index) i,
-    ];
-    final otherSum = others.fold<double>(0, (a, i) => a + _shares[i]);
-    final remaining = 1 - clamped;
-    final next = List<double>.of(_shares);
-    next[index] = clamped;
-    for (final i in others) {
-      next[i] = otherSum <= 0
-          ? remaining / others.length
-          : remaining * (_shares[i] / otherSum);
+  @override
+  void dispose() {
+    for (final r in _rows) {
+      r.dispose();
     }
-    _setShares(next);
+    super.dispose();
   }
 
-  /// Slides a whole divider sideways, moving land between its two lots.
-  void _moveCut(int index, Vertex to) => _setShares(
-    LotDivision.sharesAfterMove(_verts, _shares, _angles, index, to),
-  );
-
-  /// Pivots a divider about its other end. The area it was promised is kept
-  /// — the line re-solves its position, so only the direction changes.
-  void _pivotCut(int index, bool draggingA, Vertex to) {
-    final lines = _cutLines;
-    if (index < 0 || index >= lines.length) return;
-    final fixed = draggingA ? lines[index].b : lines[index].a;
-    final angle = LotDivision.angleAfterDrag(fixed, to);
+  Future<void> _loadEdit(String sheetId) async {
+    setState(() => _loading = true);
+    final sheet = await sl<GetSheets>().byId(sheetId);
+    final spec = sheet?.division;
+    final plots = await sl<GetPlots>()();
+    if (!mounted) return;
+    final t = context.l10n;
+    final parent = spec == null
+        ? null
+        : plots.where((p) => p.id == spec.parentPlotId).firstOrNull;
     setState(() {
-      final next = List<double>.of(_angles);
-      while (next.length <= index) {
-        next.add(LotDivision.defaultAngle);
+      _loading = false;
+      if (sheet == null || spec == null || parent == null) {
+        _error = t.divisionParentGone;
+        return;
       }
-      next[index] = angle;
-      _angles = next;
+      _editing = sheet;
+      _start(parent, spec: spec);
     });
   }
 
-  /// Saves each lot as its own plot, named after the parent.
-  Future<void> _saveLots() async {
-    final parent = _plot;
-    if (parent == null) return;
+  void _start(Plot p, {DivisionSpec? spec}) {
+    for (final r in _rows) {
+      r.dispose();
+    }
+    _rows.clear();
+    _plot = p;
+    _spec =
+        spec ??
+        DivisionSpec(
+          parentPlotId: p.id,
+          owners: const [DivisionOwner(), DivisionOwner()],
+        );
+    for (final o in _spec!.owners) {
+      _rows.add(_newRow(o.name, o.amount));
+    }
+    _tab = 0;
+    _slid = false;
+  }
+
+  _OwnerRow _newRow(String name, String amount) {
+    final row = _OwnerRow(_nextKey++, name, amount);
+    row.name.addListener(_sync);
+    row.amount.addListener(_sync);
+    return row;
+  }
+
+  /// Text fields are the source of truth for owners; this copies them into
+  /// the spec whenever one changes.
+  void _sync() {
+    final spec = _spec;
+    if (spec == null) return;
+    final owners = [
+      for (final r in _rows)
+        DivisionOwner(name: r.name.text, amount: r.amount.text),
+    ];
+    setState(() => _spec = spec.copyWith(owners: owners));
+  }
+
+  void _update(DivisionSpec next) => setState(() => _spec = next);
+
+  /// Owners added, removed or reordered: the dividers between them are new,
+  /// so any turned by hand go back to following the front side.
+  void _ownersChanged() {
+    _spec = _spec!.copyWith(angles: const []);
+    _sync();
+  }
+
+  void _addOwner({String amount = ''}) {
+    _rows.add(_newRow('', amount));
+    _ownersChanged();
+  }
+
+  void _removeOwner(int i) {
+    if (_rows.length <= 1) return;
+    _rows.removeAt(i).dispose();
+    _ownersChanged();
+  }
+
+  void _reorder(int from, int to) {
+    final row = _rows.removeAt(from);
+    _rows.insert(to, row);
+    _ownersChanged();
+  }
+
+  void _setMode(DivisionMode m) {
+    final spec = _spec!;
+    if (m == spec.mode) return;
+    // A share means nothing as an area and the other way round.
+    for (final r in _rows) {
+      r.amount.removeListener(_sync);
+      r.amount.text = '';
+      r.amount.addListener(_sync);
+    }
+    _update(spec.copyWith(mode: m));
+    _sync();
+  }
+
+  void _setAreaUnit(AreaUnit u) {
+    final spec = _spec!;
+    for (final r in _rows) {
+      final v = ShareParser.number(r.amount.text);
+      if (v == null) continue;
+      r.amount.removeListener(_sync);
+      r.amount.text = _plain(u.fromSqm(spec.areaUnit.toSqm(v)));
+      r.amount.addListener(_sync);
+    }
+    _update(spec.copyWith(areaUnit: u));
+    _sync();
+  }
+
+  void _tapSide(int side) {
+    final spec = _spec!;
+    HapticFeedback.selectionClick();
+    _update(
+      spec.frontSide == side
+          ? spec.copyWith(clearFront: true, roadWidthM: 0, angles: const [])
+          : spec.copyWith(frontSide: side, angles: const []),
+    );
+  }
+
+  void _pivot(DivisionResult r, int index, bool firstEnd, Vertex to) {
+    if (index >= r.cuts.length) return;
+    final fixed = firstEnd ? r.cuts[index].b : r.cuts[index].a;
+    final angle = LotDivision.angleAfterDrag(fixed, to);
+    final spec = _spec!;
+    final angles = List<double?>.of(spec.angles);
+    while (angles.length <= index) {
+      angles.add(null);
+    }
+    angles[index] = angle;
+    _update(spec.copyWith(angles: angles));
+  }
+
+  void _slide(DivisionResult r, int index, Vertex to) {
+    final spec = _spec!;
+    final amounts = DivisionPlan.areasAfterSlide(spec, r, index, to);
+    if (spec.mode != DivisionMode.areas) _slid = true;
+    for (var i = 0; i < _rows.length && i < amounts.length; i++) {
+      _rows[i].amount.removeListener(_sync);
+      _rows[i].amount.text = amounts[i];
+      _rows[i].amount.addListener(_sync);
+    }
+    _spec = spec.copyWith(mode: DivisionMode.areas);
+    _sync();
+  }
+
+  void _dragEnded() {
+    if (!_slid) return;
+    _slid = false;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(context.l10n.divisionSlid)));
+  }
+
+  /// Gives the unassigned rest to a new owner.
+  void _giveRest(DivisionResult r) {
+    final spec = _spec!;
+    if (spec.mode == DivisionMode.shares) {
+      final used = spec.owners.fold<double>(
+        0,
+        (s, o) => s + (ShareParser.parse(o.amount)?.value ?? 0),
+      );
+      _addOwner(amount: _fraction(1 - used));
+    } else {
+      _addOwner();
+    }
+    setState(() => _tab = 0);
+  }
+
+  Future<void> _save(DivisionResult r) async {
+    final plot = _plot, spec = _spec;
+    if (plot == null || spec == null || _busy) return;
+    setState(() => _busy = true);
     final messenger = ScaffoldMessenger.of(context);
     final t = context.l10n;
-    final lots = _lots;
-
-    for (var i = 0; i < lots.length; i++) {
-      await sl<SavePlot>()(
-        Plot(
-          id: const Uuid().v4(),
-          // "land_abc" divided into "land_abc_lot_1", "land_abc_lot_2" ...
-          name: '${parent.name}_lot_${i + 1}',
-          vertices: lots[i].vertices,
-          tag: parent.tag,
-          createdAt: DateTime.now(),
-          colorValue: _colourFor(i).toARGB32(),
-          preferredUnit: parent.preferredUnit,
-        ),
+    final router = GoRouter.maybeOf(context);
+    try {
+      final sheet = await DivisionStore.save(
+        parent: plot,
+        spec: spec,
+        result: r,
+        t: t,
+        existing: _editing,
       );
+      if (!mounted) return;
+      setState(() {
+        _editing = sheet;
+        _spec = sheet.division;
+      });
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(t.divisionSaved),
+            // Opened from its sheet, the sheet is right behind this screen.
+            action: widget.editSheetId != null || router == null
+                ? null
+                : SnackBarAction(
+                    label: t.divisionOpenSheet,
+                    onPressed: () =>
+                        router.push(AppRoutes.sheet, extra: sheet.id),
+                  ),
+          ),
+        );
+    } finally {
+      if (mounted) setState(() => _busy = false);
     }
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(t.subdivideSavedLots(lots.length, parent.name)),
-      ),
-    );
+  }
+
+  Future<void> _pdf(DivisionResult r) async {
+    final plot = _plot, spec = _spec;
+    if (plot == null || spec == null || _busy) return;
+    final t = context.l10n;
+    final settings = context.read<SettingsBloc>().state;
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _busy = true);
+    try {
+      final names = DivisionNames(spec, t);
+      final bytes = await DivisionPdf.build(
+        t: t,
+        plotName: plot.name,
+        parent: plot.vertices,
+        spec: spec,
+        result: r,
+        nameOf: names.of,
+        areaUnit: plot.preferredUnit ?? settings.areaUnit,
+        lengthUnit: settings.lengthUnit,
+        breakdown: settings.breakdown,
+      );
+      await Printing.sharePdf(bytes: bytes, filename: 'division.pdf');
+    } catch (_) {
+      messenger.showSnackBar(SnackBar(content: Text(t.exportFailed)));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  static String _plain(double v) =>
+      v.toStringAsFixed(2).replaceFirst(RegExp(r'\.?0+$'), '');
+
+  /// A leftover share as people write it: a simple fraction when it is
+  /// one, a decimal otherwise.
+  static String _fraction(double v) {
+    for (final d in const [2, 3, 4, 5, 6, 8, 10, 12, 16, 20, 24, 32, 48, 64]) {
+      final k = (v * d).round();
+      if (k > 0 && (k / d - v).abs() < 1e-6) {
+        final n = NumberFormat.decimalPattern();
+        return '${n.format(k)}/${n.format(d)}';
+      }
+    }
+    return v.toStringAsFixed(4);
   }
 
   @override
   Widget build(BuildContext context) {
-    final settings = context.watch<SettingsBloc>().state;
-    final accent = settings.accent;
-
-    if (_plot == null) {
+    final t = context.l10n;
+    final edit = widget.editSheetId != null;
+    if (_loading) {
+      return const Center(
+        child: CircularProgressIndicator(color: AppColors.lime),
+      );
+    }
+    if (_error != null) {
       return SafeArea(
         child: Column(
           children: [
-            const SizedBox(height: 8),
-            _Header(
-              title: context.l10n.subdivideTitle,
-              subtitle: context.l10n.subdivideSubtitle,
-            ),
+            _EditBar(title: t.subdivideTitle),
             Expanded(
-              child: _PlotPicker(
-                onSelect: (p) => setState(() => _plot = p),
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Text(
+                    _error!,
+                    textAlign: TextAlign.center,
+                    style: AppTypography.bodyDim,
+                  ),
+                ),
               ),
             ),
           ],
         ),
       );
     }
+    final plot = _plot;
+    final spec = _spec;
+    if (plot == null || spec == null) {
+      return SafeArea(
+        child: Column(
+          children: [
+            const SizedBox(height: 8),
+            _Header(title: t.subdivideTitle, subtitle: t.subdivideSubtitle),
+            Expanded(
+              child: _PlotPicker(onSelect: (p) => setState(() => _start(p))),
+            ),
+          ],
+        ),
+      );
+    }
 
-    final verts = _verts;
-    final totalSqm = _totalSqm;
-    final lots = _lots;
+    final settings = context.watch<SettingsBloc>().state;
+    final accent = settings.accent;
+    final result = DivisionPlan.compute(spec, plot.vertices);
+    final names = DivisionNames(spec, t);
+    final areaUnit = plot.preferredUnit ?? settings.areaUnit;
+    final canSave = result.ok && result.lots.isNotEmpty && !_busy;
 
     return SafeArea(
-      child: Column(
-        children: [
-          const SizedBox(height: 8),
-          _SelectedHeader(
-            plot: _plot!,
-            lotCount: lots.length,
-            onChange: () => setState(() => _plot = null),
-          ),
-          _Canvas(
-            verts: verts,
-            lots: lots,
-            colours: [for (var i = 0; i < lots.length; i++) _colourFor(i)],
-            cutLines: _cutLines,
-            accent: accent,
-            lengthUnit: settings.lengthUnit,
-            onMoveCut: _moveCut,
-            onPivotCut: _pivotCut,
-            onResetAngles: _resetAngles,
-          ),
-          const SizedBox(height: 10),
-          _ModeRow(
-            mode: _mode,
-            accent: accent,
-            onEqual: _makeEqual,
-            onMode: (m) => setState(() => _mode = m),
-            onAdd: _addLot,
-          ),
-          const SizedBox(height: 8),
-          Expanded(
-            child: ListView.separated(
+      child: LayoutBuilder(
+        builder: (context, box) => Column(
+          children: [
+            if (edit)
+              _EditBar(
+                title: t.subdivideTitle,
+                subtitle: t.divisionPeople(plot.name, spec.owners.length),
+              )
+            else ...[
+              const SizedBox(height: 8),
+              _SelectedHeader(
+                plot: plot,
+                owners: spec.owners.length,
+                onChange: () => setState(() {
+                  _plot = null;
+                  _spec = null;
+                  _editing = null;
+                }),
+              ),
+            ],
+            Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: lots.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 6),
-              itemBuilder: (_, i) {
-                return _LotTile(
-                  index: i,
-                  lot: lots[i],
-                  colour: _colourFor(i),
-                  name: '${_plot!.name}_lot_${i + 1}',
-                  totalSqm: totalSqm,
-                  areaUnit: settings.areaUnit,
-                  mode: _mode,
-                  accent: accent,
-                  canRemove: lots.length > 2,
-                  onRemove: () => _removeLot(i),
-                  onShare: (share) => _setShare(i, share),
-                );
-              },
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-            child: SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                // Was a snackbar and nothing else: it announced a save that
-                // never happened. Each lot is now written to history in its
-                // own right.
-                onPressed: _saveLots,
-                style: FilledButton.styleFrom(
-                  backgroundColor: accent,
-                  foregroundColor: AppColors.ink,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  height: math.min(300, box.maxHeight * 0.38),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    border: Border.all(color: AppColors.line),
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                ),
-                child: Text(
-                  context.l10n.subdivideSaveAction,
-                  style: AppTypography.sans(
-                    size: 14,
-                    weight: FontWeight.w600,
-                    color: AppColors.ink,
+                  child: DivisionCanvas(
+                    parent: plot.vertices,
+                    result: result,
+                    frontSide: spec.frontSide,
+                    nameOf: names.of,
+                    lengthUnit: settings.lengthUnit,
+                    lengthLabel: settings.lengthUnit.labelOf(t),
+                    frontLabel: t.divisionFront,
+                    northLabel: t.divisionNorth,
+                    accent: accent,
+                    onTapSide: _tapSide,
+                    onPivot: (i, a, to) => _pivot(result, i, a, to),
+                    onSlide: (i, to) => _slide(result, i, to),
+                    onDragEnd: _dragEnded,
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 6, 20, 0),
+              child: Text(
+                t.divisionDragHint,
+                maxLines: 2,
+                style: AppTypography.sans(size: 11, color: AppColors.textFaint),
+              ),
+            ),
+            _Tabs(
+              index: _tab,
+              accent: accent,
+              labels: [
+                t.divisionOwnersTab,
+                t.divisionSidesTab,
+                t.divisionBoundsTab,
+              ],
+              warn: [!result.ok || result.rest != null, false, false],
+              onTap: (i) => setState(() => _tab = i),
+            ),
+            Expanded(
+              child: switch (_tab) {
+                0 => _OwnersTab(
+                  rows: _rows,
+                  spec: spec,
+                  result: result,
+                  areaUnit: areaUnit,
+                  accent: accent,
+                  onMode: _setMode,
+                  onAreaUnit: _setAreaUnit,
+                  onAdd: () => _addOwner(),
+                  onRemove: _removeOwner,
+                  onReorder: _reorder,
+                  onGiveRest: () => _giveRest(result),
+                ),
+                1 => _SidesTab(
+                  parent: plot.vertices,
+                  spec: spec,
+                  accent: accent,
+                  lengthUnit: settings.lengthUnit,
+                  onFront: (s) => s == null
+                      ? _update(
+                          spec.copyWith(
+                            clearFront: true,
+                            roadWidthM: 0,
+                            angles: const [],
+                          ),
+                        )
+                      : _update(spec.copyWith(frontSide: s, angles: const [])),
+                  onRoad: (w) => _update(spec.copyWith(roadWidthM: w)),
+                  onStraighten: () => _update(spec.copyWith(angles: const [])),
+                ),
+                _ => _BoundsTab(
+                  result: result,
+                  names: names,
+                  areaUnit: areaUnit,
+                  lengthUnit: settings.lengthUnit,
+                ),
+              },
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+              child: Row(
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: canSave ? () => _pdf(result) : null,
+                    icon: const Icon(Icons.picture_as_pdf_outlined, size: 18),
+                    label: Text(
+                      t.resultExportPdf,
+                      style: AppTypography.sans(size: 13),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.text,
+                      disabledForegroundColor: AppColors.textFaint,
+                      side: const BorderSide(color: AppColors.lineMid),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 14,
+                        horizontal: 14,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: canSave ? () => _save(result) : null,
+                      style: FilledButton.styleFrom(
+                        backgroundColor: accent,
+                        foregroundColor: AppColors.ink,
+                        disabledBackgroundColor: AppColors.surface,
+                        disabledForegroundColor: AppColors.textDim,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      child: Text(
+                        t.subdivideSaveAction,
+                        style: AppTypography.sans(
+                          size: 14,
+                          weight: FontWeight.w600,
+                          color: canSave ? AppColors.ink : AppColors.textDim,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -292,18 +571,55 @@ class _Header extends StatelessWidget {
   const _Header({required this.title, required this.subtitle});
 
   @override
-  Widget build(BuildContext context) {
-    return TabHeader(title: title, subtitle: subtitle);
-  }
+  Widget build(BuildContext context) =>
+      TabHeader(title: title, subtitle: subtitle);
+}
+
+/// Header for the pushed "change a saved division" screen.
+class _EditBar extends StatelessWidget {
+  final String title;
+  final String? subtitle;
+  const _EditBar({required this.title, this.subtitle});
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+    child: Row(
+      children: [
+        SmallIconButton(
+          icon: Icons.chevron_left,
+          onTap: () => Navigator.of(context).maybePop(),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: AppTypography.sans(size: 15, weight: FontWeight.w600),
+              ),
+              if (subtitle != null)
+                Text(
+                  subtitle!,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.sans(size: 12, color: AppColors.textDim),
+                ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 class _SelectedHeader extends StatelessWidget {
   final Plot plot;
-  final int lotCount;
+  final int owners;
   final VoidCallback onChange;
   const _SelectedHeader({
     required this.plot,
-    required this.lotCount,
+    required this.owners,
     required this.onChange,
   });
 
@@ -311,7 +627,7 @@ class _SelectedHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return TabHeader(
       title: context.l10n.subdivideTitle,
-      subtitle: context.l10n.subdivideSummary(plot.name, lotCount),
+      subtitle: context.l10n.divisionPeople(plot.name, owners),
       trailing: OutlinedButton.icon(
         onPressed: onChange,
         icon: const Icon(Icons.swap_horiz, size: 14),
@@ -322,7 +638,7 @@ class _SelectedHeader extends StatelessWidget {
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.text,
           backgroundColor: AppColors.surface,
-          side: BorderSide(color: AppColors.line),
+          side: const BorderSide(color: AppColors.line),
           padding: const EdgeInsets.symmetric(horizontal: 12),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
@@ -332,6 +648,737 @@ class _SelectedHeader extends StatelessWidget {
     );
   }
 }
+
+class _Tabs extends StatelessWidget {
+  final int index;
+  final Color accent;
+  final List<String> labels;
+  final List<bool> warn;
+  final ValueChanged<int> onTap;
+  const _Tabs({
+    required this.index,
+    required this.accent,
+    required this.labels,
+    required this.warn,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(16, 8, 16, 6),
+    child: Container(
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        border: Border.all(color: AppColors.line),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          for (var i = 0; i < labels.length; i++)
+            Expanded(
+              child: InkWell(
+                onTap: () => onTap(i),
+                borderRadius: BorderRadius.circular(10),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 9),
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: index == i ? accent : Colors.transparent,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          labels[i],
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTypography.sans(
+                            size: 13,
+                            weight: FontWeight.w600,
+                            color: index == i
+                                ? AppColors.ink
+                                : AppColors.textDim,
+                          ),
+                        ),
+                      ),
+                      if (warn[i]) ...[
+                        const SizedBox(width: 4),
+                        Container(
+                          width: 7,
+                          height: 7,
+                          decoration: const BoxDecoration(
+                            color: AppColors.amber,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    ),
+  );
+}
+
+// ------------------------------------------------------------ owners tab
+
+String _issueText(AppLocalizations t, DivisionIssue i) => switch (i) {
+  DivisionIssue.sharesOver => t.divisionIssueSharesOver,
+  DivisionIssue.sharesMixed => t.divisionIssueSharesMixed,
+  DivisionIssue.shareUnreadable => t.divisionIssueShareUnreadable,
+  DivisionIssue.areasOver => t.divisionIssueAreasOver,
+  DivisionIssue.areaUnreadable => t.divisionIssueAreaUnreadable,
+  DivisionIssue.roadTooWide => t.divisionIssueRoadTooWide,
+};
+
+class _OwnersTab extends StatelessWidget {
+  final List<_OwnerRow> rows;
+  final DivisionSpec spec;
+  final DivisionResult result;
+  final AreaUnit areaUnit;
+  final Color accent;
+  final ValueChanged<DivisionMode> onMode;
+  final ValueChanged<AreaUnit> onAreaUnit;
+  final VoidCallback onAdd;
+  final ValueChanged<int> onRemove;
+  final void Function(int from, int to) onReorder;
+  final VoidCallback onGiveRest;
+
+  const _OwnersTab({
+    required this.rows,
+    required this.spec,
+    required this.result,
+    required this.areaUnit,
+    required this.accent,
+    required this.onMode,
+    required this.onAreaUnit,
+    required this.onAdd,
+    required this.onRemove,
+    required this.onReorder,
+    required this.onGiveRest,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.l10n;
+    final landSqm = Geometry.polygonArea(result.land);
+    final modes = [
+      (DivisionMode.equal, t.divisionModeEqual),
+      (DivisionMode.shares, t.divisionModeShares),
+      (DivisionMode.areas, t.divisionModeAreas),
+    ];
+    final header = Column(
+      key: const ValueKey('owners-header'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(t.divisionHowLabel, style: AppTypography.monoLabel),
+        const SizedBox(height: 6),
+        Row(
+          children: [
+            for (final (m, label) in modes) ...[
+              Expanded(
+                child: ChoiceChip(
+                  key: ValueKey('mode-${m.name}'),
+                  label: SizedBox(
+                    width: double.infinity,
+                    child: Text(label, textAlign: TextAlign.center),
+                  ),
+                  selected: spec.mode == m,
+                  onSelected: (_) => onMode(m),
+                  showCheckmark: false,
+                  labelStyle: AppTypography.sans(
+                    size: 13,
+                    weight: FontWeight.w600,
+                    color: spec.mode == m ? AppColors.ink : AppColors.text,
+                  ),
+                  selectedColor: accent,
+                  backgroundColor: AppColors.surface,
+                  side: BorderSide(
+                    color: spec.mode == m ? accent : AppColors.lineMid,
+                  ),
+                ),
+              ),
+              if (m != DivisionMode.areas) const SizedBox(width: 6),
+            ],
+          ],
+        ),
+        if (spec.mode != DivisionMode.equal) ...[
+          const SizedBox(height: 6),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  spec.mode == DivisionMode.shares
+                      ? t.divisionShareHelp
+                      : t.divisionAreaHelp,
+                  style: AppTypography.sans(size: 12, color: AppColors.textDim),
+                ),
+              ),
+              if (spec.mode == DivisionMode.areas)
+                PopupMenuButton<AreaUnit>(
+                  tooltip: t.settingsAreaUnit,
+                  initialValue: spec.areaUnit,
+                  onSelected: onAreaUnit,
+                  color: AppColors.surface,
+                  itemBuilder: (_) => [
+                    for (final u in AreaUnit.values)
+                      PopupMenuItem(value: u, child: Text(u.nameOf(t))),
+                  ],
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: AppColors.lineMid),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          spec.areaUnit.labelOf(t),
+                          style: AppTypography.sans(size: 12),
+                        ),
+                        const Icon(Icons.arrow_drop_down, size: 16),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
+        for (final issue in result.issues)
+          _Banner(text: _issueText(t, issue), colour: AppColors.danger),
+        if (result.rest != null)
+          _Banner(
+            text: t.divisionRestNote(
+              '${areaUnit.format(result.rest!.areaSqm)} ${areaUnit.labelOf(t)}',
+            ),
+            colour: AppColors.amber,
+            action: t.divisionGiveRest,
+            onAction: onGiveRest,
+          ),
+        const SizedBox(height: 8),
+      ],
+    );
+
+    return ReorderableListView.builder(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+      buildDefaultDragHandles: false,
+      header: header,
+      footer: Padding(
+        padding: const EdgeInsets.only(top: 6),
+        child: TextButton.icon(
+          key: const ValueKey('add-owner'),
+          onPressed: onAdd,
+          icon: Icon(Icons.person_add_alt_1_outlined, size: 18, color: accent),
+          label: Text(
+            t.divisionAddOwner,
+            style: AppTypography.sans(
+              size: 14,
+              weight: FontWeight.w600,
+              color: accent,
+            ),
+          ),
+        ),
+      ),
+      itemCount: rows.length,
+      onReorderItem: onReorder,
+      itemBuilder: (context, i) {
+        final row = rows[i];
+        final piece = result.ofOwner(i);
+        final colour = ownerColour(i);
+        final summary = piece == null
+            ? '—'
+            : '${areaUnit.format(piece.areaSqm)} ${areaUnit.labelOf(t)} · '
+                  '${SheetSummary.percent(landSqm == 0 ? 0 : piece.areaSqm / landSqm)}';
+        return Padding(
+          key: ValueKey('owner-${row.key}'),
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              border: Border.all(color: AppColors.line),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                ReorderableDragStartListener(
+                  index: i,
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 6),
+                    child: Icon(
+                      Icons.drag_indicator,
+                      size: 20,
+                      color: AppColors.textFaint,
+                    ),
+                  ),
+                ),
+                Container(
+                  width: 6,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: colour,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextField(
+                        key: ValueKey('owner-name-$i'),
+                        controller: row.name,
+                        cursorColor: accent,
+                        textCapitalization: TextCapitalization.words,
+                        style: AppTypography.sans(
+                          size: 14,
+                          weight: FontWeight.w600,
+                        ),
+                        decoration: InputDecoration(
+                          isCollapsed: true,
+                          border: InputBorder.none,
+                          hintText: t.subdivideLot(i + 1),
+                          hintStyle: AppTypography.sans(
+                            size: 14,
+                            weight: FontWeight.w600,
+                            color: AppColors.textFaint,
+                          ),
+                        ),
+                        onTapOutside: (_) => FocusScope.of(context).unfocus(),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        summary,
+                        style: AppTypography.mono(size: 11, color: colour),
+                      ),
+                    ],
+                  ),
+                ),
+                if (spec.mode != DivisionMode.equal)
+                  SizedBox(
+                    width: 112,
+                    child: TextField(
+                      key: ValueKey('owner-amount-$i'),
+                      controller: row.amount,
+                      textAlign: TextAlign.right,
+                      cursorColor: accent,
+                      keyboardType: spec.mode == DivisionMode.areas
+                          ? const TextInputType.numberWithOptions(decimal: true)
+                          : TextInputType.text,
+                      style: AppTypography.mono(
+                        size: 14,
+                        weight: FontWeight.w600,
+                        color: accent,
+                      ),
+                      decoration: InputDecoration(
+                        isDense: true,
+                        hintText: spec.mode == DivisionMode.areas
+                            ? t.divisionAreaHint
+                            : t.divisionShareHint,
+                        hintStyle: AppTypography.mono(
+                          size: 11,
+                          color: AppColors.textFaint,
+                        ),
+                        suffixText: spec.mode == DivisionMode.areas
+                            ? spec.areaUnit.labelOf(t)
+                            : null,
+                        suffixStyle: AppTypography.mono(
+                          size: 10,
+                          color: AppColors.textFaint,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 9,
+                        ),
+                        filled: true,
+                        fillColor: AppColors.ink,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: AppColors.line),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: AppColors.line),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: accent),
+                        ),
+                      ),
+                      onTapOutside: (_) => FocusScope.of(context).unfocus(),
+                    ),
+                  ),
+                IconButton(
+                  tooltip: t.subdivideRemoveLot,
+                  onPressed: rows.length > 1 ? () => onRemove(i) : null,
+                  icon: Icon(
+                    Icons.close,
+                    size: 18,
+                    color: rows.length > 1 ? AppColors.textDim : AppColors.line,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _Banner extends StatelessWidget {
+  final String text;
+  final Color colour;
+  final String? action;
+  final VoidCallback? onAction;
+  const _Banner({
+    required this.text,
+    required this.colour,
+    this.action,
+    this.onAction,
+  });
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(top: 8),
+    child: Container(
+      padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
+      decoration: BoxDecoration(
+        color: colour.withValues(alpha: 0.12),
+        border: Border.all(color: colour.withValues(alpha: 0.6)),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.info_outline, size: 16, color: colour),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: AppTypography.sans(size: 12, color: AppColors.text),
+            ),
+          ),
+          if (action != null)
+            TextButton(
+              onPressed: onAction,
+              child: Text(
+                action!,
+                style: AppTypography.sans(
+                  size: 12,
+                  weight: FontWeight.w600,
+                  color: colour,
+                ),
+              ),
+            ),
+        ],
+      ),
+    ),
+  );
+}
+
+// ------------------------------------------------------------ sides tab
+
+class _SidesTab extends StatefulWidget {
+  final List<Vertex> parent;
+  final DivisionSpec spec;
+  final Color accent;
+  final LengthUnit lengthUnit;
+  final ValueChanged<int?> onFront;
+  final ValueChanged<double> onRoad;
+  final VoidCallback onStraighten;
+
+  const _SidesTab({
+    required this.parent,
+    required this.spec,
+    required this.accent,
+    required this.lengthUnit,
+    required this.onFront,
+    required this.onRoad,
+    required this.onStraighten,
+  });
+
+  @override
+  State<_SidesTab> createState() => _SidesTabState();
+}
+
+class _SidesTabState extends State<_SidesTab> {
+  late final _custom = TextEditingController();
+
+  @override
+  void dispose() {
+    _custom.dispose();
+    super.dispose();
+  }
+
+  Widget _chip(String label, bool on, VoidCallback? onTap, {Key? key}) =>
+      ChoiceChip(
+        key: key,
+        label: Text(label),
+        selected: on,
+        onSelected: onTap == null ? null : (_) => onTap(),
+        showCheckmark: false,
+        labelStyle: AppTypography.sans(
+          size: 13,
+          weight: FontWeight.w600,
+          color: onTap == null
+              ? AppColors.textFaint
+              : (on ? AppColors.ink : AppColors.text),
+        ),
+        selectedColor: widget.accent,
+        backgroundColor: AppColors.surface,
+        disabledColor: AppColors.surface,
+        side: BorderSide(color: on ? widget.accent : AppColors.lineMid),
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.l10n;
+    final spec = widget.spec;
+    final unit = widget.lengthUnit;
+    final n = NumberFormat.decimalPattern();
+    final p = widget.parent;
+    final hasFront = spec.frontSide != null;
+    final roadSteps = unit == LengthUnit.ft
+        ? const <double>[4, 6, 8, 10, 12, 16]
+        : const <double>[1, 1.5, 2, 2.5, 3, 4];
+    final roadIn = unit.fromMeters(spec.roadWidthM);
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+      children: [
+        Text(t.divisionFrontTitle, style: AppTypography.monoLabel),
+        const SizedBox(height: 4),
+        Text(
+          t.divisionFrontHint,
+          style: AppTypography.sans(size: 12, color: AppColors.textDim),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          children: [
+            _chip(t.divisionFrontAny, !hasFront, () => widget.onFront(null)),
+            for (var i = 0; i < p.length; i++)
+              _chip(
+                t.divisionSideN(
+                  n.format(i + 1),
+                  '${unit.format(Geometry.sideLength(p[i], p[(i + 1) % p.length]))} '
+                  '${unit.labelOf(t)}',
+                ),
+                spec.frontSide == i,
+                () => widget.onFront(i),
+                key: ValueKey('side-$i'),
+              ),
+          ],
+        ),
+        const SizedBox(height: 18),
+        Text(t.divisionRoadTitle, style: AppTypography.monoLabel),
+        const SizedBox(height: 4),
+        Text(
+          hasFront ? t.divisionRoadHint : t.divisionRoadNeedsFront,
+          style: AppTypography.sans(size: 12, color: AppColors.textDim),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            _chip(
+              t.divisionRoadNone,
+              spec.roadWidthM == 0,
+              hasFront ? () => widget.onRoad(0) : null,
+            ),
+            for (final w in roadSteps)
+              _chip(
+                '${n.format(w)} ${unit.labelOf(t)}',
+                (roadIn - w).abs() < 1e-6,
+                hasFront ? () => widget.onRoad(unit.toMeters(w)) : null,
+                key: ValueKey('road-$w'),
+              ),
+            SizedBox(
+              width: 90,
+              child: TextField(
+                key: const ValueKey('road-custom'),
+                controller: _custom,
+                enabled: hasFront,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                cursorColor: widget.accent,
+                style: AppTypography.mono(size: 13, color: widget.accent),
+                decoration: InputDecoration(
+                  isDense: true,
+                  hintText: t.overlaySurveyOther,
+                  suffixText: unit.labelOf(t),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 9,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+                onChanged: (raw) {
+                  final v = ShareParser.number(raw);
+                  if (v != null && v >= 0) widget.onRoad(unit.toMeters(v));
+                },
+                onTapOutside: (_) => FocusScope.of(context).unfocus(),
+              ),
+            ),
+          ],
+        ),
+        if (spec.angles.any((a) => a != null)) ...[
+          const SizedBox(height: 18),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: OutlinedButton.icon(
+              onPressed: widget.onStraighten,
+              icon: const Icon(Icons.straighten, size: 16),
+              label: Text(t.divisionStraighten),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.text,
+                side: const BorderSide(color: AppColors.lineMid),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+// ------------------------------------------------------------ bounds tab
+
+class _BoundsTab extends StatelessWidget {
+  final DivisionResult result;
+  final DivisionNames names;
+  final AreaUnit areaUnit;
+  final LengthUnit lengthUnit;
+  const _BoundsTab({
+    required this.result,
+    required this.names,
+    required this.areaUnit,
+    required this.lengthUnit,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.l10n;
+    final pieces = result.pieces;
+    final polys = [for (final p in pieces) p.vertices];
+    final lots = [
+      for (var i = 0; i < pieces.length; i++)
+        if (pieces[i].kind != PieceKind.road) i,
+    ];
+    if (lots.isEmpty) {
+      return Center(
+        child: Text(t.divisionBoundsEmpty, style: AppTypography.bodyDim),
+      );
+    }
+    return ListView.separated(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+      itemCount: lots.length,
+      separatorBuilder: (_, _) => const SizedBox(height: 8),
+      itemBuilder: (_, k) {
+        final i = lots[k];
+        final piece = pieces[i];
+        final colour = pieceColour(piece);
+        return Container(
+          padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            border: Border.all(color: AppColors.line),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 10,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      color: colour,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      names.of(piece),
+                      style: AppTypography.sans(
+                        size: 14,
+                        weight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    '${areaUnit.format(piece.areaSqm)} ${areaUnit.labelOf(t)}',
+                    style: AppTypography.mono(size: 12, color: colour),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              for (final s in Chouhoddi.of(polys, i))
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 64,
+                        child: Text(
+                          DivisionPdf.cardinal(t, s.side),
+                          style: AppTypography.sans(
+                            size: 13,
+                            color: AppColors.textDim,
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 96,
+                        child: Text(
+                          '${lengthUnit.format(s.lengthM)} ${lengthUnit.labelOf(t)}',
+                          style: AppTypography.mono(size: 12),
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          s.neighbour == null
+                              ? t.divisionOutside
+                              : names.of(pieces[s.neighbour!]),
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTypography.sans(
+                            size: 13,
+                            color: s.neighbour == null
+                                ? AppColors.textFaint
+                                : AppColors.text,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+// ------------------------------------------------------------ plot picker
 
 class _PlotPicker extends StatefulWidget {
   final ValueChanged<Plot> onSelect;
@@ -420,7 +1467,11 @@ class _PlotPickerTile extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      context.l10n.subdivideMeta(AreaUnit.sqft.format(areaSqm), AreaUnit.sqft.labelOf(context.l10n), plot.vertices.length),
+                      context.l10n.subdivideMeta(
+                        AreaUnit.sqft.format(areaSqm),
+                        AreaUnit.sqft.labelOf(context.l10n),
+                        plot.vertices.length,
+                      ),
                       style: AppTypography.mono(
                         size: 10,
                         color: AppColors.textDim,
@@ -521,673 +1572,3 @@ class _EmptyState extends StatelessWidget {
     );
   }
 }
-
-class _Canvas extends StatefulWidget {
-  final List<Vertex> verts;
-  final List<Lot> lots;
-  final List<Color> colours;
-  final List<CutLine> cutLines;
-  final Color accent;
-  final LengthUnit lengthUnit;
-  final void Function(int index, Vertex to) onMoveCut;
-  final void Function(int index, bool draggingA, Vertex to) onPivotCut;
-  final VoidCallback onResetAngles;
-
-  const _Canvas({
-    required this.verts,
-    required this.lots,
-    required this.colours,
-    required this.cutLines,
-    required this.accent,
-    required this.lengthUnit,
-    required this.onMoveCut,
-    required this.onPivotCut,
-    required this.onResetAngles,
-  });
-
-  @override
-  State<_Canvas> createState() => _CanvasState();
-}
-
-class _CanvasState extends State<_Canvas> {
-  /// Which divider end is being dragged, if any: (index, isFirstEnd).
-  (int, bool)? _grabbed;
-
-  /// Which divider is being slid whole.
-  int? _sliding;
-
-  @override
-  Widget build(BuildContext context) {
-    final verts = widget.verts;
-    final lots = widget.lots;
-    final colours = widget.colours;
-    final cutLines = widget.cutLines;
-    final lengthUnit = widget.lengthUnit;
-    final onMoveCut = widget.onMoveCut;
-    final onPivotCut = widget.onPivotCut;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(14),
-        child: SizedBox(
-          height: 230,
-          child: Container(
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              border: Border.all(color: AppColors.line),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: LayoutBuilder(
-              builder: (context, c) {
-                final w = c.maxWidth, h = c.maxHeight;
-                final cx = w / 2, cy = h / 2;
-                final scale = _scaleFor(verts, w, h);
-
-                Vertex toWorld(Offset p) =>
-                    Vertex((p.dx - cx) / scale, (p.dy - cy) / scale);
-                Offset toScreen(Vertex v) =>
-                    Offset(cx + v.x * scale, cy + v.y * scale);
-
-                return GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onPanStart: (d) {
-                    // Grabbing an end pivots the divider; grabbing anywhere
-                    // else slides the whole line.
-                    _grabbed = null;
-                    var best = 30.0;
-                    for (var i = 0; i < cutLines.length; i++) {
-                      for (final isA in [true, false]) {
-                        final end = isA ? cutLines[i].a : cutLines[i].b;
-                        final dist = (toScreen(end) - d.localPosition).distance;
-                        if (dist < best) {
-                          best = dist;
-                          _grabbed = (i, isA);
-                        }
-                      }
-                    }
-                    if (_grabbed != null) return;
-                    var nearest = 0;
-                    var nearestDist = double.infinity;
-                    for (var i = 0; i < cutLines.length; i++) {
-                      final mid = toScreen(
-                        Vertex(
-                          (cutLines[i].a.x + cutLines[i].b.x) / 2,
-                          (cutLines[i].a.y + cutLines[i].b.y) / 2,
-                        ),
-                      );
-                      final dist = (mid - d.localPosition).distance;
-                      if (dist < nearestDist) {
-                        nearestDist = dist;
-                        nearest = i;
-                      }
-                    }
-                    _sliding = cutLines.isEmpty ? null : nearest;
-                  },
-                  onPanUpdate: (d) {
-                    final grabbed = _grabbed;
-                    if (grabbed != null) {
-                      onPivotCut(
-                        grabbed.$1,
-                        grabbed.$2,
-                        toWorld(d.localPosition),
-                      );
-                      return;
-                    }
-                    final sliding = _sliding;
-                    if (sliding != null) {
-                      onMoveCut(sliding, toWorld(d.localPosition));
-                    }
-                  },
-                  onPanEnd: (_) {
-                    _grabbed = null;
-                    _sliding = null;
-                  },
-                  child: Stack(
-                    children: [
-                      GridBackground(
-                        style: context.watch<SettingsBloc>().state.gridStyle,
-                      ),
-                      Positioned.fill(
-                        child: CustomPaint(
-                          painter: _DivisionPainter(
-                            verts: verts,
-                            lots: lots,
-                            colours: colours,
-                            cutLines: cutLines,
-                            lengthUnit: lengthUnit,
-                            lengthLabel: lengthUnit.labelOf(context.l10n),
-                            names: [
-                              for (var i = 0; i < lots.length; i++)
-                                context.l10n.subdivideLot(i + 1),
-                            ],
-                            scale: scale,
-                            center: Offset(cx, cy),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  static double _scaleFor(List<Vertex> verts, double w, double h) {
-    if (verts.length < 2) return 4.2;
-    final (minX, minY, maxX, maxY) = Geometry.bbox(verts);
-    final dx = maxX - minX, dy = maxY - minY;
-    const pad = 48.0;
-    final sx = dx == 0 ? 4.2 : (w - pad) / dx;
-    final sy = dy == 0 ? 4.2 : (h - pad) / dy;
-    return math.min(sx, sy).clamp(1.0, 12.0);
-  }
-}
-
-/// Fills each lot with its own colour and marks the draggable boundaries.
-///
-/// The lots are the polygons the division actually produced, so what is
-/// shaded here is exactly the land the figures below describe.
-/// Fills each lot with its own colour, marks the draggable dividers, and
-/// writes the length of every boundary onto it.
-///
-/// The lots are the polygons the division actually produced, so what is
-/// shaded here is exactly the land the figures below describe.
-class _DivisionPainter extends CustomPainter {
-  final List<Vertex> verts;
-  final List<Lot> lots;
-  final List<Color> colours;
-  final List<CutLine> cutLines;
-  final List<String> names;
-  final LengthUnit lengthUnit;
-  final String lengthLabel;
-  final double scale;
-  final Offset center;
-
-  _DivisionPainter({
-    required this.verts,
-    required this.lots,
-    required this.colours,
-    required this.cutLines,
-    required this.names,
-    required this.lengthUnit,
-    required this.lengthLabel,
-    required this.scale,
-    required this.center,
-  });
-
-  Offset _at(Vertex v) =>
-      Offset(center.dx + v.x * scale, center.dy + v.y * scale);
-
-  Path _path(List<Vertex> poly) {
-    final path = Path();
-    if (poly.isEmpty) return path;
-    path.moveTo(_at(poly.first).dx, _at(poly.first).dy);
-    for (final v in poly.skip(1)) {
-      path.lineTo(_at(v).dx, _at(v).dy);
-    }
-    path.close();
-    return path;
-  }
-
-  void _label(Canvas canvas, Offset at, String text, Color colour) {
-    final tp = TextPainter(
-      text: TextSpan(
-        text: text,
-        style: AppTypography.mono(
-          size: 9,
-          weight: FontWeight.w500,
-          color: AppColors.ink,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    final rect = Rect.fromCenter(
-      center: at,
-      width: tp.width + 8,
-      height: 14,
-    );
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(rect, const Radius.circular(3)),
-      Paint()..color = colour,
-    );
-    tp.paint(
-      canvas,
-      Offset(rect.center.dx - tp.width / 2, rect.center.dy - tp.height / 2),
-    );
-  }
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (verts.length < 3) return;
-
-    for (var i = 0; i < lots.length; i++) {
-      final colour = colours[i % colours.length];
-      final path = _path(lots[i].vertices);
-      canvas.drawPath(path, Paint()..color = colour.withValues(alpha: 0.22));
-      canvas.drawPath(
-        path,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.2
-          ..color = colour,
-      );
-    }
-
-    canvas.drawPath(
-      _path(verts),
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2
-        ..color = AppColors.text.withValues(alpha: 0.5),
-    );
-
-    // Every side of the plot, measured — split where a divider lands on it,
-    // so a boundary cut in the middle reads as its two real pieces.
-    final divideEnds = [
-      for (final line in cutLines) ...[line.a, line.b],
-    ];
-    for (var i = 0; i < verts.length; i++) {
-      final a = verts[i];
-      final b = verts[(i + 1) % verts.length];
-      for (final (p, q) in LotDivision.splitEdge(a, b, divideEnds)) {
-        final pa = _at(p);
-        final qa = _at(q);
-        // Too short to letter without the labels colliding.
-        if ((qa - pa).distance < 26) continue;
-        final ang = math.atan2(q.y - p.y, q.x - p.x);
-        final off = Offset(-math.sin(ang) * 11, math.cos(ang) * 11);
-        _label(
-          canvas,
-          Offset((pa.dx + qa.dx) / 2, (pa.dy + qa.dy) / 2) + off,
-          '${lengthUnit.format(Geometry.sideLength(p, q))} $lengthLabel',
-          AppColors.text.withValues(alpha: 0.75),
-        );
-      }
-    }
-
-    // Dividers, with their own length and a handle at each end.
-    for (final line in cutLines) {
-      final a = _at(line.a);
-      final b = _at(line.b);
-      canvas.drawLine(
-        a,
-        b,
-        Paint()
-          ..strokeWidth = 2
-          ..color = AppColors.text.withValues(alpha: 0.9),
-      );
-      _label(
-        canvas,
-        Offset((a.dx + b.dx) / 2, (a.dy + b.dy) / 2),
-        '${lengthUnit.format(line.lengthM)} $lengthLabel',
-        AppColors.text,
-      );
-      for (final end in [a, b]) {
-        canvas.drawCircle(end, 7, Paint()..color = AppColors.ink);
-        canvas.drawCircle(
-          end,
-          7,
-          Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 2
-            ..color = AppColors.text,
-        );
-      }
-    }
-
-    // Lot names, centred on the piece they belong to.
-    for (var i = 0; i < lots.length; i++) {
-      final poly = lots[i].vertices;
-      if (poly.isEmpty) continue;
-      var sx = 0.0, sy = 0.0;
-      for (final v in poly) {
-        sx += v.x;
-        sy += v.y;
-      }
-      final mid = _at(Vertex(sx / poly.length, sy / poly.length));
-      final tp = TextPainter(
-        text: TextSpan(
-          text: names[i].toUpperCase(),
-          style: AppTypography.mono(
-            size: 10,
-            weight: FontWeight.w600,
-            color: colours[i % colours.length],
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-      )..layout();
-      tp.paint(canvas, Offset(mid.dx - tp.width / 2, mid.dy - tp.height / 2));
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _DivisionPainter old) =>
-      old.verts != verts ||
-      old.cutLines != cutLines ||
-      old.scale != scale ||
-      old.center != center ||
-      old.lots.length != lots.length;
-}
-
-/// One lot: its colour, name, share and area — and, in percent or area
-/// mode, a field for saying how big it should be.
-class _LotTile extends StatelessWidget {
-  final int index;
-  final Lot lot;
-  final Color colour;
-  final String name;
-  final double totalSqm;
-  final AreaUnit areaUnit;
-  final _SplitMode mode;
-  final Color accent;
-  final bool canRemove;
-  final VoidCallback onRemove;
-  final ValueChanged<double> onShare;
-
-  const _LotTile({
-    required this.index,
-    required this.lot,
-    required this.colour,
-    required this.name,
-    required this.totalSqm,
-    required this.areaUnit,
-    required this.mode,
-    required this.accent,
-    required this.canRemove,
-    required this.onRemove,
-    required this.onShare,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        border: Border.all(color: AppColors.line),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 8,
-            height: 34,
-            decoration: BoxDecoration(
-              color: colour,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTypography.sans(size: 12, weight: FontWeight.w500),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  '${(lot.share * 100).toStringAsFixed(1)}% · '
-                  '${areaUnit.format(lot.areaSqm)} '
-                  '${areaUnit.labelOf(context.l10n)}',
-                  style: AppTypography.mono(size: 10, color: AppColors.textDim),
-                ),
-              ],
-            ),
-          ),
-          if (mode != _SplitMode.equal)
-            SizedBox(
-              width: 96,
-              child: _ShareField(
-                key: ValueKey('$index-${mode.name}'),
-                mode: mode,
-                share: lot.share,
-                totalSqm: totalSqm,
-                areaUnit: areaUnit,
-                accent: accent,
-                onShare: onShare,
-              ),
-            ),
-          if (canRemove)
-            IconButton(
-              tooltip: context.l10n.subdivideRemoveLot,
-              onPressed: onRemove,
-              icon: const Icon(
-                Icons.remove_circle_outline,
-                size: 18,
-                color: AppColors.textFaint,
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Types a lot's size, as a percentage or as an area depending on the mode.
-class _ShareField extends StatefulWidget {
-  final _SplitMode mode;
-  final double share;
-  final double totalSqm;
-  final AreaUnit areaUnit;
-  final Color accent;
-  final ValueChanged<double> onShare;
-
-  const _ShareField({
-    super.key,
-    required this.mode,
-    required this.share,
-    required this.totalSqm,
-    required this.areaUnit,
-    required this.accent,
-    required this.onShare,
-  });
-
-  @override
-  State<_ShareField> createState() => _ShareFieldState();
-}
-
-class _ShareFieldState extends State<_ShareField> {
-  late final TextEditingController _ctrl =
-      TextEditingController(text: _text());
-
-  String _text() {
-    final v = widget.mode == _SplitMode.percent
-        ? widget.share * 100
-        : widget.areaUnit.fromSqm(widget.share * widget.totalSqm);
-    return v
-        .toStringAsFixed(2)
-        .replaceFirst(RegExp(r'0+$'), '')
-        .replaceFirst(RegExp(r'\.$'), '');
-  }
-
-  @override
-  void didUpdateWidget(_ShareField old) {
-    super.didUpdateWidget(old);
-    final typed = double.tryParse(_ctrl.text);
-    final shown = typed == null
-        ? null
-        : widget.mode == _SplitMode.percent
-        ? typed / 100
-        : widget.areaUnit.toSqm(typed) / widget.totalSqm;
-    // Leave the field alone while it still represents this lot, so typing
-    // is never corrected mid-keystroke.
-    if (shown == null || (shown - widget.share).abs() > 1e-4) {
-      _ctrl.text = _text();
-    }
-  }
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      controller: _ctrl,
-      textAlign: TextAlign.right,
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
-      cursorColor: widget.accent,
-      style: AppTypography.mono(
-        size: 13,
-        weight: FontWeight.w600,
-        color: widget.accent,
-      ),
-      decoration: InputDecoration(
-        isDense: true,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 8,
-          vertical: 8,
-        ),
-        suffixText: widget.mode == _SplitMode.percent
-            ? '%'
-            : widget.areaUnit.labelOf(context.l10n),
-        suffixStyle: AppTypography.mono(size: 9, color: AppColors.textFaint),
-        filled: true,
-        fillColor: AppColors.surfaceHi,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: AppColors.line),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: AppColors.line),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: widget.accent),
-        ),
-      ),
-      onChanged: (raw) {
-        final v = double.tryParse(raw);
-        if (v == null || v <= 0) return;
-        widget.onShare(
-          widget.mode == _SplitMode.percent
-              ? v / 100
-              : widget.areaUnit.toSqm(v) / widget.totalSqm,
-        );
-      },
-    );
-  }
-}
-
-/// Equal / Percent / Area, and the button that adds another lot.
-class _ModeRow extends StatelessWidget {
-  final _SplitMode mode;
-  final Color accent;
-  final VoidCallback onEqual;
-  final ValueChanged<_SplitMode> onMode;
-  final VoidCallback onAdd;
-
-  const _ModeRow({
-    required this.mode,
-    required this.accent,
-    required this.onEqual,
-    required this.onMode,
-    required this.onAdd,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final options = [
-      (_SplitMode.equal, context.l10n.subdivideModeEqual),
-      (_SplitMode.percent, context.l10n.subdivideModePercent),
-      (_SplitMode.area, context.l10n.subdivideModeArea),
-    ];
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        children: [
-          for (final (m, label) in options) ...[
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(right: 6),
-                child: _Pill(
-                  label: label,
-                  active: mode == m,
-                  accent: accent,
-                  onTap: () => m == _SplitMode.equal ? onEqual() : onMode(m),
-                ),
-              ),
-            ),
-          ],
-          _Pill(
-            label: context.l10n.subdivideAddLot,
-            active: false,
-            accent: accent,
-            icon: Icons.add,
-            onTap: onAdd,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Pill extends StatelessWidget {
-  final String label;
-  final bool active;
-  final Color accent;
-  final IconData? icon;
-  final VoidCallback onTap;
-  const _Pill({
-    required this.label,
-    required this.active,
-    required this.accent,
-    required this.onTap,
-    this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(10),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 10),
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: active ? accent : AppColors.ink,
-          border: Border.all(color: active ? accent : AppColors.line),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (icon != null) ...[
-                Icon(
-                  icon,
-                  size: 13,
-                  color: active ? AppColors.ink : accent,
-                ),
-                const SizedBox(width: 4),
-              ],
-              Text(
-                label,
-                maxLines: 1,
-                style: AppTypography.sans(
-                  size: 11,
-                  weight: FontWeight.w500,
-                  color: active ? AppColors.ink : AppColors.text,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-

@@ -22,6 +22,7 @@ import '../../presentation/features/settings/view/settings_screen.dart';
 import '../../presentation/features/sheet/view/arrange_screen.dart';
 import '../../presentation/features/sheet/view/sheet_screen.dart';
 import '../../presentation/features/subdivide/view/subdivide_screen.dart';
+import '../theme/app_colors.dart';
 import '../../presentation/shared/widgets/main_shell.dart';
 import '../../l10n/l10n.dart';
 import '../geometry/presets.dart';
@@ -44,6 +45,7 @@ class AppRoutes {
   static const sheetArrange = '/sheet/arrange';
   static const mouza = '/mouza';
   static const mapOverlay = '/map-overlay';
+  static const divide = '/divide';
   static const converter = '/converter';
   static const calculator = '/calculator';
   static const khotiyan = '/khotiyan';
@@ -152,6 +154,13 @@ GoRouter buildRouter() {
         builder: (_, state) => ArrangeScreen(sheetId: state.extra as String),
       ),
       GoRoute(path: AppRoutes.mouza, builder: (_, _) => const MouzaScreen()),
+      GoRoute(
+        path: AppRoutes.divide,
+        builder: (_, state) => Scaffold(
+          backgroundColor: AppColors.ink,
+          body: SubdivideScreen(editSheetId: state.extra as String),
+        ),
+      ),
       GoRoute(
         path: AppRoutes.mapOverlay,
         builder: (_, _) => const OverlayScreen(),
