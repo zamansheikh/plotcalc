@@ -21,7 +21,11 @@ import '../../../shared/widgets/polygon_painter.dart';
 import '../../../../l10n/l10n.dart';
 
 class CompareScreen extends StatefulWidget {
-  const CompareScreen({super.key});
+  /// The two plots picked in History. Without them the screen falls back
+  /// to the two newest plots.
+  final List<String>? plotIds;
+
+  const CompareScreen({super.key, this.plotIds});
 
   @override
   State<CompareScreen> createState() => _CompareScreenState();
@@ -43,7 +47,15 @@ class _CompareScreenState extends State<CompareScreen> {
     // async gap isn't safe.
     final t = context.l10n;
     final all = await sl<GetPlots>()();
-    if (all.length >= 2) {
+    final ids = widget.plotIds;
+    final picked = [
+      if (ids != null)
+        for (final id in ids) ...all.where((p) => p.id == id),
+    ];
+    if (picked.length == 2) {
+      _a = picked[0];
+      _b = picked[1];
+    } else if (all.length >= 2) {
       _a = all[0];
       _b = all[1];
     } else if (all.length == 1) {

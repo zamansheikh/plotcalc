@@ -124,6 +124,14 @@ class PlotPdf {
     );
   }
 
+  /// Shared with the sheet PDF, so both documents load fonts and shape
+  /// Bengali the same way.
+  static Future<pw.ThemeData?> themeFor({required bool bengali}) =>
+      _theme(bengali: bengali);
+  static pw.Widget text(String value, pw.TextStyle style) =>
+      _text(value, style);
+  static bool hasBengali(String value) => _bengali.hasMatch(value);
+
   /// Test seam: lets a suite start from a clean cache.
   static void resetFontCacheForTest() => _themes.clear();
 

@@ -875,7 +875,7 @@ abstract class AppLocalizations {
   /// No description provided for @historySelected.
   ///
   /// In en, this message translates to:
-  /// **'{count} SELECTED FOR COMPARE'**
+  /// **'{count} SELECTED'**
   String historySelected(int count);
 
   /// No description provided for @historyEmpty.
@@ -2059,6 +2059,264 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not open the link'**
   String get aboutOpenLinkFailed;
+
+  /// No description provided for @historyTabPlots.
+  ///
+  /// In en, this message translates to:
+  /// **'Plots'**
+  String get historyTabPlots;
+
+  /// No description provided for @historyTabSheets.
+  ///
+  /// In en, this message translates to:
+  /// **'Sheets'**
+  String get historyTabSheets;
+
+  /// No description provided for @historySelectHint.
+  ///
+  /// In en, this message translates to:
+  /// **'LONG-PRESS PLOTS TO SELECT'**
+  String get historySelectHint;
+
+  /// No description provided for @historyCompareShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Compare'**
+  String get historyCompareShort;
+
+  /// No description provided for @historySum.
+  ///
+  /// In en, this message translates to:
+  /// **'Sum {count} plots'**
+  String historySum(int count);
+
+  /// No description provided for @sheetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Land sheet'**
+  String get sheetTitle;
+
+  /// No description provided for @sheetNameTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Name this sheet'**
+  String get sheetNameTitle;
+
+  /// No description provided for @sheetDefaultName.
+  ///
+  /// In en, this message translates to:
+  /// **'Sheet {number}'**
+  String sheetDefaultName(String number);
+
+  /// No description provided for @sheetTotalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'TOTAL AREA'**
+  String get sheetTotalLabel;
+
+  /// No description provided for @sheetTotalArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Total · {count} plots'**
+  String sheetTotalArea(int count);
+
+  /// No description provided for @sheetCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} plots'**
+  String sheetCount(int count);
+
+  /// No description provided for @sheetPriceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'PRICE'**
+  String get sheetPriceLabel;
+
+  /// No description provided for @sheetPricePer.
+  ///
+  /// In en, this message translates to:
+  /// **'per {unit}'**
+  String sheetPricePer(String unit);
+
+  /// No description provided for @sheetRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate'**
+  String get sheetRate;
+
+  /// No description provided for @sheetTotalValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Total value'**
+  String get sheetTotalValue;
+
+  /// No description provided for @sheetPlotsHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'PLOTS IN THIS SHEET'**
+  String get sheetPlotsHeader;
+
+  /// No description provided for @sheetAddPlots.
+  ///
+  /// In en, this message translates to:
+  /// **'Add plots'**
+  String get sheetAddPlots;
+
+  /// No description provided for @sheetAllAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Every saved plot is already in this sheet.'**
+  String get sheetAllAdded;
+
+  /// No description provided for @sheetEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No plots in this sheet yet.'**
+  String get sheetEmpty;
+
+  /// No description provided for @sheetsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No sheets yet.\nLong-press plots to select them, then tap Sum.'**
+  String get sheetsEmpty;
+
+  /// No description provided for @sheetMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} plots in this sheet were deleted.'**
+  String sheetMissing(int count);
+
+  /// No description provided for @sheetDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete sheet?'**
+  String get sheetDeleteTitle;
+
+  /// No description provided for @sheetDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'“{name}” will be deleted. Its plots stay saved.'**
+  String sheetDeleteBody(String name);
+
+  /// No description provided for @sheetColPlot.
+  ///
+  /// In en, this message translates to:
+  /// **'Plot'**
+  String get sheetColPlot;
+
+  /// No description provided for @sheetColShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get sheetColShare;
+
+  /// No description provided for @sheetColValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Value'**
+  String get sheetColValue;
+
+  /// No description provided for @sheetPrepared.
+  ///
+  /// In en, this message translates to:
+  /// **'Prepared {date}'**
+  String sheetPrepared(String date);
+
+  /// No description provided for @sheetUnitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Read this sheet in'**
+  String get sheetUnitTitle;
+
+  /// No description provided for @sheetPriceUnitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Price is quoted per'**
+  String get sheetPriceUnitTitle;
+
+  /// No description provided for @sheetPlotRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'“{name}” removed from the sheet'**
+  String sheetPlotRemoved(String name);
+
+  /// No description provided for @sheetLayoutHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'LAYOUT'**
+  String get sheetLayoutHeader;
+
+  /// No description provided for @sheetArrange.
+  ///
+  /// In en, this message translates to:
+  /// **'Arrange'**
+  String get sheetArrange;
+
+  /// No description provided for @sheetArrangeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Arrange plots'**
+  String get sheetArrangeTitle;
+
+  /// No description provided for @sheetArrangeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag a plot to move it · pinch to zoom'**
+  String get sheetArrangeHint;
+
+  /// No description provided for @sheetTurnLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn left'**
+  String get sheetTurnLeft;
+
+  /// No description provided for @sheetTurnRight.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn right'**
+  String get sheetTurnRight;
+
+  /// No description provided for @sheetFitView.
+  ///
+  /// In en, this message translates to:
+  /// **'Fit to screen'**
+  String get sheetFitView;
+
+  /// No description provided for @sheetAutoArrange.
+  ///
+  /// In en, this message translates to:
+  /// **'Arrange automatically'**
+  String get sheetAutoArrange;
+
+  /// No description provided for @sheetLayoutSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Layout saved'**
+  String get sheetLayoutSaved;
+
+  /// No description provided for @sheetDiscardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard changes?'**
+  String get sheetDiscardTitle;
+
+  /// No description provided for @sheetDiscardBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This arrangement has not been saved.'**
+  String get sheetDiscardBody;
+
+  /// No description provided for @sheetDiscard.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get sheetDiscard;
+
+  /// No description provided for @sheetTapToSelect.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a plot to select it'**
+  String get sheetTapToSelect;
 }
 
 class _AppLocalizationsDelegate

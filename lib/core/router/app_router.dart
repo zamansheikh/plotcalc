@@ -17,6 +17,8 @@ import '../../presentation/features/picker/view/picker_screen.dart';
 import '../../presentation/features/result/view/result_screen.dart';
 import '../../presentation/features/settings/view/breakdown_units_screen.dart';
 import '../../presentation/features/settings/view/settings_screen.dart';
+import '../../presentation/features/sheet/view/arrange_screen.dart';
+import '../../presentation/features/sheet/view/sheet_screen.dart';
 import '../../presentation/features/subdivide/view/subdivide_screen.dart';
 import '../../presentation/shared/widgets/main_shell.dart';
 import '../../l10n/l10n.dart';
@@ -36,6 +38,8 @@ class AppRoutes {
   static const result = '/result';
   static const adjust = '/adjust';
   static const compare = '/compare';
+  static const sheet = '/sheet';
+  static const sheetArrange = '/sheet/arrange';
   static const converter = '/converter';
   static const calculator = '/calculator';
   static const khotiyan = '/khotiyan';
@@ -137,7 +141,17 @@ GoRouter buildRouter() {
       ),
       GoRoute(
         path: AppRoutes.compare,
-        builder: (_, _) => const CompareScreen(),
+        builder: (_, state) => CompareScreen(
+          plotIds: (state.extra as List?)?.cast<String>(),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.sheet,
+        builder: (_, state) => SheetScreen(sheetId: state.extra as String),
+      ),
+      GoRoute(
+        path: AppRoutes.sheetArrange,
+        builder: (_, state) => ArrangeScreen(sheetId: state.extra as String),
       ),
       GoRoute(
         path: AppRoutes.converter,
