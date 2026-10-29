@@ -1456,4 +1456,178 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get mouzaAreaSoFar => 'ক্ষেত্রফল';
+
+  @override
+  String get overlayEntryTitle => 'প্যান্টোগ্রাফ';
+
+  @override
+  String get overlayEntrySub => 'CS ↔ RS মিলিয়ে মাপুন';
+
+  @override
+  String get mouzaCompareLink =>
+      'একই মৌজার দুই জরিপের ম্যাপ আছে? প্যান্টোগ্রাফে মিলিয়ে দেখুন';
+
+  @override
+  String get overlayTitle => 'প্যান্টোগ্রাফ';
+
+  @override
+  String get overlayStepMaps => 'ম্যাপ';
+
+  @override
+  String get overlayStepMatch => 'মিলান';
+
+  @override
+  String get overlayStepMeasure => 'মাপ';
+
+  @override
+  String get overlayMapsTitle => 'মৌজার দুটি ম্যাপ দিন';
+
+  @override
+  String get overlayMapsSub =>
+      'সাধারণত পুরনো জরিপ (CS বা SA) আর নতুন জরিপ (RS বা BS)। এরপর দুই ম্যাপেই আছে এমন কয়েকটি জায়গা চিহ্নিত করলে একটির উপর আরেকটি বসে যাবে।';
+
+  @override
+  String get overlayMapOld => 'পুরনো জরিপ';
+
+  @override
+  String get overlayMapNew => 'নতুন জরিপ';
+
+  @override
+  String get overlayAddPhoto => 'ছবি দিন';
+
+  @override
+  String get overlaySurveyOther => 'অন্য';
+
+  @override
+  String get overlaySameSheet =>
+      'দুটিই একই মৌজার একই সিটের ম্যাপ হতে হবে (একই জে.এল. নং)।';
+
+  @override
+  String get overlayMatchStart =>
+      'দুই ম্যাপেই খুঁজে পাওয়া যায় এমন একটি জায়গায় চাপুন — রাস্তার মোড়, মৌজা সীমানার কোণা বা পিলার।';
+
+  @override
+  String overlayMatchOther(String map) {
+    return 'এবার $map ম্যাপে ঠিক সেই জায়গায় চাপুন। ছোট বৃত্তে আগের জায়গাটি দেখুন।';
+  }
+
+  @override
+  String get overlayMatchGuessed =>
+      'যেখানে হওয়ার কথা সেখানে বসানো হয়েছে — ঠিক না থাকলে সঠিক জায়গায় চাপুন বা টেনে মেলান।';
+
+  @override
+  String overlayMatchMore(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countStringটি মিলেছে। আরও দিন, সিটের চার কোণার দিকে ছড়িয়ে — ৪টি বা বেশি হলে সবচেয়ে ভালো।';
+  }
+
+  @override
+  String get overlayNextPair => 'পরের জায়গা';
+
+  @override
+  String get overlayRemovePair => 'মুছুন';
+
+  @override
+  String overlayQualityUnchecked(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'মিল যাচাই করতে আরও $countStringটি দিন';
+  }
+
+  @override
+  String get overlayQualityGood => 'মিল: ভালো';
+
+  @override
+  String get overlayQualityFair => 'মিল: মোটামুটি — জায়গাগুলো দেখে নিন';
+
+  @override
+  String get overlayQualityPoor => 'মিল: খারাপ — কোনো জায়গা সম্ভবত ভুল';
+
+  @override
+  String get overlayQualityPoorWhich => 'কোনটি ভুল জানতে আরও একটি জায়গা দিন';
+
+  @override
+  String overlaySuspect(String n) {
+    return '$n নম্বর জায়গাটি সম্ভবত ভুল — দেখে নিন';
+  }
+
+  @override
+  String get overlayViewBoth => 'দুটো';
+
+  @override
+  String get overlayColours => 'রঙ';
+
+  @override
+  String get overlayScaleHint =>
+      'যেকোনো ম্যাপের স্কেল বারে স্কেল দিন — দুটি ম্যাপ এখন একই মাপে।';
+
+  @override
+  String get overlayPlot => 'দাগ';
+
+  @override
+  String get overlayTraceHint =>
+      'ম্যাপ বেছে নিন, তারপর তার একটি দাগের কোণাগুলোতে চাপ দিন।';
+
+  @override
+  String get overlayFinishPlot => 'দাগ শেষ';
+
+  @override
+  String get overlayPlotNameTitle => 'দাগ নম্বর';
+
+  @override
+  String get overlayPlotsHeader => 'দাগসমূহ';
+
+  @override
+  String get overlayOverlapHeader => 'যতটুকু মিলেছে';
+
+  @override
+  String overlayOverlapShare(String pa, String a, String pb, String b) {
+    return '$a-এর $pa · $b-এর $pb';
+  }
+
+  @override
+  String get overlayNoOverlap => 'আঁকা দাগগুলো একটি আরেকটির উপর পড়েনি।';
+
+  @override
+  String get overlayOverlapEmpty =>
+      'দুই ম্যাপ থেকে একটি করে দাগ আঁকুন — কতটুকু মিলে তা দেখাবে।';
+
+  @override
+  String get overlayReport => 'রিপোর্ট';
+
+  @override
+  String get overlayReportTitle => 'প্যান্টোগ্রাফ';
+
+  @override
+  String overlayReportMatched(int count, String quality) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countStringটি জায়গায় মিলানো · $quality';
+  }
+
+  @override
+  String overlayReportMismatch(String value) {
+    return 'গড় অমিল $value';
+  }
+
+  @override
+  String get overlayReportMap => 'ম্যাপ';
+
+  @override
+  String get overlayLeaveBody => 'মিলানো জায়গা ও আঁকা দাগ হারিয়ে যাবে।';
+
+  @override
+  String get overlayNeedTwo => 'এগোতে অন্তত দুটি জায়গা মিলান।';
+
+  @override
+  String overlayMovePlace(String n) {
+    return '$n নম্বর জায়গা: যেকোনো ম্যাপে সঠিক জায়গায় চাপুন, বা চিহ্নটি টেনে মেলান।';
+  }
 }

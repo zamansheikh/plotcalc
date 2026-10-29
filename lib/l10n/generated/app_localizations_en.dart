@@ -1460,4 +1460,180 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mouzaAreaSoFar => 'AREA';
+
+  @override
+  String get overlayEntryTitle => 'Pantograph';
+
+  @override
+  String get overlayEntrySub => 'CS ↔ RS overlay';
+
+  @override
+  String get mouzaCompareLink =>
+      'Have two surveys of this mouza? Lay them over each other with Pantograph';
+
+  @override
+  String get overlayTitle => 'Pantograph';
+
+  @override
+  String get overlayStepMaps => 'Maps';
+
+  @override
+  String get overlayStepMatch => 'Match';
+
+  @override
+  String get overlayStepMeasure => 'Measure';
+
+  @override
+  String get overlayMapsTitle => 'Add both maps of the mouza';
+
+  @override
+  String get overlayMapsSub =>
+      'Usually the old survey (CS or SA) and the newer one (RS or BS). Next you mark a few places found on both, and one map is laid over the other.';
+
+  @override
+  String get overlayMapOld => 'OLD SURVEY';
+
+  @override
+  String get overlayMapNew => 'NEW SURVEY';
+
+  @override
+  String get overlayAddPhoto => 'Add photo';
+
+  @override
+  String get overlaySurveyOther => 'Other';
+
+  @override
+  String get overlaySameSheet =>
+      'Both must be the same sheet of the same mouza (same J.L. no.).';
+
+  @override
+  String get overlayMatchStart =>
+      'Tap a place you can find on both maps — a road crossing, a corner of the mouza boundary, a pillar.';
+
+  @override
+  String overlayMatchOther(String map) {
+    return 'Now tap the very same place on the $map map. The small circle shows where it was.';
+  }
+
+  @override
+  String get overlayMatchGuessed =>
+      'Placed where it should be — if it is not exactly on the spot, tap the right spot or drag it.';
+
+  @override
+  String overlayMatchMore(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString matched. Add more, spread towards the corners of the sheet — four or more is best.';
+  }
+
+  @override
+  String get overlayNextPair => 'Next place';
+
+  @override
+  String get overlayRemovePair => 'Remove';
+
+  @override
+  String overlayQualityUnchecked(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'Add $countString more to check the match';
+  }
+
+  @override
+  String get overlayQualityGood => 'Match: good';
+
+  @override
+  String get overlayQualityFair => 'Match: fair — look over the places';
+
+  @override
+  String get overlayQualityPoor => 'Match: poor — a place is probably wrong';
+
+  @override
+  String get overlayQualityPoorWhich =>
+      'Add one more place to find out which is wrong';
+
+  @override
+  String overlaySuspect(String n) {
+    return 'Place $n looks wrong — check it';
+  }
+
+  @override
+  String get overlayViewBoth => 'Both';
+
+  @override
+  String get overlayColours => 'Colours';
+
+  @override
+  String get overlayScaleHint =>
+      'Set the scale on either map\'s scale bar — both share it now.';
+
+  @override
+  String get overlayPlot => 'plot';
+
+  @override
+  String get overlayTraceHint =>
+      'Choose the map, then tap the corners of one plot on it.';
+
+  @override
+  String get overlayFinishPlot => 'Plot done';
+
+  @override
+  String get overlayPlotNameTitle => 'Plot number';
+
+  @override
+  String get overlayPlotsHeader => 'PLOTS';
+
+  @override
+  String get overlayOverlapHeader => 'SHARED AREA';
+
+  @override
+  String overlayOverlapShare(String pa, String a, String pb, String b) {
+    return '$pa of $a · $pb of $b';
+  }
+
+  @override
+  String get overlayNoOverlap => 'The traced plots do not overlap.';
+
+  @override
+  String get overlayOverlapEmpty =>
+      'Trace a plot on each map to see how much they share.';
+
+  @override
+  String get overlayReport => 'Report';
+
+  @override
+  String get overlayReportTitle => 'PANTOGRAPH';
+
+  @override
+  String overlayReportMatched(int count, String quality) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'Matched at $countString places · $quality';
+  }
+
+  @override
+  String overlayReportMismatch(String value) {
+    return 'Average mismatch $value';
+  }
+
+  @override
+  String get overlayReportMap => 'Map';
+
+  @override
+  String get overlayLeaveBody =>
+      'The matching and the traced plots will be lost.';
+
+  @override
+  String get overlayNeedTwo => 'Match at least two places to continue.';
+
+  @override
+  String overlayMovePlace(String n) {
+    return 'Place $n: tap the right spot, or drag its mark, on either map.';
+  }
 }

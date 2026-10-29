@@ -2,7 +2,6 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -20,21 +19,9 @@ import '../../../../l10n/l10n.dart';
 import '../../../shared/settings/settings_bloc.dart';
 import '../../../shared/widgets/phone_chrome.dart';
 import '../../result/view/result_screen.dart' show ResultArgs;
-
-/// Reads a photo from the camera or the gallery. A seam, so tests can hand
-/// the screen an image without a platform picker.
-typedef PickMapPhoto = Future<Uint8List?> Function(ImageSource source);
-
-Future<Uint8List?> _pickWithPlugin(ImageSource source) async {
-  final file = await ImagePicker().pickImage(
-    source: source,
-    // Plenty for tracing, and keeps a 50-megapixel photo out of memory.
-    maxWidth: 4096,
-    maxHeight: 4096,
-    imageQuality: 92,
-  );
-  return file?.readAsBytes();
-}
+import '../../draw/view/plot_labels.dart';
+import '../../overlay/view/overlay_canvas.dart' show mapControlAreas;
+import 'map_widgets.dart';
 
 enum _Step { photo, scale, corners }
 
@@ -105,7 +92,7 @@ class _MouzaScreenState extends State<MouzaScreen> {
     final messenger = ScaffoldMessenger.of(context);
     final failed = context.l10n.mouzaPickFailed;
     try {
-      final bytes = await (widget.pickPhoto ?? _pickWithPlugin)(source);
+      final bytes = await (widget.pickPhoto ?? pickMapPhotoWithPlugin)(source);
       if (bytes == null) return; // cancelled
       await _load(bytes);
     } catch (_) {
@@ -490,7 +477,7 @@ class _MouzaScreenState extends State<MouzaScreen> {
                                         scaleLabel: _distance.text.isEmpty
                                             ? null
                                             : '${_distance.text} '
-                                                  '${_unitLabel(t, _unitOrDefault())}',
+                                                  '${mapDistanceUnitLabel(t, _unitOrDefault())}',
                                         lengthUnit: settings.lengthUnit,
                                         lengthLabel: settings.lengthUnit
                                             .labelOf(t),
@@ -507,7 +494,7 @@ class _MouzaScreenState extends State<MouzaScreen> {
                                       Positioned(
                                         right: 10,
                                         top: 10,
-                                        child: _ZoomButtons(
+                                        child: MapZoomButtons(
                                           onIn: () => _zoomBy(1.6),
                                           onOut: () => _zoomBy(1 / 1.6),
                                         ),
@@ -521,9 +508,9 @@ class _MouzaScreenState extends State<MouzaScreen> {
                         ),
                 ),
                 if (_step == _Step.scale)
-                  _PanelBox(
+                  MapPanelBox(
                     maxHeight: box.maxHeight * 0.45,
-                    child: _ScalePanel(
+                    child: MapScalePanel(
                       points: _scalePoints.length,
                       controller: _distance,
                       unit: _unitOrDefault(),
@@ -542,7 +529,7 @@ class _MouzaScreenState extends State<MouzaScreen> {
                     ),
                   ),
                 if (_step == _Step.corners)
-                  _PanelBox(
+                  MapPanelBox(
                     maxHeight: box.maxHeight * 0.45,
                     child: _CornersPanel(
                       corners: _corners.length,
@@ -562,13 +549,6 @@ class _MouzaScreenState extends State<MouzaScreen> {
     );
   }
 }
-
-String _unitLabel(AppLocalizations t, MapDistanceUnit u) => switch (u) {
-  MapDistanceUnit.foot => t.mouzaUnitFoot,
-  MapDistanceUnit.meter => t.mouzaUnitMeter,
-  MapDistanceUnit.chain => t.mouzaUnitChain,
-  MapDistanceUnit.link => t.mouzaUnitLink,
-};
 
 // ------------------------------------------------------------------ chrome
 
@@ -643,75 +623,6 @@ class _TopBar extends StatelessWidget {
             SmallIconButton(icon: Icons.fit_screen_outlined, onTap: onFit),
         ],
       ),
-    );
-  }
-}
-
-/// Holds a step's controls under the map. It never takes more than its share
-/// of the room left over by the keyboard, and scrolls past that: the map must stay
-/// big enough to see the line being measured, even on a small phone with a
-/// large font.
-class _PanelBox extends StatelessWidget {
-  final double maxHeight;
-  final Widget child;
-  const _PanelBox({required this.maxHeight, required this.child});
-
-  @override
-  Widget build(BuildContext context) => ConstrainedBox(
-    constraints: BoxConstraints(maxHeight: maxHeight),
-    child: SingleChildScrollView(child: child),
-  );
-}
-
-/// Lays its child out normally, but never gets shorter than the tallest it
-/// has been. Hints change length as the user taps; if the panel holding
-/// them shrank, the map above would grow and slide under the next tap.
-/// Unlike a fixed height, this still fits any font size.
-class _NoShrink extends SingleChildRenderObjectWidget {
-  const _NoShrink({super.key, required super.child});
-
-  @override
-  RenderObject createRenderObject(BuildContext context) => _RenderNoShrink();
-}
-
-class _RenderNoShrink extends RenderProxyBox {
-  double _tallest = 0;
-
-  @override
-  void performLayout() {
-    final c = child!;
-    c.layout(constraints, parentUsesSize: true);
-    _tallest = math.max(_tallest, c.size.height);
-    size = constraints.constrain(Size(c.size.width, _tallest));
-  }
-}
-
-class _ZoomButtons extends StatelessWidget {
-  final VoidCallback onIn;
-  final VoidCallback onOut;
-  const _ZoomButtons({required this.onIn, required this.onOut});
-
-  @override
-  Widget build(BuildContext context) {
-    Widget button(IconData icon, VoidCallback onTap, Key key) => Material(
-      color: AppColors.ink.withValues(alpha: 0.85),
-      shape: const CircleBorder(side: BorderSide(color: AppColors.lineMid)),
-      child: InkWell(
-        key: key,
-        customBorder: const CircleBorder(),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(10),
-          child: Icon(icon, size: 20, color: AppColors.text),
-        ),
-      ),
-    );
-    return Column(
-      children: [
-        button(Icons.add, onIn, const ValueKey('mouza-zoom-in')),
-        const SizedBox(height: 8),
-        button(Icons.remove, onOut, const ValueKey('mouza-zoom-out')),
-      ],
     );
   }
 }
@@ -825,225 +736,29 @@ class _PhotoStep extends StatelessWidget {
             ],
           ),
         ),
-      ],
-    );
-  }
-}
-
-class _Hint extends StatelessWidget {
-  final String text;
-  final Color accent;
-  const _Hint(this.text, {required this.accent});
-
-  @override
-  Widget build(BuildContext context) => Row(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Icon(Icons.touch_app_outlined, size: 16, color: accent),
-      const SizedBox(width: 8),
-      Expanded(
-        child: Text(
-          text,
-          style: AppTypography.sans(size: 13, color: AppColors.text),
-        ),
-      ),
-    ],
-  );
-}
-
-ButtonStyle _primary(Color accent) => FilledButton.styleFrom(
-  backgroundColor: accent,
-  foregroundColor: AppColors.ink,
-  disabledBackgroundColor: AppColors.surface,
-  disabledForegroundColor: AppColors.textDim,
-  padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 14),
-  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-);
-
-ButtonStyle get _secondary => OutlinedButton.styleFrom(
-  foregroundColor: AppColors.text,
-  disabledForegroundColor: AppColors.textFaint,
-  side: const BorderSide(color: AppColors.lineMid),
-  padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 12),
-  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-);
-
-class _ScalePanel extends StatelessWidget {
-  final int points;
-  final TextEditingController controller;
-  final MapDistanceUnit unit;
-  final Color accent;
-  final bool ready;
-  final ValueChanged<MapDistanceUnit> onUnit;
-  final VoidCallback onChanged;
-  final VoidCallback onStartOver;
-  final VoidCallback onNext;
-  const _ScalePanel({
-    required this.points,
-    required this.controller,
-    required this.unit,
-    required this.accent,
-    required this.ready,
-    required this.onUnit,
-    required this.onChanged,
-    required this.onStartOver,
-    required this.onNext,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final t = context.l10n;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // The hint changes between the two taps; a panel that shrinks
-          // would move the map under the second tap. Once both points are
-          // in there is nothing left to tap, so it may size naturally again.
-          _NoShrink(
-            key: ValueKey(points == 2),
-            child: _Hint(switch (points) {
-              0 => t.mouzaScaleHintFirst,
-              1 => t.mouzaScaleHintSecond,
-              _ => t.mouzaDragTip,
-            }, accent: accent),
-          ),
-          if (points == 2) ...[
-            const SizedBox(height: 12),
-            Text(t.mouzaScaleDistance, style: AppTypography.monoLabel),
-            const SizedBox(height: 6),
-            Row(
+        const SizedBox(height: 14),
+        // Two surveys of the same mouza belong in the comparison instead.
+        InkWell(
+          onTap: () => context.push(AppRoutes.mapOverlay),
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Row(
               children: [
+                Icon(Icons.layers_outlined, size: 18, color: accent),
+                const SizedBox(width: 10),
                 Expanded(
-                  child: Container(
-                    height: 48,
-                    alignment: Alignment.centerLeft,
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      border: Border.all(color: AppColors.lineMid),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: TextField(
-                      key: const ValueKey('mouza-distance'),
-                      controller: controller,
-                      autofocus: true,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(
-                          RegExp(r'[0-9০-৯.,]'),
-                        ),
-                      ],
-                      cursorColor: accent,
-                      textAlignVertical: TextAlignVertical.center,
-                      style: AppTypography.mono(
-                        size: 18,
-                        weight: FontWeight.w600,
-                        color: accent,
-                      ),
-                      decoration: InputDecoration(
-                        isCollapsed: true,
-                        border: InputBorder.none,
-                        hintText: '0',
-                        hintStyle: AppTypography.mono(
-                          size: 18,
-                          color: AppColors.textFaint,
-                        ),
-                      ),
-                      onChanged: (_) => onChanged(),
-                      // The keyboard's tick goes on, so the Next button
-                      // does not have to be found under the keyboard.
-                      textInputAction: TextInputAction.next,
-                      onSubmitted: (_) {
-                        if (ready) onNext();
-                      },
-                      onTapOutside: (_) => FocusScope.of(context).unfocus(),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  for (final u in MapDistanceUnit.values) ...[
-                    if (u != MapDistanceUnit.values.first)
-                      const SizedBox(width: 6),
-                    ChoiceChip(
-                      label: Text(_unitLabel(t, u)),
-                      selected: u == unit,
-                      onSelected: (_) => onUnit(u),
-                      showCheckmark: false,
-                      labelStyle: AppTypography.sans(
-                        size: 13,
-                        weight: FontWeight.w600,
-                        color: u == unit ? AppColors.ink : AppColors.text,
-                      ),
-                      selectedColor: accent,
-                      backgroundColor: AppColors.surface,
-                      side: BorderSide(
-                        color: u == unit ? accent : AppColors.lineMid,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              t.mouzaScaleNoBar,
-              style: AppTypography.sans(size: 12, color: AppColors.textDim),
-            ),
-          ],
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              if (points > 0) ...[
-                OutlinedButton(
-                  onPressed: onStartOver,
-                  style: _secondary,
                   child: Text(
-                    t.mouzaStartOver,
-                    style: AppTypography.sans(size: 13),
+                    t.mouzaCompareLink,
+                    style: AppTypography.sans(size: 13, color: accent),
                   ),
                 ),
-                const SizedBox(width: 8),
+                Icon(Icons.chevron_right, size: 18, color: accent),
               ],
-              Expanded(
-                child: FilledButton(
-                  onPressed: ready ? onNext : null,
-                  style: _primary(accent),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        t.mouzaNext,
-                        style: AppTypography.sans(
-                          size: 14,
-                          weight: FontWeight.w600,
-                          color: ready ? AppColors.ink : AppColors.textDim,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Icon(
-                        Icons.arrow_forward,
-                        size: 16,
-                        color: ready ? AppColors.ink : AppColors.textDim,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -1120,8 +835,8 @@ class _CornersPanel extends StatelessWidget {
             style: AppTypography.sans(size: 12, color: AppColors.textDim),
           ),
           const SizedBox(height: 10),
-          _NoShrink(
-            child: _Hint(
+          NoShrink(
+            child: MapHint(
               corners == 0
                   ? t.mouzaTraceHintFirst
                   : t.mouzaTraceHintMore(corners),
@@ -1151,7 +866,7 @@ class _CornersPanel extends StatelessWidget {
               const SizedBox(width: 8),
               OutlinedButton(
                 onPressed: onScale,
-                style: _secondary,
+                style: mapSecondaryButtonStyle,
                 child: Text(
                   t.mouzaChangeScale,
                   style: AppTypography.sans(size: 13),
@@ -1160,7 +875,7 @@ class _CornersPanel extends StatelessWidget {
               const SizedBox(width: 8),
               OutlinedButton(
                 onPressed: onNewPlot,
-                style: _secondary,
+                style: mapSecondaryButtonStyle,
                 child: Text(
                   t.mouzaNewPlot,
                   style: AppTypography.sans(size: 13),
@@ -1170,7 +885,7 @@ class _CornersPanel extends StatelessWidget {
               Expanded(
                 child: FilledButton(
                   onPressed: onResult,
-                  style: _primary(accent),
+                  style: mapPrimaryButtonStyle(accent),
                   child: FittedBox(
                     fit: BoxFit.scaleDown,
                     child: Text(
@@ -1236,14 +951,20 @@ class _MapPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     canvas.clipRect(Offset.zero & size);
-    _scene(canvas, scale, offset, labels: true);
+    _scene(canvas, scale, offset, labels: true, size: size);
     if (mapScale != null) _scaleBar(canvas, size);
     _loupe(canvas, size);
   }
 
   /// Everything on the map, at a given zoom: used for the view itself and,
   /// much larger, inside the magnifier.
-  void _scene(Canvas canvas, double s, Offset o, {required bool labels}) {
+  void _scene(
+    Canvas canvas,
+    double s,
+    Offset o, {
+    required bool labels,
+    Size size = const Size(1e6, 1e6),
+  }) {
     Offset px(Offset p) => p * s + o;
 
     canvas.drawImageRect(
@@ -1326,7 +1047,7 @@ class _MapPainter extends CustomPainter {
             ..strokeWidth = 2,
         );
       }
-      if (labels && mapScale != null) _sideLabels(canvas, pts);
+      if (labels && mapScale != null) _sideLabels(canvas, pts, size);
       for (var i = 0; i < pts.length; i++) {
         _handle(
           canvas,
@@ -1339,23 +1060,27 @@ class _MapPainter extends CustomPainter {
     }
   }
 
-  void _sideLabels(Canvas canvas, List<Offset> pts) {
+  /// Every side's length, outside the plot and never overlapping; see
+  /// [PlotLabelLayout].
+  void _sideLabels(Canvas canvas, List<Offset> pts, Size size) {
     final ms = mapScale!;
-    final n = pts.length;
-    final sides = n >= 3 ? n : n - 1;
-    for (var i = 0; i < sides; i++) {
-      final a = pts[i], b = pts[(i + 1) % n];
-      if ((b - a).distance < 70) continue;
-      final meters = ms.lengthOf(corners[i], corners[(i + 1) % n]);
-      _pill(
-        canvas,
-        (a + b) / 2,
-        '${lengthUnit.format(meters)} $lengthLabel',
-        fill: AppColors.ink.withValues(alpha: 0.85),
-        ink: AppColors.text,
-        border: accent.withValues(alpha: 0.6),
-      );
-    }
+    final n = corners.length;
+    paintSideLengths(
+      canvas,
+      pts,
+      text: (i) =>
+          '${lengthUnit.format(ms.lengthOf(corners[i], corners[(i + 1) % n]))} '
+          '$lengthLabel',
+      style: AppTypography.mono(
+        size: 10,
+        weight: FontWeight.w600,
+        color: AppColors.text,
+      ),
+      fill: AppColors.ink.withValues(alpha: 0.85),
+      border: accent.withValues(alpha: 0.6),
+      bounds: size,
+      reserved: [for (final r in mapControlAreas(size)) LabelBox.rect(r)],
+    );
   }
 
   void _handle(

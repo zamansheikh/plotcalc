@@ -68,3 +68,83 @@ class MouzaEntryCard extends StatelessWidget {
     );
   }
 }
+
+/// Home's pair of map tools: measure from one mouza map, or lay two surveys
+/// of it over each other.
+class MapToolsRow extends StatelessWidget {
+  final Color accent;
+  const MapToolsRow({super.key, required this.accent});
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.l10n;
+    Widget tile({
+      required IconData icon,
+      required String title,
+      required String sub,
+      required String route,
+      required Key key,
+    }) => Expanded(
+      child: InkWell(
+        key: key,
+        onTap: () => context.push(route),
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            border: Border.all(color: accent.withValues(alpha: 0.45)),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: accent.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, size: 18, color: accent),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                title,
+                style: AppTypography.sans(size: 14, weight: FontWeight.w600),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                sub,
+                style: AppTypography.sans(size: 11, color: AppColors.textDim),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          tile(
+            key: const ValueKey('home-mouza'),
+            icon: Icons.map_outlined,
+            title: t.mouzaTitle,
+            sub: t.mouzaEntrySub,
+            route: AppRoutes.mouza,
+          ),
+          const SizedBox(width: 10),
+          tile(
+            key: const ValueKey('home-overlay'),
+            icon: Icons.layers_outlined,
+            title: t.overlayEntryTitle,
+            sub: t.overlayEntrySub,
+            route: AppRoutes.mapOverlay,
+          ),
+        ],
+      ),
+    );
+  }
+}

@@ -50,7 +50,11 @@ class _HomeView extends StatelessWidget {
             0,
             (acc, p) => acc + Geometry.polygonArea(p.vertices),
           );
-          return Column(
+          // One scrolling page: on a short screen, a large font or in
+          // landscape the cards can no longer squeeze the list to nothing
+          // and overflow.
+          return ListView(
+            padding: EdgeInsets.zero,
             children: [
               const SizedBox(height: 12),
               _Header(accent: accent),
@@ -63,12 +67,10 @@ class _HomeView extends StatelessWidget {
               _QuickActions(accent: accent),
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
-                child: MouzaEntryCard(accent: accent),
+                child: MapToolsRow(accent: accent),
               ),
               _RecentHeader(count: state.plots.length, accent: accent),
-              Expanded(
-                child: _RecentList(plots: state.plots, accent: accent),
-              ),
+              _RecentList(plots: state.plots, accent: accent),
             ],
           );
         },
@@ -429,6 +431,9 @@ class _RecentList extends StatelessWidget {
   Widget build(BuildContext context) {
     final visible = plots.take(5).toList();
     return ListView.separated(
+      // Part of Home's own scroll; at most five rows.
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
       itemCount: visible.length,
       separatorBuilder: (_, _) => const SizedBox(height: 8),

@@ -14,6 +14,7 @@ import '../../presentation/features/info/view/article_screen.dart';
 import '../../presentation/features/info/view/info_screen.dart';
 import '../../presentation/features/khotiyan/view/khotiyan_screen.dart';
 import '../../presentation/features/mouza/view/mouza_screen.dart';
+import '../../presentation/features/overlay/view/overlay_screen.dart';
 import '../../presentation/features/picker/view/picker_screen.dart';
 import '../../presentation/features/result/view/result_screen.dart';
 import '../../presentation/features/settings/view/breakdown_units_screen.dart';
@@ -42,6 +43,7 @@ class AppRoutes {
   static const sheet = '/sheet';
   static const sheetArrange = '/sheet/arrange';
   static const mouza = '/mouza';
+  static const mapOverlay = '/map-overlay';
   static const converter = '/converter';
   static const calculator = '/calculator';
   static const khotiyan = '/khotiyan';
@@ -99,10 +101,7 @@ GoRouter buildRouter() {
 
       // Top-level routes pushed over the shell (bottom nav hidden while
       // they're active).
-      GoRoute(
-        path: AppRoutes.picker,
-        builder: (_, _) => const PickerScreen(),
-      ),
+      GoRoute(path: AppRoutes.picker, builder: (_, _) => const PickerScreen()),
       GoRoute(
         path: AppRoutes.draw,
         builder: (_, state) {
@@ -133,19 +132,16 @@ GoRouter buildRouter() {
         builder: (context, state) {
           final args = state.extra as AdjustArgs?;
           return AdjustScreen(
-            args: args ??
-                AdjustArgs(
-                  name: context.l10n.defaultPlotLabel,
-                  vertices: [],
-                ),
+            args:
+                args ??
+                AdjustArgs(name: context.l10n.defaultPlotLabel, vertices: []),
           );
         },
       ),
       GoRoute(
         path: AppRoutes.compare,
-        builder: (_, state) => CompareScreen(
-          plotIds: (state.extra as List?)?.cast<String>(),
-        ),
+        builder: (_, state) =>
+            CompareScreen(plotIds: (state.extra as List?)?.cast<String>()),
       ),
       GoRoute(
         path: AppRoutes.sheet,
@@ -155,9 +151,10 @@ GoRouter buildRouter() {
         path: AppRoutes.sheetArrange,
         builder: (_, state) => ArrangeScreen(sheetId: state.extra as String),
       ),
+      GoRoute(path: AppRoutes.mouza, builder: (_, _) => const MouzaScreen()),
       GoRoute(
-        path: AppRoutes.mouza,
-        builder: (_, _) => const MouzaScreen(),
+        path: AppRoutes.mapOverlay,
+        builder: (_, _) => const OverlayScreen(),
       ),
       GoRoute(
         path: AppRoutes.converter,
@@ -187,10 +184,7 @@ GoRouter buildRouter() {
         path: AppRoutes.breakdownUnits,
         builder: (_, _) => const BreakdownUnitsScreen(),
       ),
-      GoRoute(
-        path: AppRoutes.about,
-        builder: (_, _) => const AboutScreen(),
-      ),
+      GoRoute(path: AppRoutes.about, builder: (_, _) => const AboutScreen()),
     ],
     errorBuilder: (context, state) => Scaffold(
       body: Center(child: Text(context.l10n.routeNotFound('${state.uri}'))),

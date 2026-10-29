@@ -2527,6 +2527,282 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'AREA'**
   String get mouzaAreaSoFar;
+
+  /// No description provided for @overlayEntryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pantograph'**
+  String get overlayEntryTitle;
+
+  /// No description provided for @overlayEntrySub.
+  ///
+  /// In en, this message translates to:
+  /// **'CS ↔ RS overlay'**
+  String get overlayEntrySub;
+
+  /// No description provided for @mouzaCompareLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Have two surveys of this mouza? Lay them over each other with Pantograph'**
+  String get mouzaCompareLink;
+
+  /// No description provided for @overlayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pantograph'**
+  String get overlayTitle;
+
+  /// No description provided for @overlayStepMaps.
+  ///
+  /// In en, this message translates to:
+  /// **'Maps'**
+  String get overlayStepMaps;
+
+  /// No description provided for @overlayStepMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Match'**
+  String get overlayStepMatch;
+
+  /// No description provided for @overlayStepMeasure.
+  ///
+  /// In en, this message translates to:
+  /// **'Measure'**
+  String get overlayStepMeasure;
+
+  /// No description provided for @overlayMapsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add both maps of the mouza'**
+  String get overlayMapsTitle;
+
+  /// No description provided for @overlayMapsSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Usually the old survey (CS or SA) and the newer one (RS or BS). Next you mark a few places found on both, and one map is laid over the other.'**
+  String get overlayMapsSub;
+
+  /// No description provided for @overlayMapOld.
+  ///
+  /// In en, this message translates to:
+  /// **'OLD SURVEY'**
+  String get overlayMapOld;
+
+  /// No description provided for @overlayMapNew.
+  ///
+  /// In en, this message translates to:
+  /// **'NEW SURVEY'**
+  String get overlayMapNew;
+
+  /// No description provided for @overlayAddPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Add photo'**
+  String get overlayAddPhoto;
+
+  /// No description provided for @overlaySurveyOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get overlaySurveyOther;
+
+  /// No description provided for @overlaySameSheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Both must be the same sheet of the same mouza (same J.L. no.).'**
+  String get overlaySameSheet;
+
+  /// No description provided for @overlayMatchStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a place you can find on both maps — a road crossing, a corner of the mouza boundary, a pillar.'**
+  String get overlayMatchStart;
+
+  /// No description provided for @overlayMatchOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Now tap the very same place on the {map} map. The small circle shows where it was.'**
+  String overlayMatchOther(String map);
+
+  /// No description provided for @overlayMatchGuessed.
+  ///
+  /// In en, this message translates to:
+  /// **'Placed where it should be — if it is not exactly on the spot, tap the right spot or drag it.'**
+  String get overlayMatchGuessed;
+
+  /// No description provided for @overlayMatchMore.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} matched. Add more, spread towards the corners of the sheet — four or more is best.'**
+  String overlayMatchMore(int count);
+
+  /// No description provided for @overlayNextPair.
+  ///
+  /// In en, this message translates to:
+  /// **'Next place'**
+  String get overlayNextPair;
+
+  /// No description provided for @overlayRemovePair.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get overlayRemovePair;
+
+  /// No description provided for @overlayQualityUnchecked.
+  ///
+  /// In en, this message translates to:
+  /// **'Add {count} more to check the match'**
+  String overlayQualityUnchecked(int count);
+
+  /// No description provided for @overlayQualityGood.
+  ///
+  /// In en, this message translates to:
+  /// **'Match: good'**
+  String get overlayQualityGood;
+
+  /// No description provided for @overlayQualityFair.
+  ///
+  /// In en, this message translates to:
+  /// **'Match: fair — look over the places'**
+  String get overlayQualityFair;
+
+  /// No description provided for @overlayQualityPoor.
+  ///
+  /// In en, this message translates to:
+  /// **'Match: poor — a place is probably wrong'**
+  String get overlayQualityPoor;
+
+  /// No description provided for @overlayQualityPoorWhich.
+  ///
+  /// In en, this message translates to:
+  /// **'Add one more place to find out which is wrong'**
+  String get overlayQualityPoorWhich;
+
+  /// No description provided for @overlaySuspect.
+  ///
+  /// In en, this message translates to:
+  /// **'Place {n} looks wrong — check it'**
+  String overlaySuspect(String n);
+
+  /// No description provided for @overlayViewBoth.
+  ///
+  /// In en, this message translates to:
+  /// **'Both'**
+  String get overlayViewBoth;
+
+  /// No description provided for @overlayColours.
+  ///
+  /// In en, this message translates to:
+  /// **'Colours'**
+  String get overlayColours;
+
+  /// No description provided for @overlayScaleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Set the scale on either map\'s scale bar — both share it now.'**
+  String get overlayScaleHint;
+
+  /// No description provided for @overlayPlot.
+  ///
+  /// In en, this message translates to:
+  /// **'plot'**
+  String get overlayPlot;
+
+  /// No description provided for @overlayTraceHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the map, then tap the corners of one plot on it.'**
+  String get overlayTraceHint;
+
+  /// No description provided for @overlayFinishPlot.
+  ///
+  /// In en, this message translates to:
+  /// **'Plot done'**
+  String get overlayFinishPlot;
+
+  /// No description provided for @overlayPlotNameTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Plot number'**
+  String get overlayPlotNameTitle;
+
+  /// No description provided for @overlayPlotsHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'PLOTS'**
+  String get overlayPlotsHeader;
+
+  /// No description provided for @overlayOverlapHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'SHARED AREA'**
+  String get overlayOverlapHeader;
+
+  /// No description provided for @overlayOverlapShare.
+  ///
+  /// In en, this message translates to:
+  /// **'{pa} of {a} · {pb} of {b}'**
+  String overlayOverlapShare(String pa, String a, String pb, String b);
+
+  /// No description provided for @overlayNoOverlap.
+  ///
+  /// In en, this message translates to:
+  /// **'The traced plots do not overlap.'**
+  String get overlayNoOverlap;
+
+  /// No description provided for @overlayOverlapEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Trace a plot on each map to see how much they share.'**
+  String get overlayOverlapEmpty;
+
+  /// No description provided for @overlayReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Report'**
+  String get overlayReport;
+
+  /// No description provided for @overlayReportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'PANTOGRAPH'**
+  String get overlayReportTitle;
+
+  /// No description provided for @overlayReportMatched.
+  ///
+  /// In en, this message translates to:
+  /// **'Matched at {count} places · {quality}'**
+  String overlayReportMatched(int count, String quality);
+
+  /// No description provided for @overlayReportMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Average mismatch {value}'**
+  String overlayReportMismatch(String value);
+
+  /// No description provided for @overlayReportMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Map'**
+  String get overlayReportMap;
+
+  /// No description provided for @overlayLeaveBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The matching and the traced plots will be lost.'**
+  String get overlayLeaveBody;
+
+  /// No description provided for @overlayNeedTwo.
+  ///
+  /// In en, this message translates to:
+  /// **'Match at least two places to continue.'**
+  String get overlayNeedTwo;
+
+  /// No description provided for @overlayMovePlace.
+  ///
+  /// In en, this message translates to:
+  /// **'Place {n}: tap the right spot, or drag its mark, on either map.'**
+  String overlayMovePlace(String n);
 }
 
 class _AppLocalizationsDelegate
