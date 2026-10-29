@@ -616,9 +616,9 @@ class _CanvasState extends State<_Canvas> {
       // Compass (top left), diagonals switch (top right), scale bar
       // (bottom left): labels under them would be hidden.
       reserved: [
-        const Rect.fromLTWH(0, 0, 64, 64),
-        Rect.fromLTWH(size.width - 120, 0, 120, 58),
-        Rect.fromLTWH(0, size.height - 48, 240, 48),
+        LabelBox.rect(const Rect.fromLTWH(0, 0, 64, 64)),
+        LabelBox.rect(Rect.fromLTWH(size.width - 120, 0, 120, 58)),
+        LabelBox.rect(Rect.fromLTWH(0, size.height - 48, 240, 48)),
       ],
     );
   }
@@ -826,7 +826,7 @@ class _DrawCanvasPainter extends CustomPainter {
     // Labels after every line, so no line runs across a label. A diagonal
     // with no free spot for its label simply shows none.
     for (final e
-        in labels?.diagonals.entries ?? const <MapEntry<(int, int), Rect>>[]) {
+        in labels?.diagonals.entries ?? const <MapEntry<(int, int), LabelBox>>[]) {
       final (i, j) = e.key;
       _pill(
         canvas,
@@ -845,28 +845,20 @@ class _DrawCanvasPainter extends CustomPainter {
 
   static void _pill(
     Canvas canvas,
-    Rect rect,
+    LabelBox box,
     String text, {
     required TextStyle style,
     required Color fill,
     required Color border,
-  }) {
-    final rr = RRect.fromRectAndRadius(rect, const Radius.circular(4));
-    canvas
-      ..drawRRect(rr, Paint()..color = fill)
-      ..drawRRect(
-        rr,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 0.6
-          ..color = border,
-      );
-    final tp = TextPainter(
-      text: TextSpan(text: text, style: style),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    tp.paint(canvas, rect.center - Offset(tp.width / 2, tp.height / 2));
-  }
+  }) => paintLabelPill(
+    canvas,
+    box,
+    text,
+    style: style,
+    fill: fill,
+    border: border,
+    borderWidth: 0.6,
+  );
 
   static void _drawDashedLine(Canvas canvas, Offset a, Offset b, Paint paint) {
     const dash = 4.0;

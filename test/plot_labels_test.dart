@@ -23,7 +23,7 @@ PlotLabelLayout layoutOf(
   diagonalPairs: diagonals(pts.length),
   diagonalSize: (_, _) => const Size(66, 16),
   angleSize: (_) => const Size(28, 14),
-  reserved: const [Rect.fromLTWH(0, 0, 64, 64)],
+  reserved: [LabelBox.rect(const Rect.fromLTWH(0, 0, 64, 64))],
 );
 
 void expectNoOverlaps(PlotLabelLayout l, List<Offset> pts) {
@@ -38,7 +38,7 @@ void expectNoOverlaps(PlotLabelLayout l, List<Offset> pts) {
     }
     for (final p in pts) {
       expect(
-        all[a].overlaps(Rect.fromCircle(center: p, radius: 12)),
+        all[a].overlaps(LabelBox.circle(p, 12)),
         isFalse,
         reason: 'label ${all[a]} covers the corner at $p',
       );
@@ -93,6 +93,30 @@ void main() {
     }
   });
 
+  test('labels beside an upright side clear the plot entirely', () {
+    // A tall, narrow plot: a wide label beside its long sides used to stick
+    // into the plot and cover its name.
+    const tall = [
+      Offset(300, 200),
+      Offset(360, 200),
+      Offset(360, 600),
+      Offset(300, 600),
+    ];
+    final l = PlotLabelLayout.compute(
+      pts: tall,
+      bounds: const Size(700, 900),
+      sideSize: (_) => const Size(110, 18),
+    );
+    const inside = Rect.fromLTRB(300, 200, 360, 600);
+    for (final i in [1, 3]) {
+      expect(
+        l.sides[i]!.overlaps(LabelBox.rect(inside)),
+        isFalse,
+        reason: 'side $i',
+      );
+    }
+  });
+
   test('a reflex corner gets its angle outside the plot', () {
     // An L shape: the corner at (300, 300) points into the plot.
     const ell = [
@@ -126,11 +150,78 @@ void main() {
     const reserved = Rect.fromLTWH(0, 0, 64, 64);
     const canvas = Rect.fromLTWH(0, 0, 700, 900);
     for (final r in l.all) {
-      expect(r.overlaps(reserved), isFalse);
+      expect(r.overlaps(LabelBox.rect(reserved)), isFalse);
+      final b = r.bounds;
       expect(
-        canvas.contains(r.topLeft) && canvas.contains(r.bottomRight),
+        canvas.contains(b.topLeft) && canvas.contains(b.bottomRight),
         isTrue,
       );
     }
+  });
+
+  group('turned labels', () {
+    test('lengths run along their side and never read upside down', () {
+      const quad = [
+        Offset(200, 200),
+        Offset(480, 260),
+        Offset(430, 560),
+        Offset(180, 470),
+      ];
+      final l = layoutOf(quad);
+      for (final e in l.sides.entries) {
+        final a = quad[e.key], b = quad[(e.key + 1) % quad.length];
+        final along = math.atan2(b.dy - a.dy, b.dx - a.dx);
+        final angle = e.value.angle;
+        final diff = (angle - along) % math.pi;
+        expect(
+          math.min(diff, math.pi - diff),
+          lessThan(1e-9),
+          reason: 'side ${e.key} is turned with its side',
+        );
+        expect(angle, greaterThanOrEqualTo(-math.pi / 2));
+        expect(angle, lessThan(math.pi / 2));
+      }
+    });
+
+    test('an upright side reads bottom to top; near-level reads level', () {
+      expect(
+        readableAngle(const Offset(0, 0), const Offset(0, 100)),
+        closeTo(-math.pi / 2, 1e-9),
+      );
+      expect(
+        readableAngle(const Offset(0, 100), const Offset(0, 0)),
+        closeTo(-math.pi / 2, 1e-9),
+      );
+      expect(readableAngle(const Offset(100, 0), const Offset(0, 0)), 0);
+      expect(readableAngle(const Offset(0, 0), const Offset(100, 2)), 0);
+    });
+
+    test('a turned label sits right beside its line', () {
+      const sq = [
+        Offset(200, 200),
+        Offset(500, 300),
+        Offset(450, 600),
+        Offset(150, 500),
+      ];
+      final l = layoutOf(sq);
+      final box = l.sides[0]!;
+      final a = sq[0], b = sq[1];
+      final d = (b - a) / (b - a).distance;
+      final n = Offset(-d.dy, d.dx);
+      final c = box.center - a;
+      final dist = (c.dx * n.dx + c.dy * n.dy).abs();
+      expect(dist, lessThan(box.size.height / 2 + 8));
+    });
+
+    test('turned boxes overlap exactly, not by their upright bounds', () {
+      const a = LabelBox(Offset(100, 100), Size(120, 16), math.pi / 4);
+      const b = LabelBox(Offset(120, 80), Size(120, 16), math.pi / 4);
+      expect(a.bounds.overlaps(b.bounds), isTrue);
+      expect(a.overlaps(b), isFalse);
+      const c = LabelBox(Offset(105, 100), Size(120, 16), -math.pi / 4);
+      expect(a.overlaps(c), isTrue, reason: 'crossing boxes');
+      expect(a.contains(const Offset(100, 100)), isTrue);
+      expect(a.contains(const Offset(100, 130)), isFalse);
+    });
   });
 }
