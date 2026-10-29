@@ -2317,6 +2317,216 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tap a plot to select it'**
   String get sheetTapToSelect;
+
+  /// No description provided for @mouzaEntryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Measure from a mouza map'**
+  String get mouzaEntryTitle;
+
+  /// No description provided for @mouzaEntrySub.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo → scale → tap the corners'**
+  String get mouzaEntrySub;
+
+  /// No description provided for @mouzaTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Mouza map'**
+  String get mouzaTitle;
+
+  /// No description provided for @mouzaStepPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo'**
+  String get mouzaStepPhoto;
+
+  /// No description provided for @mouzaStepScale.
+  ///
+  /// In en, this message translates to:
+  /// **'Scale'**
+  String get mouzaStepScale;
+
+  /// No description provided for @mouzaStepCorners.
+  ///
+  /// In en, this message translates to:
+  /// **'Corners'**
+  String get mouzaStepCorners;
+
+  /// No description provided for @mouzaPickTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a photo of the map'**
+  String get mouzaPickTitle;
+
+  /// No description provided for @mouzaPickSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Then set its scale and tap the corners of your plot. The area is worked out for you.'**
+  String get mouzaPickSub;
+
+  /// No description provided for @mouzaPickCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'Take photo'**
+  String get mouzaPickCamera;
+
+  /// No description provided for @mouzaPickGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from gallery'**
+  String get mouzaPickGallery;
+
+  /// No description provided for @mouzaTipsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'FOR AN ACCURATE RESULT'**
+  String get mouzaTipsTitle;
+
+  /// No description provided for @mouzaTip1.
+  ///
+  /// In en, this message translates to:
+  /// **'Lay the map flat and shoot from straight above.'**
+  String get mouzaTip1;
+
+  /// No description provided for @mouzaTip2.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep the scale bar, or a side whose length you know, in the photo.'**
+  String get mouzaTip2;
+
+  /// No description provided for @mouzaTip3.
+  ///
+  /// In en, this message translates to:
+  /// **'Use good light — no shadow, no glare.'**
+  String get mouzaTip3;
+
+  /// No description provided for @mouzaPickFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the photo.'**
+  String get mouzaPickFailed;
+
+  /// No description provided for @mouzaScaleHintFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap two points whose distance you know — like the two ends of the map\'s scale bar.'**
+  String get mouzaScaleHintFirst;
+
+  /// No description provided for @mouzaScaleHintSecond.
+  ///
+  /// In en, this message translates to:
+  /// **'Now tap the second point.'**
+  String get mouzaScaleHintSecond;
+
+  /// No description provided for @mouzaScaleDistance.
+  ///
+  /// In en, this message translates to:
+  /// **'DISTANCE BETWEEN THE TWO POINTS'**
+  String get mouzaScaleDistance;
+
+  /// No description provided for @mouzaScaleNoBar.
+  ///
+  /// In en, this message translates to:
+  /// **'No scale bar? Use any side whose length is written in the deed.'**
+  String get mouzaScaleNoBar;
+
+  /// No description provided for @mouzaDragTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag a point to fine-tune it — a magnifier shows exactly where it is.'**
+  String get mouzaDragTip;
+
+  /// No description provided for @mouzaUnitFoot.
+  ///
+  /// In en, this message translates to:
+  /// **'ft'**
+  String get mouzaUnitFoot;
+
+  /// No description provided for @mouzaUnitMeter.
+  ///
+  /// In en, this message translates to:
+  /// **'m'**
+  String get mouzaUnitMeter;
+
+  /// No description provided for @mouzaUnitChain.
+  ///
+  /// In en, this message translates to:
+  /// **'chain'**
+  String get mouzaUnitChain;
+
+  /// No description provided for @mouzaUnitLink.
+  ///
+  /// In en, this message translates to:
+  /// **'link'**
+  String get mouzaUnitLink;
+
+  /// No description provided for @mouzaNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get mouzaNext;
+
+  /// No description provided for @mouzaStartOver.
+  ///
+  /// In en, this message translates to:
+  /// **'Start over'**
+  String get mouzaStartOver;
+
+  /// No description provided for @mouzaTraceHintFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap each corner of the plot, one after another.'**
+  String get mouzaTraceHintFirst;
+
+  /// No description provided for @mouzaTraceHintMore.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} corners — keep going around the plot.'**
+  String mouzaTraceHintMore(int count);
+
+  /// No description provided for @mouzaNewPlot.
+  ///
+  /// In en, this message translates to:
+  /// **'New plot'**
+  String get mouzaNewPlot;
+
+  /// No description provided for @mouzaChangeScale.
+  ///
+  /// In en, this message translates to:
+  /// **'Scale'**
+  String get mouzaChangeScale;
+
+  /// No description provided for @mouzaSeeResult.
+  ///
+  /// In en, this message translates to:
+  /// **'See result'**
+  String get mouzaSeeResult;
+
+  /// No description provided for @mouzaDefaultName.
+  ///
+  /// In en, this message translates to:
+  /// **'Mouza map plot'**
+  String get mouzaDefaultName;
+
+  /// No description provided for @mouzaLeaveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave the map?'**
+  String get mouzaLeaveTitle;
+
+  /// No description provided for @mouzaLeaveBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The corners you tapped will be lost.'**
+  String get mouzaLeaveBody;
+
+  /// No description provided for @mouzaAreaSoFar.
+  ///
+  /// In en, this message translates to:
+  /// **'AREA'**
+  String get mouzaAreaSoFar;
 }
 
 class _AppLocalizationsDelegate

@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSCameraUsageDescription</key>
+	<string>PlotCalc uses the camera to photograph a mouza map, so you can measure plots on it.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>PlotCalc opens a photo of a mouza map from your library, so you can measure plots on it.</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

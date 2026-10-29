@@ -1340,4 +1340,120 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get sheetTapToSelect => 'বাছতে একটি প্লটে চাপ দিন';
+
+  @override
+  String get mouzaEntryTitle => 'মৌজা ম্যাপ থেকে মাপুন';
+
+  @override
+  String get mouzaEntrySub => 'ছবি → স্কেল → কোণায় চাপ';
+
+  @override
+  String get mouzaTitle => 'মৌজা ম্যাপ';
+
+  @override
+  String get mouzaStepPhoto => 'ছবি';
+
+  @override
+  String get mouzaStepScale => 'স্কেল';
+
+  @override
+  String get mouzaStepCorners => 'কোণ';
+
+  @override
+  String get mouzaPickTitle => 'ম্যাপের ছবি নিন';
+
+  @override
+  String get mouzaPickSub =>
+      'তারপর স্কেল ঠিক করে প্লটের কোণাগুলোতে চাপ দিন — ক্ষেত্রফল নিজে থেকেই বের হবে।';
+
+  @override
+  String get mouzaPickCamera => 'ছবি তুলুন';
+
+  @override
+  String get mouzaPickGallery => 'গ্যালারি থেকে বাছুন';
+
+  @override
+  String get mouzaTipsTitle => 'সঠিক মাপের জন্য';
+
+  @override
+  String get mouzaTip1 => 'ম্যাপটি সমান জায়গায় রেখে ঠিক উপর থেকে ছবি তুলুন।';
+
+  @override
+  String get mouzaTip2 =>
+      'স্কেল বার, অথবা যে বাহুর মাপ জানেন, তা যেন ছবিতে থাকে।';
+
+  @override
+  String get mouzaTip3 => 'পর্যাপ্ত আলো রাখুন — ছায়া বা ঝলক যেন না থাকে।';
+
+  @override
+  String get mouzaPickFailed => 'ছবিটি খোলা যায়নি।';
+
+  @override
+  String get mouzaScaleHintFirst =>
+      'এমন দুটি বিন্দুতে চাপ দিন যাদের মাঝের দূরত্ব আপনি জানেন — যেমন স্কেল বারের দুই মাথা।';
+
+  @override
+  String get mouzaScaleHintSecond => 'এবার দ্বিতীয় বিন্দুতে চাপ দিন।';
+
+  @override
+  String get mouzaScaleDistance => 'দুই বিন্দুর মাঝের দূরত্ব';
+
+  @override
+  String get mouzaScaleNoBar =>
+      'স্কেল বার নেই? দলিলে লেখা যেকোনো বাহুর মাপ ব্যবহার করুন।';
+
+  @override
+  String get mouzaDragTip =>
+      'বিন্দু টেনে ঠিক জায়গায় বসান — বড় করে দেখাবে কোথায় আছে।';
+
+  @override
+  String get mouzaUnitFoot => 'ফুট';
+
+  @override
+  String get mouzaUnitMeter => 'মিটার';
+
+  @override
+  String get mouzaUnitChain => 'চেইন (জরীপ)';
+
+  @override
+  String get mouzaUnitLink => 'লিংক (কড়ি)';
+
+  @override
+  String get mouzaNext => 'পরের ধাপ';
+
+  @override
+  String get mouzaStartOver => 'আবার শুরু';
+
+  @override
+  String get mouzaTraceHintFirst => 'প্লটের প্রতিটি কোণায় পরপর চাপ দিন।';
+
+  @override
+  String mouzaTraceHintMore(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countStringটি কোণ — প্লটের চারপাশ ঘুরে চাপ দিতে থাকুন।';
+  }
+
+  @override
+  String get mouzaNewPlot => 'নতুন প্লট';
+
+  @override
+  String get mouzaChangeScale => 'স্কেল';
+
+  @override
+  String get mouzaSeeResult => 'ফলাফল দেখুন';
+
+  @override
+  String get mouzaDefaultName => 'মৌজা ম্যাপের প্লট';
+
+  @override
+  String get mouzaLeaveTitle => 'ম্যাপ ছেড়ে যাবেন?';
+
+  @override
+  String get mouzaLeaveBody => 'যে কোণাগুলো দিয়েছেন তা হারিয়ে যাবে।';
+
+  @override
+  String get mouzaAreaSoFar => 'ক্ষেত্রফল';
 }

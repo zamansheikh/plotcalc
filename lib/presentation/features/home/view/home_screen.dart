@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../mouza/view/mouza_entry_card.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/geometry/geometry.dart';
 import '../../../../core/router/app_router.dart';
@@ -60,6 +61,10 @@ class _HomeView extends StatelessWidget {
                 count: state.plots.length,
               ),
               _QuickActions(accent: accent),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+                child: MouzaEntryCard(accent: accent),
+              ),
               _RecentHeader(count: state.plots.length, accent: accent),
               Expanded(
                 child: _RecentList(plots: state.plots, accent: accent),
@@ -133,18 +138,24 @@ class _HeroCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.baseline,
                     textBaseline: TextBaseline.alphabetic,
                     children: [
-                      Text(
-                        acres,
-                        style: AppTypography.mono(
-                          size: 38,
-                          weight: FontWeight.w500,
-                          color: accent,
-                          letterSpacing: -1.1,
+                      Flexible(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            acres,
+                            style: AppTypography.mono(
+                              size: 38,
+                              weight: FontWeight.w500,
+                              color: accent,
+                              letterSpacing: -1.1,
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        'acre',
+                        AreaUnit.acre.labelOf(context.l10n),
                         style: AppTypography.mono(
                           size: 14,
                           color: AppColors.textDim,
@@ -153,10 +164,12 @@ class _HeroCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 14),
-                  Row(
+                  Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    runSpacing: 4,
                     children: [
                       Text(
-                        '+$count plots',
+                        '+${context.l10n.sheetCount(count)}',
                         style: AppTypography.mono(size: 11, color: accent),
                       ),
                       const _Dot(),
@@ -261,32 +274,36 @@ class _QuickActions extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
-      child: Row(
-        children: [
-          Expanded(
-            child: _ActionTile(
-              icon: Icons.add,
-              label: context.l10n.homeMeasurePlot,
-              sub: context.l10n.homeMeasureSub,
-              tag: context.l10n.homeBadgeNew,
-              filled: true,
-              accent: accent,
-              onTap: () => context.push(AppRoutes.picker),
+      // Same height for both, whichever label wraps.
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: _ActionTile(
+                icon: Icons.add,
+                label: context.l10n.homeMeasurePlot,
+                sub: context.l10n.homeMeasureSub,
+                tag: context.l10n.homeBadgeNew,
+                filled: true,
+                accent: accent,
+                onTap: () => context.push(AppRoutes.picker),
+              ),
             ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: _ActionTile(
-              icon: Icons.swap_horiz,
-              label: context.l10n.converterTitle,
-              sub: context.l10n.homeAllUnits,
-              tag: context.l10n.homeToolLabel,
-              filled: false,
-              accent: accent,
-              onTap: () => context.push(AppRoutes.converter),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _ActionTile(
+                icon: Icons.swap_horiz,
+                label: context.l10n.converterTitle,
+                sub: context.l10n.homeAllUnits,
+                tag: context.l10n.homeToolLabel,
+                filled: false,
+                accent: accent,
+                onTap: () => context.push(AppRoutes.converter),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -382,7 +399,10 @@ class _RecentHeader extends StatelessWidget {
         textBaseline: TextBaseline.alphabetic,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(context.l10n.homeRecent(count), style: AppTypography.monoCaption),
+          Text(
+            context.l10n.homeRecent(count),
+            style: AppTypography.monoCaption,
+          ),
           GestureDetector(
             onTap: () => context.goTab(TabKind.history),
             child: Text(

@@ -494,21 +494,24 @@ class _Tile extends StatelessWidget {
                   const SizedBox(height: 2),
                   Row(
                     children: [
+                      // The area is what matters here, so it is never the
+                      // part that gets cut: the meta text gives way first.
+                      Text(
+                        '${unit.format(areaSqm)} ${unit.labelOf(context.l10n)}',
+                        style: AppTypography.mono(size: 10, color: color),
+                      ),
                       Flexible(
                         child: Text(
-                          '${unit.format(areaSqm)} ${unit.labelOf(context.l10n)}',
+                          context.l10n.historyPlotMeta(
+                            plot.vertices.length,
+                            _when(context, plot.createdAt),
+                          ),
+                          maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: AppTypography.mono(size: 10, color: color),
-                        ),
-                      ),
-                      Text(
-                        context.l10n.historyPlotMeta(
-                          plot.vertices.length,
-                          _when(context, plot.createdAt),
-                        ),
-                        style: AppTypography.mono(
-                          size: 10,
-                          color: AppColors.textDim,
+                          style: AppTypography.mono(
+                            size: 10,
+                            color: AppColors.textDim,
+                          ),
                         ),
                       ),
                     ],

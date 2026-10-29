@@ -1343,4 +1343,121 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sheetTapToSelect => 'Tap a plot to select it';
+
+  @override
+  String get mouzaEntryTitle => 'Measure from a mouza map';
+
+  @override
+  String get mouzaEntrySub => 'Photo → scale → tap the corners';
+
+  @override
+  String get mouzaTitle => 'Mouza map';
+
+  @override
+  String get mouzaStepPhoto => 'Photo';
+
+  @override
+  String get mouzaStepScale => 'Scale';
+
+  @override
+  String get mouzaStepCorners => 'Corners';
+
+  @override
+  String get mouzaPickTitle => 'Take a photo of the map';
+
+  @override
+  String get mouzaPickSub =>
+      'Then set its scale and tap the corners of your plot. The area is worked out for you.';
+
+  @override
+  String get mouzaPickCamera => 'Take photo';
+
+  @override
+  String get mouzaPickGallery => 'Choose from gallery';
+
+  @override
+  String get mouzaTipsTitle => 'FOR AN ACCURATE RESULT';
+
+  @override
+  String get mouzaTip1 => 'Lay the map flat and shoot from straight above.';
+
+  @override
+  String get mouzaTip2 =>
+      'Keep the scale bar, or a side whose length you know, in the photo.';
+
+  @override
+  String get mouzaTip3 => 'Use good light — no shadow, no glare.';
+
+  @override
+  String get mouzaPickFailed => 'Could not open the photo.';
+
+  @override
+  String get mouzaScaleHintFirst =>
+      'Tap two points whose distance you know — like the two ends of the map\'s scale bar.';
+
+  @override
+  String get mouzaScaleHintSecond => 'Now tap the second point.';
+
+  @override
+  String get mouzaScaleDistance => 'DISTANCE BETWEEN THE TWO POINTS';
+
+  @override
+  String get mouzaScaleNoBar =>
+      'No scale bar? Use any side whose length is written in the deed.';
+
+  @override
+  String get mouzaDragTip =>
+      'Drag a point to fine-tune it — a magnifier shows exactly where it is.';
+
+  @override
+  String get mouzaUnitFoot => 'ft';
+
+  @override
+  String get mouzaUnitMeter => 'm';
+
+  @override
+  String get mouzaUnitChain => 'chain';
+
+  @override
+  String get mouzaUnitLink => 'link';
+
+  @override
+  String get mouzaNext => 'Next';
+
+  @override
+  String get mouzaStartOver => 'Start over';
+
+  @override
+  String get mouzaTraceHintFirst =>
+      'Tap each corner of the plot, one after another.';
+
+  @override
+  String mouzaTraceHintMore(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString corners — keep going around the plot.';
+  }
+
+  @override
+  String get mouzaNewPlot => 'New plot';
+
+  @override
+  String get mouzaChangeScale => 'Scale';
+
+  @override
+  String get mouzaSeeResult => 'See result';
+
+  @override
+  String get mouzaDefaultName => 'Mouza map plot';
+
+  @override
+  String get mouzaLeaveTitle => 'Leave the map?';
+
+  @override
+  String get mouzaLeaveBody => 'The corners you tapped will be lost.';
+
+  @override
+  String get mouzaAreaSoFar => 'AREA';
 }

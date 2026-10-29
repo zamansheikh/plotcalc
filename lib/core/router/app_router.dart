@@ -13,6 +13,7 @@ import '../../presentation/features/info/data/articles.dart';
 import '../../presentation/features/info/view/article_screen.dart';
 import '../../presentation/features/info/view/info_screen.dart';
 import '../../presentation/features/khotiyan/view/khotiyan_screen.dart';
+import '../../presentation/features/mouza/view/mouza_screen.dart';
 import '../../presentation/features/picker/view/picker_screen.dart';
 import '../../presentation/features/result/view/result_screen.dart';
 import '../../presentation/features/settings/view/breakdown_units_screen.dart';
@@ -40,6 +41,7 @@ class AppRoutes {
   static const compare = '/compare';
   static const sheet = '/sheet';
   static const sheetArrange = '/sheet/arrange';
+  static const mouza = '/mouza';
   static const converter = '/converter';
   static const calculator = '/calculator';
   static const khotiyan = '/khotiyan';
@@ -152,6 +154,10 @@ GoRouter buildRouter() {
       GoRoute(
         path: AppRoutes.sheetArrange,
         builder: (_, state) => ArrangeScreen(sheetId: state.extra as String),
+      ),
+      GoRoute(
+        path: AppRoutes.mouza,
+        builder: (_, _) => const MouzaScreen(),
       ),
       GoRoute(
         path: AppRoutes.converter,

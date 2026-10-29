@@ -46,6 +46,7 @@ dependencies:
   path_provider: ^2.1.6
   package_info_plus: ^10.2.2
   bangla_pdf: ^1.9.2
+  image_picker: ^1.2.4
 
 dev_dependencies:
   flutter_test:
