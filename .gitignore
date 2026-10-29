@@ -52,3 +52,6 @@ lib/l10n/untranslated.json
 .shot/
 .agents/
 skills-lock.json
+
+# Google Play promo video: rebuilt by tool/store/build.sh, uploaded to YouTube.
+store/google-play/*/promo-video.mp4

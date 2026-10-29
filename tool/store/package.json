@@ -1,0 +1,9 @@
+{
+  "name": "plotcalc-store-assets",
+  "private": true,
+  "type": "module",
+  "description": "Renders the Google Play screenshots, feature graphic and promo video (see tool/store/build.sh).",
+  "dependencies": {
+    "puppeteer-core": "24.10.0"
+  }
+}
