@@ -35,9 +35,16 @@ class _CompareScreenState extends State<CompareScreen> {
   Plot? _a;
   Plot? _b;
 
+  bool _started = false;
+
+  /// Loads once the screen's context is ready: [_load] reads the
+  /// translations, which [initState] may not touch — that threw as soon as
+  /// Compare was opened.
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_started) return;
+    _started = true;
     _load();
   }
 
