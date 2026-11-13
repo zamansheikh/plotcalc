@@ -6,8 +6,8 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../l10n/l10n.dart';
 
-/// The way into measuring from a mouza map photo, shown on Home and on the
-/// "measure a plot" screen.
+/// The way into measuring from a mouza map photo, shown on the "measure a
+/// plot" screen.
 class MouzaEntryCard extends StatelessWidget {
   final Color accent;
   const MouzaEntryCard({super.key, required this.accent});
@@ -15,8 +15,36 @@ class MouzaEntryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.l10n;
-    return InkWell(
+    return MapEntryCard(
+      accent: accent,
+      icon: Icons.map_outlined,
+      title: t.mouzaEntryTitle,
+      sub: t.mouzaEntrySub,
       onTap: () => context.push(AppRoutes.mouza),
+    );
+  }
+}
+
+/// A full-width way into one of the map tools.
+class MapEntryCard extends StatelessWidget {
+  final Color accent;
+  final IconData icon;
+  final String title;
+  final String sub;
+  final VoidCallback onTap;
+  const MapEntryCard({
+    super.key,
+    required this.accent,
+    required this.icon,
+    required this.title,
+    required this.sub,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
@@ -34,7 +62,7 @@ class MouzaEntryCard extends StatelessWidget {
                 color: accent.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(Icons.map_outlined, size: 20, color: accent),
+              child: Icon(icon, size: 20, color: accent),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -42,7 +70,7 @@ class MouzaEntryCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    t.mouzaEntryTitle,
+                    title,
                     overflow: TextOverflow.ellipsis,
                     style: AppTypography.sans(
                       size: 14,
@@ -51,7 +79,7 @@ class MouzaEntryCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    t.mouzaEntrySub,
+                    sub,
                     overflow: TextOverflow.ellipsis,
                     style: AppTypography.sans(
                       size: 12,
@@ -69,8 +97,8 @@ class MouzaEntryCard extends StatelessWidget {
   }
 }
 
-/// Home's pair of map tools: measure from one mouza map, or lay two surveys
-/// of it over each other.
+/// Home's map tools: measure on the satellite map; measure from one mouza
+/// map, or lay two surveys of it over each other.
 class MapToolsRow extends StatelessWidget {
   final Color accent;
   const MapToolsRow({super.key, required this.accent});
@@ -126,27 +154,41 @@ class MapToolsRow extends StatelessWidget {
       ),
     );
 
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          tile(
-            key: const ValueKey('home-mouza'),
-            icon: Icons.map_outlined,
-            title: t.mouzaTitle,
-            sub: t.mouzaEntrySub,
-            route: AppRoutes.mouza,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        MapEntryCard(
+          key: const ValueKey('home-satellite'),
+          accent: accent,
+          icon: Icons.satellite_alt_outlined,
+          title: t.satEntryTitle,
+          sub: t.satEntrySub,
+          onTap: () => context.push(AppRoutes.satellite),
+        ),
+        const SizedBox(height: 10),
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              tile(
+                key: const ValueKey('home-mouza'),
+                icon: Icons.map_outlined,
+                title: t.mouzaTitle,
+                sub: t.mouzaEntrySub,
+                route: AppRoutes.mouza,
+              ),
+              const SizedBox(width: 10),
+              tile(
+                key: const ValueKey('home-overlay'),
+                icon: Icons.layers_outlined,
+                title: t.overlayEntryTitle,
+                sub: t.overlayEntrySub,
+                route: AppRoutes.mapOverlay,
+              ),
+            ],
           ),
-          const SizedBox(width: 10),
-          tile(
-            key: const ValueKey('home-overlay'),
-            icon: Icons.layers_outlined,
-            title: t.overlayEntryTitle,
-            sub: t.overlayEntrySub,
-            route: AppRoutes.mapOverlay,
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

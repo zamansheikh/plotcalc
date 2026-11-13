@@ -222,7 +222,7 @@
     <!-- Main Content -->
     <main>
         <h1>🔒 Privacy Policy</h1>
-        <p class="last-updated">Last Updated: December 2025</p>
+        <p class="last-updated">Last Updated: November 2026</p>
 
         <!-- Table of Contents -->
         <section class="toc">
@@ -250,7 +250,7 @@
                 <strong>Please read this Privacy Policy carefully.</strong> If you do not agree with our policies and practices, please do not use our App.
             </p>
             <div class="highlight">
-                <strong>Key Principle:</strong> PlotCalc is designed with privacy first in mind. All your measurements and data stay on your device - we never send your data to our servers or any third parties.
+                <strong>Key Principle:</strong> PlotCalc is designed with privacy first in mind. All your measurements and data stay on your device - we have no servers and never receive your data. The one feature that contacts a third party is the satellite map, which loads its imagery from Google Maps (see <a href="#third-parties">Third-Party Services</a>).
             </div>
         </section>
 
@@ -267,13 +267,13 @@
 
             <h3>Data We DO NOT Collect:</h3>
             <ul>
-                <li>❌ Your location or GPS data</li>
+                <li>❌ Your location or GPS data: the satellite map reads your location on your device only when you press "My location" or measure by walking, to show where you are and to place the corners of a plot. We never receive it, and a saved plot keeps only its shape and size, not where it is. (Google's map may receive it; see <a href="#third-parties">Third-Party Services</a>.)</li>
                 <li>❌ Your contacts or phone numbers</li>
                 <li>❌ Your personal identification information</li>
                 <li>❌ Browsing history or web activity</li>
                 <li>❌ Financial or payment information</li>
                 <li>❌ Health or biometric data</li>
-                <li>❌ Camera or microphone access</li>
+                <li>❌ Photos or recordings: the camera and photo library are used only when you choose to photograph or open a mouza map, and that photo stays on your device. The microphone is never used.</li>
                 <li>❌ Any data without your explicit action</li>
             </ul>
 
@@ -386,8 +386,11 @@
                 <li><strong>go_router:</strong> Navigation library</li>
             </ul>
 
+            <h3>Google Maps (satellite map only)</h3>
+            <p>The "Measure on the satellite map" feature shows a map provided by the Google Maps SDK. While that screen is open, your device connects to Google to load the map, so Google receives your IP address and which area you are viewing. If you allow location, the map shows a "you are here" dot and Google's map component may receive your location. A place name you type in the search box is looked up by your phone's built-in geocoder (Google on Android, Apple on iOS). Google handles this data under the <a href="https://policies.google.com/privacy">Google Privacy Policy</a>. Nothing is sent to Google from any other part of the app, and location permission is optional: you can measure by tapping the map without it.</p>
+
             <h3>External Services</h3>
-            <p>PlotCalc does NOT integrate with or use:</p>
+            <p>Apart from Google Maps above, PlotCalc does NOT integrate with or use:</p>
             <ul>
                 <li>❌ Google Analytics or any analytics service</li>
                 <li>❌ Firebase or cloud services</li>
@@ -397,7 +400,7 @@
             </ul>
 
             <div class="highlight">
-                <strong>No Tracking:</strong> We do not track your usage, location, behavior, or any other information about you.
+                <strong>No Tracking:</strong> We do not track your usage, location, behavior, or any other information about you. Location is read only while the satellite map is open and you have asked for it.
             </div>
         </section>
 

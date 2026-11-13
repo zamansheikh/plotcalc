@@ -4603,6 +4603,168 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{n} parts in all'**
   String inheritBaseParts(String n);
+
+  /// No description provided for @satEntryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Measure on the satellite map'**
+  String get satEntryTitle;
+
+  /// No description provided for @satEntrySub.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the corners, or walk them with GPS'**
+  String get satEntrySub;
+
+  /// No description provided for @satTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Satellite map'**
+  String get satTitle;
+
+  /// No description provided for @satModeTap.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap on the map'**
+  String get satModeTap;
+
+  /// No description provided for @satModeWalk.
+  ///
+  /// In en, this message translates to:
+  /// **'Walk (GPS)'**
+  String get satModeWalk;
+
+  /// No description provided for @satSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Village, bazar or upazila'**
+  String get satSearchHint;
+
+  /// No description provided for @satSearchNone.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t find “{query}”'**
+  String satSearchNone(String query);
+
+  /// No description provided for @satSearchFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Search failed — check the internet'**
+  String get satSearchFailed;
+
+  /// No description provided for @satMyLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'My location'**
+  String get satMyLocation;
+
+  /// No description provided for @satMapSatellite.
+  ///
+  /// In en, this message translates to:
+  /// **'Satellite'**
+  String get satMapSatellite;
+
+  /// No description provided for @satMapStreet.
+  ///
+  /// In en, this message translates to:
+  /// **'Road map'**
+  String get satMapStreet;
+
+  /// No description provided for @satHintTapFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Find the land and zoom in. Tap a corner, or press and hold to place it exactly.'**
+  String get satHintTapFirst;
+
+  /// No description provided for @satHintTapMore.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} corners — tap the next one. Drag a corner to move it; a magnifier shows where it is.'**
+  String satHintTapMore(int count);
+
+  /// No description provided for @satZoomIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Zoom in closer, then tap the corner.'**
+  String get satZoomIn;
+
+  /// No description provided for @satHintWalkFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Stand on a corner of the land and press “Corner here”.'**
+  String get satHintWalkFirst;
+
+  /// No description provided for @satHintWalkMore.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} corners — walk to the next corner and press again.'**
+  String satHintWalkMore(int count);
+
+  /// No description provided for @satAddHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Corner here'**
+  String get satAddHere;
+
+  /// No description provided for @satHold.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold still… {seconds}'**
+  String satHold(int seconds);
+
+  /// No description provided for @satAccuracy.
+  ///
+  /// In en, this message translates to:
+  /// **'GPS accuracy ±{meters} m'**
+  String satAccuracy(int meters);
+
+  /// No description provided for @satAccuracyWeak.
+  ///
+  /// In en, this message translates to:
+  /// **'Weak GPS — wait a moment in the open'**
+  String get satAccuracyWeak;
+
+  /// No description provided for @satWaitingGps.
+  ///
+  /// In en, this message translates to:
+  /// **'Finding GPS…'**
+  String get satWaitingGps;
+
+  /// No description provided for @satNoFix.
+  ///
+  /// In en, this message translates to:
+  /// **'No GPS reading yet, press again.'**
+  String get satNoFix;
+
+  /// No description provided for @satLocationOff.
+  ///
+  /// In en, this message translates to:
+  /// **'The phone\'s location is off.'**
+  String get satLocationOff;
+
+  /// No description provided for @satPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Location permission was not given.'**
+  String get satPermissionDenied;
+
+  /// No description provided for @satOpenSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on'**
+  String get satOpenSettings;
+
+  /// No description provided for @satApproxNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Satellite photos and GPS can be a few metres off, so this is an estimate. For a deed or a dispute, have an amin measure it.'**
+  String get satApproxNote;
+
+  /// No description provided for @satDefaultName.
+  ///
+  /// In en, this message translates to:
+  /// **'Plot from the satellite map'**
+  String get satDefaultName;
 }
 
 class _AppLocalizationsDelegate

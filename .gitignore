@@ -55,3 +55,9 @@ skills-lock.json
 
 # Google Play promo video: rebuilt by tool/store/build.sh, uploaded to YouTube.
 store/google-play/*/promo-video.mp4
+
+# Google Maps key for iOS (GMS_API_KEY = ...).
+/ios/Flutter/MapsKey.xcconfig
+
+# Local secrets (the Google Maps key).
+.env

@@ -14,6 +14,33 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
+// The Google Maps key for the satellite map. It lives outside git (the repo
+// is public): MAPS_API_KEY=... in android/local.properties, or the
+// MAPS_API_KEY environment variable. Restrict it in Google Cloud Console to
+// this package and signing certificates, and to "Maps SDK for Android".
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.inputStream().use { localProperties.load(it) }
+}
+val mapsApiKey: String =
+    localProperties.getProperty("MAPS_API_KEY")
+        ?: System.getenv("MAPS_API_KEY")
+        ?: ""
+
+// A release without the key would ship a satellite map that stays blank.
+gradle.taskGraph.whenReady {
+    val releasing = allTasks.any {
+        it.project == project && it.name.contains("Release")
+    }
+    if (releasing && mapsApiKey.isBlank()) {
+        throw GradleException(
+            "MAPS_API_KEY is not set. Add MAPS_API_KEY=<key> to " +
+                "android/local.properties (see android/app/build.gradle.kts).",
+        )
+    }
+}
+
 android {
     namespace = "com.programmernexus.plotcalc"
     compileSdk = flutter.compileSdkVersion
@@ -33,6 +60,7 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        manifestPlaceholders["mapsApiKey"] = mapsApiKey
     }
     signingConfigs {
         create("release") {

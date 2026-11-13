@@ -47,6 +47,10 @@ dependencies:
   package_info_plus: ^10.2.2
   bangla_pdf: ^1.9.2
   image_picker: ^1.2.4
+  google_maps_flutter: ^2.19.0
+  geolocator: ^14.1.2
+  geocoding: ^5.0.1
+  google_maps_flutter_ios_sdk9: ^2.19.0
 
 dev_dependencies:
   flutter_test:

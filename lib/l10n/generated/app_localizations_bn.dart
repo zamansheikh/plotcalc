@@ -2698,4 +2698,113 @@ class AppLocalizationsBn extends AppLocalizations {
   String inheritBaseParts(String n) {
     return 'মোট $n ভাগ';
   }
+
+  @override
+  String get satEntryTitle => 'স্যাটেলাইট ম্যাপে মাপুন';
+
+  @override
+  String get satEntrySub => 'ম্যাপে কোণায় চাপ দিন, বা হেঁটে GPS-এ';
+
+  @override
+  String get satTitle => 'স্যাটেলাইট ম্যাপ';
+
+  @override
+  String get satModeTap => 'ম্যাপে চাপ দিয়ে';
+
+  @override
+  String get satModeWalk => 'হেঁটে (GPS)';
+
+  @override
+  String get satSearchHint => 'গ্রাম, বাজার বা উপজেলার নাম';
+
+  @override
+  String satSearchNone(String query) {
+    return '“$query” পাওয়া যায়নি';
+  }
+
+  @override
+  String get satSearchFailed => 'খোঁজা গেল না — ইন্টারনেট আছে কি না দেখুন';
+
+  @override
+  String get satMyLocation => 'আমার অবস্থান';
+
+  @override
+  String get satMapSatellite => 'স্যাটেলাইট';
+
+  @override
+  String get satMapStreet => 'সাধারণ ম্যাপ';
+
+  @override
+  String get satHintTapFirst =>
+      'জমিটা খুঁজে জুম করুন। কোণায় চাপ দিন, বা নিখুঁত বসাতে চেপে ধরে টানুন।';
+
+  @override
+  String satHintTapMore(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countStringটি কোণ — পরের কোণায় চাপ দিন। সরাতে কোণা ধরে টানুন, বড় করে দেখাবে।';
+  }
+
+  @override
+  String get satZoomIn => 'আরও কাছে জুম করে কোণায় চাপ দিন।';
+
+  @override
+  String get satHintWalkFirst => 'জমির এক কোণায় দাঁড়িয়ে “এখানে কোণা” চাপুন।';
+
+  @override
+  String satHintWalkMore(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countStringটি কোণ — পরের কোণায় হেঁটে গিয়ে আবার চাপুন।';
+  }
+
+  @override
+  String get satAddHere => 'এখানে কোণা';
+
+  @override
+  String satHold(int seconds) {
+    final intl.NumberFormat secondsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String secondsString = secondsNumberFormat.format(seconds);
+
+    return 'নড়বেন না… $secondsString';
+  }
+
+  @override
+  String satAccuracy(int meters) {
+    final intl.NumberFormat metersNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String metersString = metersNumberFormat.format(meters);
+
+    return 'GPS নির্ভুলতা ±$metersString মি';
+  }
+
+  @override
+  String get satAccuracyWeak => 'GPS দুর্বল — খোলা জায়গায় একটু দাঁড়ান';
+
+  @override
+  String get satWaitingGps => 'GPS খুঁজছে…';
+
+  @override
+  String get satNoFix => 'GPS পাওয়া যায়নি, আবার চাপুন।';
+
+  @override
+  String get satLocationOff => 'ফোনের লোকেশন বন্ধ আছে।';
+
+  @override
+  String get satPermissionDenied => 'লোকেশনের অনুমতি দেওয়া হয়নি।';
+
+  @override
+  String get satOpenSettings => 'চালু করুন';
+
+  @override
+  String get satApproxNote =>
+      'স্যাটেলাইট ছবি ও GPS কয়েক মিটার সরে থাকতে পারে, তাই এই মাপ আনুমানিক। দলিল বা মামলার কাজে আমিন দিয়ে মাপান।';
+
+  @override
+  String get satDefaultName => 'ম্যাপে মাপা জমি';
 }

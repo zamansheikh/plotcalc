@@ -65,17 +65,34 @@ samples, guidance on mobile development, and a full API reference.
    flutter pub get
    ```
 
-3. **Run the app**
+3. **Add a Google Maps key** (for the satellite map; kept out of git)
+
+   Create a key in Google Cloud Console with **Maps SDK for Android** enabled,
+   restricted to `com.programmernexus.plotcalc` and your signing certificates'
+   SHA-1 (debug, release, and the Play app signing key). Then add it to
+   `android/local.properties`:
+   ```properties
+   MAPS_API_KEY=your-key
+   ```
+   For iOS, enable **Maps SDK for iOS** and create `ios/Flutter/MapsKey.xcconfig`:
+   ```
+   GMS_API_KEY = your-key
+   ```
+   A debug build runs without a key (the satellite map stays blank); a release
+   build stops with an error. Use only the Maps SDK: Places, Geocoding and
+   map IDs are billed.
+
+4. **Run the app**
    ```bash
    flutter run
    ```
 
-4. **Build Release APK** (Android)
+5. **Build Release APK** (Android)
    ```bash
    flutter build apk --release
    ```
 
-5. **Build Release IPA** (iOS)
+6. **Build Release IPA** (iOS)
    ```bash
    flutter build ios --release
    ```
@@ -182,7 +199,8 @@ plotcalc/
 
 - **No Data Collection**: The app does not collect any personal data
 - **Local Storage Only**: All measurements are stored locally on your device
-- **No Cloud Sync**: No data is sent to external servers
+- **No Cloud Sync**: No data is sent to our servers; there are none
+- **Satellite map**: Loads imagery from Google Maps; location is optional and read only on the device
 - **No Ads or Tracking**: Completely ad-free and tracking-free
 - **Open Source**: Code is transparent and auditable
 

@@ -2109,5 +2109,93 @@
         "type": "String"
       }
     }
-  }
+  },
+  "satEntryTitle": "Measure on the satellite map",
+  "@satEntryTitle": {},
+  "satEntrySub": "Tap the corners, or walk them with GPS",
+  "@satEntrySub": {},
+  "satTitle": "Satellite map",
+  "@satTitle": {},
+  "satModeTap": "Tap on the map",
+  "@satModeTap": {},
+  "satModeWalk": "Walk (GPS)",
+  "@satModeWalk": {},
+  "satSearchHint": "Village, bazar or upazila",
+  "@satSearchHint": {},
+  "satSearchNone": "Couldn't find “{query}”",
+  "@satSearchNone": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "satSearchFailed": "Search failed — check the internet",
+  "@satSearchFailed": {},
+  "satMyLocation": "My location",
+  "@satMyLocation": {},
+  "satMapSatellite": "Satellite",
+  "@satMapSatellite": {},
+  "satMapStreet": "Road map",
+  "@satMapStreet": {},
+  "satHintTapFirst": "Find the land and zoom in. Tap a corner, or press and hold to place it exactly.",
+  "@satHintTapFirst": {},
+  "satHintTapMore": "{count} corners — tap the next one. Drag a corner to move it; a magnifier shows where it is.",
+  "@satHintTapMore": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "satZoomIn": "Zoom in closer, then tap the corner.",
+  "@satZoomIn": {},
+  "satHintWalkFirst": "Stand on a corner of the land and press “Corner here”.",
+  "@satHintWalkFirst": {},
+  "satHintWalkMore": "{count} corners — walk to the next corner and press again.",
+  "@satHintWalkMore": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "satAddHere": "Corner here",
+  "@satAddHere": {},
+  "satHold": "Hold still… {seconds}",
+  "@satHold": {
+    "placeholders": {
+      "seconds": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "satAccuracy": "GPS accuracy ±{meters} m",
+  "@satAccuracy": {
+    "placeholders": {
+      "meters": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "satAccuracyWeak": "Weak GPS — wait a moment in the open",
+  "@satAccuracyWeak": {},
+  "satWaitingGps": "Finding GPS…",
+  "@satWaitingGps": {},
+  "satNoFix": "No GPS reading yet, press again.",
+  "@satNoFix": {},
+  "satLocationOff": "The phone's location is off.",
+  "@satLocationOff": {},
+  "satPermissionDenied": "Location permission was not given.",
+  "@satPermissionDenied": {},
+  "satOpenSettings": "Turn on",
+  "@satOpenSettings": {},
+  "satApproxNote": "Satellite photos and GPS can be a few metres off, so this is an estimate. For a deed or a dispute, have an amin measure it.",
+  "@satApproxNote": {},
+  "satDefaultName": "Plot from the satellite map",
+  "@satDefaultName": {}
 }

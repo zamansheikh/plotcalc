@@ -2726,4 +2726,114 @@ class AppLocalizationsEn extends AppLocalizations {
   String inheritBaseParts(String n) {
     return '$n parts in all';
   }
+
+  @override
+  String get satEntryTitle => 'Measure on the satellite map';
+
+  @override
+  String get satEntrySub => 'Tap the corners, or walk them with GPS';
+
+  @override
+  String get satTitle => 'Satellite map';
+
+  @override
+  String get satModeTap => 'Tap on the map';
+
+  @override
+  String get satModeWalk => 'Walk (GPS)';
+
+  @override
+  String get satSearchHint => 'Village, bazar or upazila';
+
+  @override
+  String satSearchNone(String query) {
+    return 'Couldn\'t find “$query”';
+  }
+
+  @override
+  String get satSearchFailed => 'Search failed — check the internet';
+
+  @override
+  String get satMyLocation => 'My location';
+
+  @override
+  String get satMapSatellite => 'Satellite';
+
+  @override
+  String get satMapStreet => 'Road map';
+
+  @override
+  String get satHintTapFirst =>
+      'Find the land and zoom in. Tap a corner, or press and hold to place it exactly.';
+
+  @override
+  String satHintTapMore(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString corners — tap the next one. Drag a corner to move it; a magnifier shows where it is.';
+  }
+
+  @override
+  String get satZoomIn => 'Zoom in closer, then tap the corner.';
+
+  @override
+  String get satHintWalkFirst =>
+      'Stand on a corner of the land and press “Corner here”.';
+
+  @override
+  String satHintWalkMore(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString corners — walk to the next corner and press again.';
+  }
+
+  @override
+  String get satAddHere => 'Corner here';
+
+  @override
+  String satHold(int seconds) {
+    final intl.NumberFormat secondsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String secondsString = secondsNumberFormat.format(seconds);
+
+    return 'Hold still… $secondsString';
+  }
+
+  @override
+  String satAccuracy(int meters) {
+    final intl.NumberFormat metersNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String metersString = metersNumberFormat.format(meters);
+
+    return 'GPS accuracy ±$metersString m';
+  }
+
+  @override
+  String get satAccuracyWeak => 'Weak GPS — wait a moment in the open';
+
+  @override
+  String get satWaitingGps => 'Finding GPS…';
+
+  @override
+  String get satNoFix => 'No GPS reading yet, press again.';
+
+  @override
+  String get satLocationOff => 'The phone\'s location is off.';
+
+  @override
+  String get satPermissionDenied => 'Location permission was not given.';
+
+  @override
+  String get satOpenSettings => 'Turn on';
+
+  @override
+  String get satApproxNote =>
+      'Satellite photos and GPS can be a few metres off, so this is an estimate. For a deed or a dispute, have an amin measure it.';
+
+  @override
+  String get satDefaultName => 'Plot from the satellite map';
 }

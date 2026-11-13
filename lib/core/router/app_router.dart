@@ -18,6 +18,7 @@ import '../../presentation/features/mouza/view/mouza_screen.dart';
 import '../../presentation/features/overlay/view/overlay_screen.dart';
 import '../../presentation/features/picker/view/picker_screen.dart';
 import '../../presentation/features/result/view/result_screen.dart';
+import '../../presentation/features/satellite/view/satellite_screen.dart';
 import '../../presentation/features/settings/view/breakdown_units_screen.dart';
 import '../../presentation/features/settings/view/settings_screen.dart';
 import '../../presentation/features/sheet/view/arrange_screen.dart';
@@ -46,6 +47,7 @@ class AppRoutes {
   static const sheetArrange = '/sheet/arrange';
   static const mouza = '/mouza';
   static const mapOverlay = '/map-overlay';
+  static const satellite = '/satellite';
   static const divide = '/divide';
   static const inheritance = '/inheritance';
   static const converter = '/converter';
@@ -156,6 +158,10 @@ GoRouter buildRouter() {
         builder: (_, state) => ArrangeScreen(sheetId: state.extra as String),
       ),
       GoRoute(path: AppRoutes.mouza, builder: (_, _) => const MouzaScreen()),
+      GoRoute(
+        path: AppRoutes.satellite,
+        builder: (_, _) => const SatelliteScreen(),
+      ),
       GoRoute(
         path: AppRoutes.divide,
         builder: (_, state) {
