@@ -1,0 +1,14 @@
+<bn-BD>
+নতুন সংস্করণ ২.৩.০
+• স্যাটেলাইট ম্যাপে মাপুন: ম্যাপে জমি খুঁজে কোণায় চাপ দিন, অথবা জমির চারপাশে হেঁটে GPS দিয়ে কোণা নিন
+• কোণা নিখুঁত বসাতে চেপে ধরে টানুন — বড় করে দেখাবে
+• ওয়ারিশ হিসাব: মুসলিম, হিন্দু ও খ্রিস্টান আইনে কে কত অংশ পাবেন; ফলাফল থেকে সরাসরি জমি ভাগ
+• হোম পর্দায় লেখা কেটে যাওয়ার সমস্যা ঠিক করা হয়েছে
+</bn-BD>
+<en-US>
+New in 2.3.0
+• Measure on the satellite map: find the land and tap its corners, or walk round it and record each corner by GPS
+• Press and hold to place a corner exactly, under a magnifier
+• Inheritance shares: who gets how much under Muslim, Hindu and Christian law, then divide the land from the result
+• Fixed: text cut off on the Home screen
+</en-US>
