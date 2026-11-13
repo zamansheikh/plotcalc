@@ -3151,6 +3151,1458 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'In local units'**
   String get divisionColLocal;
+
+  /// No description provided for @inheritTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Inheritance shares'**
+  String get inheritTitle;
+
+  /// No description provided for @inheritDrawerSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Who gets what share, by Islamic law'**
+  String get inheritDrawerSub;
+
+  /// No description provided for @inheritStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {step} of 3 · {name}'**
+  String inheritStep(int step, String name);
+
+  /// No description provided for @inheritStepDeceased.
+  ///
+  /// In en, this message translates to:
+  /// **'Who has died?'**
+  String get inheritStepDeceased;
+
+  /// No description provided for @inheritStepFamily.
+  ///
+  /// In en, this message translates to:
+  /// **'Who survived them?'**
+  String get inheritStepFamily;
+
+  /// No description provided for @inheritStepResult.
+  ///
+  /// In en, this message translates to:
+  /// **'Who gets what'**
+  String get inheritStepResult;
+
+  /// No description provided for @inheritMan.
+  ///
+  /// In en, this message translates to:
+  /// **'A man'**
+  String get inheritMan;
+
+  /// No description provided for @inheritWoman.
+  ///
+  /// In en, this message translates to:
+  /// **'A woman'**
+  String get inheritWoman;
+
+  /// No description provided for @inheritNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Their name (optional)'**
+  String get inheritNameHint;
+
+  /// No description provided for @inheritLand.
+  ///
+  /// In en, this message translates to:
+  /// **'Land to share (optional)'**
+  String get inheritLand;
+
+  /// No description provided for @inheritLandHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave it empty to see the shares only.'**
+  String get inheritLandHint;
+
+  /// No description provided for @inheritFromSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Or pick a saved plot'**
+  String get inheritFromSaved;
+
+  /// No description provided for @inheritSeeResult.
+  ///
+  /// In en, this message translates to:
+  /// **'See the shares'**
+  String get inheritSeeResult;
+
+  /// No description provided for @inheritNeedHeir.
+  ///
+  /// In en, this message translates to:
+  /// **'Add at least one heir'**
+  String get inheritNeedHeir;
+
+  /// No description provided for @inheritFamily.
+  ///
+  /// In en, this message translates to:
+  /// **'Close family'**
+  String get inheritFamily;
+
+  /// No description provided for @inheritMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Other relatives'**
+  String get inheritMore;
+
+  /// No description provided for @inheritPredeceasedAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'A child who died before them'**
+  String get inheritPredeceasedAdd;
+
+  /// No description provided for @inheritPredeceasedAddSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Their children take their share'**
+  String get inheritPredeceasedAddSub;
+
+  /// No description provided for @inheritPredeceasedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Child who died earlier · {n}'**
+  String inheritPredeceasedTitle(int n);
+
+  /// No description provided for @inheritPredeceasedNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Their children take what they would have taken (Muslim Family Laws Ordinance 1961, s. 4).'**
+  String get inheritPredeceasedNote;
+
+  /// No description provided for @inheritTheirSons.
+  ///
+  /// In en, this message translates to:
+  /// **'Their sons'**
+  String get inheritTheirSons;
+
+  /// No description provided for @inheritTheirDaughters.
+  ///
+  /// In en, this message translates to:
+  /// **'Their daughters'**
+  String get inheritTheirDaughters;
+
+  /// No description provided for @inheritNoChildrenNote.
+  ///
+  /// In en, this message translates to:
+  /// **'With no children of their own they take nothing.'**
+  String get inheritNoChildrenNote;
+
+  /// No description provided for @inheritHalfSiblings.
+  ///
+  /// In en, this message translates to:
+  /// **'Half brothers and sisters'**
+  String get inheritHalfSiblings;
+
+  /// No description provided for @inheritMaleLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Nephews, uncles and cousins'**
+  String get inheritMaleLine;
+
+  /// No description provided for @inheritSubGrandfather.
+  ///
+  /// In en, this message translates to:
+  /// **'Father\'s father'**
+  String get inheritSubGrandfather;
+
+  /// No description provided for @inheritSubPaternalGrandmother.
+  ///
+  /// In en, this message translates to:
+  /// **'Father\'s mother'**
+  String get inheritSubPaternalGrandmother;
+
+  /// No description provided for @inheritSubMaternalGrandmother.
+  ///
+  /// In en, this message translates to:
+  /// **'Mother\'s mother'**
+  String get inheritSubMaternalGrandmother;
+
+  /// No description provided for @inheritSubFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Same father and mother'**
+  String get inheritSubFull;
+
+  /// No description provided for @inheritSubPaternal.
+  ///
+  /// In en, this message translates to:
+  /// **'Same father, another mother'**
+  String get inheritSubPaternal;
+
+  /// No description provided for @inheritSubMaternal.
+  ///
+  /// In en, this message translates to:
+  /// **'Same mother, another father'**
+  String get inheritSubMaternal;
+
+  /// No description provided for @inheritSubFullNephew.
+  ///
+  /// In en, this message translates to:
+  /// **'A full brother\'s son'**
+  String get inheritSubFullNephew;
+
+  /// No description provided for @inheritSubPaternalNephew.
+  ///
+  /// In en, this message translates to:
+  /// **'A half brother\'s son (same father)'**
+  String get inheritSubPaternalNephew;
+
+  /// No description provided for @inheritSubFullUncle.
+  ///
+  /// In en, this message translates to:
+  /// **'Father\'s full brother'**
+  String get inheritSubFullUncle;
+
+  /// No description provided for @inheritSubPaternalUncle.
+  ///
+  /// In en, this message translates to:
+  /// **'Father\'s half brother (same father)'**
+  String get inheritSubPaternalUncle;
+
+  /// No description provided for @inheritSubFullCousin.
+  ///
+  /// In en, this message translates to:
+  /// **'Son of the father\'s full brother'**
+  String get inheritSubFullCousin;
+
+  /// No description provided for @inheritSubPaternalCousin.
+  ///
+  /// In en, this message translates to:
+  /// **'Son of the father\'s half brother'**
+  String get inheritSubPaternalCousin;
+
+  /// No description provided for @inheritWivesMax.
+  ///
+  /// In en, this message translates to:
+  /// **'At most four.'**
+  String get inheritWivesMax;
+
+  /// No description provided for @inheritHiddenBy.
+  ///
+  /// In en, this message translates to:
+  /// **'With {who} alive, brothers, sisters, uncles and others take nothing, so they are not asked.'**
+  String inheritHiddenBy(String who);
+
+  /// No description provided for @inheritSiblingsForMother.
+  ///
+  /// In en, this message translates to:
+  /// **'Brothers and sisters take nothing here, but two or more cut the mother to 1/6.'**
+  String get inheritSiblingsForMother;
+
+  /// No description provided for @inheritDistant.
+  ///
+  /// In en, this message translates to:
+  /// **'Distant relatives (মামা, খালা, ফুফু, নানা, a sister\'s children…) inherit only when no sharer or residuary is left; then they are asked about here.'**
+  String get inheritDistant;
+
+  /// No description provided for @inheritHeirHusband.
+  ///
+  /// In en, this message translates to:
+  /// **'Husband'**
+  String get inheritHeirHusband;
+
+  /// No description provided for @inheritHeirWife.
+  ///
+  /// In en, this message translates to:
+  /// **'Wife'**
+  String get inheritHeirWife;
+
+  /// No description provided for @inheritHeirSon.
+  ///
+  /// In en, this message translates to:
+  /// **'Son'**
+  String get inheritHeirSon;
+
+  /// No description provided for @inheritHeirDaughter.
+  ///
+  /// In en, this message translates to:
+  /// **'Daughter'**
+  String get inheritHeirDaughter;
+
+  /// No description provided for @inheritHeirGrandson.
+  ///
+  /// In en, this message translates to:
+  /// **'son'**
+  String get inheritHeirGrandson;
+
+  /// No description provided for @inheritHeirGranddaughter.
+  ///
+  /// In en, this message translates to:
+  /// **'daughter'**
+  String get inheritHeirGranddaughter;
+
+  /// No description provided for @inheritHeirFather.
+  ///
+  /// In en, this message translates to:
+  /// **'Father'**
+  String get inheritHeirFather;
+
+  /// No description provided for @inheritHeirMother.
+  ///
+  /// In en, this message translates to:
+  /// **'Mother'**
+  String get inheritHeirMother;
+
+  /// No description provided for @inheritHeirGrandfather.
+  ///
+  /// In en, this message translates to:
+  /// **'Grandfather'**
+  String get inheritHeirGrandfather;
+
+  /// No description provided for @inheritHeirPaternalGrandmother.
+  ///
+  /// In en, this message translates to:
+  /// **'Father\'s mother'**
+  String get inheritHeirPaternalGrandmother;
+
+  /// No description provided for @inheritHeirMaternalGrandmother.
+  ///
+  /// In en, this message translates to:
+  /// **'Mother\'s mother'**
+  String get inheritHeirMaternalGrandmother;
+
+  /// No description provided for @inheritHeirFullBrother.
+  ///
+  /// In en, this message translates to:
+  /// **'Brother'**
+  String get inheritHeirFullBrother;
+
+  /// No description provided for @inheritHeirFullSister.
+  ///
+  /// In en, this message translates to:
+  /// **'Sister'**
+  String get inheritHeirFullSister;
+
+  /// No description provided for @inheritHeirPaternalBrother.
+  ///
+  /// In en, this message translates to:
+  /// **'Half brother (father)'**
+  String get inheritHeirPaternalBrother;
+
+  /// No description provided for @inheritHeirPaternalSister.
+  ///
+  /// In en, this message translates to:
+  /// **'Half sister (father)'**
+  String get inheritHeirPaternalSister;
+
+  /// No description provided for @inheritHeirMaternalBrother.
+  ///
+  /// In en, this message translates to:
+  /// **'Half brother (mother)'**
+  String get inheritHeirMaternalBrother;
+
+  /// No description provided for @inheritHeirMaternalSister.
+  ///
+  /// In en, this message translates to:
+  /// **'Half sister (mother)'**
+  String get inheritHeirMaternalSister;
+
+  /// No description provided for @inheritHeirFullNephew.
+  ///
+  /// In en, this message translates to:
+  /// **'Nephew'**
+  String get inheritHeirFullNephew;
+
+  /// No description provided for @inheritHeirPaternalNephew.
+  ///
+  /// In en, this message translates to:
+  /// **'Nephew (half brother)'**
+  String get inheritHeirPaternalNephew;
+
+  /// No description provided for @inheritHeirFullUncle.
+  ///
+  /// In en, this message translates to:
+  /// **'Uncle'**
+  String get inheritHeirFullUncle;
+
+  /// No description provided for @inheritHeirPaternalUncle.
+  ///
+  /// In en, this message translates to:
+  /// **'Uncle (half)'**
+  String get inheritHeirPaternalUncle;
+
+  /// No description provided for @inheritHeirFullCousin.
+  ///
+  /// In en, this message translates to:
+  /// **'Cousin'**
+  String get inheritHeirFullCousin;
+
+  /// No description provided for @inheritHeirPaternalCousin.
+  ///
+  /// In en, this message translates to:
+  /// **'Cousin (half uncle)'**
+  String get inheritHeirPaternalCousin;
+
+  /// No description provided for @inheritNumbered.
+  ///
+  /// In en, this message translates to:
+  /// **'{heir} {n}'**
+  String inheritNumbered(String heir, int n);
+
+  /// No description provided for @inheritChildOf.
+  ///
+  /// In en, this message translates to:
+  /// **'{parent}\'s {child}'**
+  String inheritChildOf(String parent, String child);
+
+  /// No description provided for @inheritWhyHusbandHalf.
+  ///
+  /// In en, this message translates to:
+  /// **'No children: the husband takes 1/2.'**
+  String get inheritWhyHusbandHalf;
+
+  /// No description provided for @inheritWhyHusbandQuarter.
+  ///
+  /// In en, this message translates to:
+  /// **'With children: the husband takes 1/4.'**
+  String get inheritWhyHusbandQuarter;
+
+  /// No description provided for @inheritWhyWifeQuarter.
+  ///
+  /// In en, this message translates to:
+  /// **'No children: wives take 1/4, shared equally.'**
+  String get inheritWhyWifeQuarter;
+
+  /// No description provided for @inheritWhyWifeEighth.
+  ///
+  /// In en, this message translates to:
+  /// **'With children: wives take 1/8, shared equally.'**
+  String get inheritWhyWifeEighth;
+
+  /// No description provided for @inheritWhySonResidue.
+  ///
+  /// In en, this message translates to:
+  /// **'Sons and daughters take what is left after the fixed shares, a son twice a daughter.'**
+  String get inheritWhySonResidue;
+
+  /// No description provided for @inheritWhyDaughterWithSon.
+  ///
+  /// In en, this message translates to:
+  /// **'With a son, a daughter takes half what a son takes.'**
+  String get inheritWhyDaughterWithSon;
+
+  /// No description provided for @inheritWhyDaughterHalf.
+  ///
+  /// In en, this message translates to:
+  /// **'An only daughter with no son takes 1/2.'**
+  String get inheritWhyDaughterHalf;
+
+  /// No description provided for @inheritWhyDaughtersTwoThirds.
+  ///
+  /// In en, this message translates to:
+  /// **'Daughters with no son take 2/3 between them.'**
+  String get inheritWhyDaughtersTwoThirds;
+
+  /// No description provided for @inheritWhyFatherSixth.
+  ///
+  /// In en, this message translates to:
+  /// **'With a son: the father takes 1/6.'**
+  String get inheritWhyFatherSixth;
+
+  /// No description provided for @inheritWhyFatherSixthAndRest.
+  ///
+  /// In en, this message translates to:
+  /// **'Daughters but no son: the father takes 1/6 and what is left.'**
+  String get inheritWhyFatherSixthAndRest;
+
+  /// No description provided for @inheritWhyFatherRest.
+  ///
+  /// In en, this message translates to:
+  /// **'No children: the father takes what is left after the fixed shares.'**
+  String get inheritWhyFatherRest;
+
+  /// No description provided for @inheritWhyGrandfatherSixth.
+  ///
+  /// In en, this message translates to:
+  /// **'With the father gone, the grandfather takes his place: 1/6 with a son.'**
+  String get inheritWhyGrandfatherSixth;
+
+  /// No description provided for @inheritWhyGrandfatherSixthAndRest.
+  ///
+  /// In en, this message translates to:
+  /// **'In the father\'s place: 1/6 and what is left.'**
+  String get inheritWhyGrandfatherSixthAndRest;
+
+  /// No description provided for @inheritWhyGrandfatherRest.
+  ///
+  /// In en, this message translates to:
+  /// **'In the father\'s place: what is left.'**
+  String get inheritWhyGrandfatherRest;
+
+  /// No description provided for @inheritWhyMotherSixthChild.
+  ///
+  /// In en, this message translates to:
+  /// **'With children: the mother takes 1/6.'**
+  String get inheritWhyMotherSixthChild;
+
+  /// No description provided for @inheritWhyMotherSixthSiblings.
+  ///
+  /// In en, this message translates to:
+  /// **'With two or more brothers or sisters: the mother takes 1/6.'**
+  String get inheritWhyMotherSixthSiblings;
+
+  /// No description provided for @inheritWhyMotherThird.
+  ///
+  /// In en, this message translates to:
+  /// **'No children and fewer than two siblings: the mother takes 1/3.'**
+  String get inheritWhyMotherThird;
+
+  /// No description provided for @inheritWhyMotherThirdOfRest.
+  ///
+  /// In en, this message translates to:
+  /// **'Only the spouse and both parents: the mother takes 1/3 of what the spouse leaves.'**
+  String get inheritWhyMotherThirdOfRest;
+
+  /// No description provided for @inheritWhyGrandmotherSixth.
+  ///
+  /// In en, this message translates to:
+  /// **'With the mother gone: grandmothers take 1/6, shared equally.'**
+  String get inheritWhyGrandmotherSixth;
+
+  /// No description provided for @inheritWhyUterineSixth.
+  ///
+  /// In en, this message translates to:
+  /// **'No children, father or grandfather: one half sibling through the mother takes 1/6.'**
+  String get inheritWhyUterineSixth;
+
+  /// No description provided for @inheritWhyUterineThird.
+  ///
+  /// In en, this message translates to:
+  /// **'Half siblings through the mother take 1/3, brothers and sisters alike.'**
+  String get inheritWhyUterineThird;
+
+  /// No description provided for @inheritWhySisterHalf.
+  ///
+  /// In en, this message translates to:
+  /// **'An only sister with no brother takes 1/2.'**
+  String get inheritWhySisterHalf;
+
+  /// No description provided for @inheritWhySistersTwoThirds.
+  ///
+  /// In en, this message translates to:
+  /// **'Sisters with no brother take 2/3 between them.'**
+  String get inheritWhySistersTwoThirds;
+
+  /// No description provided for @inheritWhyPaternalSisterSixth.
+  ///
+  /// In en, this message translates to:
+  /// **'With one full sister taking 1/2, half sisters take 1/6 to make 2/3.'**
+  String get inheritWhyPaternalSisterSixth;
+
+  /// No description provided for @inheritWhySiblingsResidue.
+  ///
+  /// In en, this message translates to:
+  /// **'Brothers and sisters take what is left, a brother twice a sister.'**
+  String get inheritWhySiblingsResidue;
+
+  /// No description provided for @inheritWhySisterWithDaughters.
+  ///
+  /// In en, this message translates to:
+  /// **'With a daughter, a sister takes what is left.'**
+  String get inheritWhySisterWithDaughters;
+
+  /// No description provided for @inheritWhyAgnateResidue.
+  ///
+  /// In en, this message translates to:
+  /// **'The nearest man of the family line takes what is left.'**
+  String get inheritWhyAgnateResidue;
+
+  /// No description provided for @inheritWhyRepresented.
+  ///
+  /// In en, this message translates to:
+  /// **'Their late parent\'s share, a son twice a daughter (Ordinance 1961).'**
+  String get inheritWhyRepresented;
+
+  /// No description provided for @inheritWhySole.
+  ///
+  /// In en, this message translates to:
+  /// **'With no other heir, takes everything.'**
+  String get inheritWhySole;
+
+  /// No description provided for @inheritAwl.
+  ///
+  /// In en, this message translates to:
+  /// **'The fixed shares came to more than the whole, so every share was cut in the same proportion (awl).'**
+  String get inheritAwl;
+
+  /// No description provided for @inheritRadd.
+  ///
+  /// In en, this message translates to:
+  /// **'Something was left over, so it went back to the heirs other than the spouse, in proportion (radd).'**
+  String get inheritRadd;
+
+  /// No description provided for @inheritSpouseRest.
+  ///
+  /// In en, this message translates to:
+  /// **'With no other heir, the spouse takes the rest too. If distant kin survive, ask an expert.'**
+  String get inheritSpouseRest;
+
+  /// No description provided for @inheritExcludedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Who gets nothing'**
+  String get inheritExcludedTitle;
+
+  /// No description provided for @inheritOut.
+  ///
+  /// In en, this message translates to:
+  /// **'{heir}: nothing, {reason}'**
+  String inheritOut(String heir, String reason);
+
+  /// No description provided for @inheritOutSon.
+  ///
+  /// In en, this message translates to:
+  /// **'because there is a son'**
+  String get inheritOutSon;
+
+  /// No description provided for @inheritOutFather.
+  ///
+  /// In en, this message translates to:
+  /// **'because the father is alive'**
+  String get inheritOutFather;
+
+  /// No description provided for @inheritOutGrandfather.
+  ///
+  /// In en, this message translates to:
+  /// **'because the grandfather is alive'**
+  String get inheritOutGrandfather;
+
+  /// No description provided for @inheritOutMother.
+  ///
+  /// In en, this message translates to:
+  /// **'because the mother is alive'**
+  String get inheritOutMother;
+
+  /// No description provided for @inheritOutChild.
+  ///
+  /// In en, this message translates to:
+  /// **'because there are children'**
+  String get inheritOutChild;
+
+  /// No description provided for @inheritOutFullBrother.
+  ///
+  /// In en, this message translates to:
+  /// **'because there is a full brother'**
+  String get inheritOutFullBrother;
+
+  /// No description provided for @inheritOutPaternalBrother.
+  ///
+  /// In en, this message translates to:
+  /// **'because there is a half brother'**
+  String get inheritOutPaternalBrother;
+
+  /// No description provided for @inheritOutSisterWithDaughters.
+  ///
+  /// In en, this message translates to:
+  /// **'because a sister takes the rest with the daughters'**
+  String get inheritOutSisterWithDaughters;
+
+  /// No description provided for @inheritOutTwoFullSisters.
+  ///
+  /// In en, this message translates to:
+  /// **'because two full sisters take the 2/3'**
+  String get inheritOutTwoFullSisters;
+
+  /// No description provided for @inheritOutCloser.
+  ///
+  /// In en, this message translates to:
+  /// **'because a closer relative takes the rest'**
+  String get inheritOutCloser;
+
+  /// No description provided for @inheritOutNothingLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'because the fixed shares took everything'**
+  String get inheritOutNothingLeft;
+
+  /// No description provided for @inheritWhoSon.
+  ///
+  /// In en, this message translates to:
+  /// **'a son'**
+  String get inheritWhoSon;
+
+  /// No description provided for @inheritWhoFather.
+  ///
+  /// In en, this message translates to:
+  /// **'the father'**
+  String get inheritWhoFather;
+
+  /// No description provided for @inheritWhoGrandfather.
+  ///
+  /// In en, this message translates to:
+  /// **'the grandfather'**
+  String get inheritWhoGrandfather;
+
+  /// No description provided for @inheritMotherCut.
+  ///
+  /// In en, this message translates to:
+  /// **'They take nothing, but because of them the mother takes 1/6.'**
+  String get inheritMotherCut;
+
+  /// No description provided for @inheritBase.
+  ///
+  /// In en, this message translates to:
+  /// **'Base {n}'**
+  String inheritBase(String n);
+
+  /// No description provided for @inheritParts.
+  ///
+  /// In en, this message translates to:
+  /// **'{parts} of {base} parts'**
+  String inheritParts(String parts, String base);
+
+  /// No description provided for @inheritEstate.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}\'s estate'**
+  String inheritEstate(String name);
+
+  /// No description provided for @inheritDeceasedMan.
+  ///
+  /// In en, this message translates to:
+  /// **'The deceased (a man)'**
+  String get inheritDeceasedMan;
+
+  /// No description provided for @inheritDeceasedWoman.
+  ///
+  /// In en, this message translates to:
+  /// **'The deceased (a woman)'**
+  String get inheritDeceasedWoman;
+
+  /// No description provided for @inheritSharesOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Shares of the whole estate'**
+  String get inheritSharesOnly;
+
+  /// No description provided for @inheritDivide.
+  ///
+  /// In en, this message translates to:
+  /// **'Divide the land by these shares'**
+  String get inheritDivide;
+
+  /// No description provided for @inheritShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get inheritShare;
+
+  /// No description provided for @inheritDisclaimer.
+  ///
+  /// In en, this message translates to:
+  /// **'Worked out by Hanafi rules and the Muslim Family Laws Ordinance 1961. Check with an expert before a deed or a court.'**
+  String get inheritDisclaimer;
+
+  /// No description provided for @inheritPickPlot.
+  ///
+  /// In en, this message translates to:
+  /// **'Which plot is being divided?'**
+  String get inheritPickPlot;
+
+  /// No description provided for @inheritEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Change the family'**
+  String get inheritEdit;
+
+  /// No description provided for @inheritReligion.
+  ///
+  /// In en, this message translates to:
+  /// **'Religion of the deceased'**
+  String get inheritReligion;
+
+  /// No description provided for @inheritMuslim.
+  ///
+  /// In en, this message translates to:
+  /// **'Muslim'**
+  String get inheritMuslim;
+
+  /// No description provided for @inheritHindu.
+  ///
+  /// In en, this message translates to:
+  /// **'Hindu'**
+  String get inheritHindu;
+
+  /// No description provided for @inheritChristian.
+  ///
+  /// In en, this message translates to:
+  /// **'Christian'**
+  String get inheritChristian;
+
+  /// No description provided for @inheritHinduWoman.
+  ///
+  /// In en, this message translates to:
+  /// **'A Hindu woman\'s property follows other rules. What she got as a widow, daughter or mother goes back, at her death, to the heirs of the man she got it from: work it out for him instead. Her own property (stridhan) goes first to her children; beyond that, ask a Hindu-law lawyer.'**
+  String get inheritHinduWoman;
+
+  /// No description provided for @inheritLate.
+  ///
+  /// In en, this message translates to:
+  /// **'Late {heir} {n}'**
+  String inheritLate(String heir, int n);
+
+  /// No description provided for @inheritViaWife.
+  ///
+  /// In en, this message translates to:
+  /// **'wife'**
+  String get inheritViaWife;
+
+  /// No description provided for @inheritHeirSonsWidow.
+  ///
+  /// In en, this message translates to:
+  /// **'Son\'s widow'**
+  String get inheritHeirSonsWidow;
+
+  /// No description provided for @inheritHeirUnmarriedDaughter.
+  ///
+  /// In en, this message translates to:
+  /// **'Unmarried daughter'**
+  String get inheritHeirUnmarriedDaughter;
+
+  /// No description provided for @inheritHeirMarriedDaughter.
+  ///
+  /// In en, this message translates to:
+  /// **'Married daughter'**
+  String get inheritHeirMarriedDaughter;
+
+  /// No description provided for @inheritHeirDaughtersSon.
+  ///
+  /// In en, this message translates to:
+  /// **'Daughter\'s son'**
+  String get inheritHeirDaughtersSon;
+
+  /// No description provided for @inheritHeirDaughtersDaughter.
+  ///
+  /// In en, this message translates to:
+  /// **'Daughter\'s daughter'**
+  String get inheritHeirDaughtersDaughter;
+
+  /// No description provided for @inheritHeirBrother.
+  ///
+  /// In en, this message translates to:
+  /// **'Brother'**
+  String get inheritHeirBrother;
+
+  /// No description provided for @inheritHeirSister.
+  ///
+  /// In en, this message translates to:
+  /// **'Sister'**
+  String get inheritHeirSister;
+
+  /// No description provided for @inheritHeirGrandNephew.
+  ///
+  /// In en, this message translates to:
+  /// **'Nephew\'s son'**
+  String get inheritHeirGrandNephew;
+
+  /// No description provided for @inheritHeirSistersSon.
+  ///
+  /// In en, this message translates to:
+  /// **'Sister\'s son'**
+  String get inheritHeirSistersSon;
+
+  /// No description provided for @inheritHeirSistersDaughter.
+  ///
+  /// In en, this message translates to:
+  /// **'Sister\'s daughter'**
+  String get inheritHeirSistersDaughter;
+
+  /// No description provided for @inheritHeirBrothersDaughter.
+  ///
+  /// In en, this message translates to:
+  /// **'Brother\'s daughter'**
+  String get inheritHeirBrothersDaughter;
+
+  /// No description provided for @inheritHeirMaternalGrandfather.
+  ///
+  /// In en, this message translates to:
+  /// **'Mother\'s father'**
+  String get inheritHeirMaternalGrandfather;
+
+  /// No description provided for @inheritHeirPaternalAunt.
+  ///
+  /// In en, this message translates to:
+  /// **'Father\'s sister'**
+  String get inheritHeirPaternalAunt;
+
+  /// No description provided for @inheritHeirMaternalUncle.
+  ///
+  /// In en, this message translates to:
+  /// **'Mother\'s brother'**
+  String get inheritHeirMaternalUncle;
+
+  /// No description provided for @inheritHeirMaternalAunt.
+  ///
+  /// In en, this message translates to:
+  /// **'Mother\'s sister'**
+  String get inheritHeirMaternalAunt;
+
+  /// No description provided for @inheritHeirCousin.
+  ///
+  /// In en, this message translates to:
+  /// **'First cousin'**
+  String get inheritHeirCousin;
+
+  /// No description provided for @inheritSubWidows.
+  ///
+  /// In en, this message translates to:
+  /// **'Together they take one son\'s share.'**
+  String get inheritSubWidows;
+
+  /// No description provided for @inheritSubUnmarried.
+  ///
+  /// In en, this message translates to:
+  /// **'Not yet married'**
+  String get inheritSubUnmarried;
+
+  /// No description provided for @inheritSubMarriedWithSon.
+  ///
+  /// In en, this message translates to:
+  /// **'Has a son, or may still have one'**
+  String get inheritSubMarriedWithSon;
+
+  /// No description provided for @inheritHinduDaughterNote.
+  ///
+  /// In en, this message translates to:
+  /// **'A widowed or childless daughter who has no son and cannot have one does not inherit.'**
+  String get inheritHinduDaughterNote;
+
+  /// No description provided for @inheritDeadSonAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'A son who died before him'**
+  String get inheritDeadSonAdd;
+
+  /// No description provided for @inheritDeadSonAddSub.
+  ///
+  /// In en, this message translates to:
+  /// **'His sons and his widow take his share'**
+  String get inheritDeadSonAddSub;
+
+  /// No description provided for @inheritDeadSonTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Son who died earlier · {n}'**
+  String inheritDeadSonTitle(int n);
+
+  /// No description provided for @inheritTheirWidow.
+  ///
+  /// In en, this message translates to:
+  /// **'His widow is alive'**
+  String get inheritTheirWidow;
+
+  /// No description provided for @inheritSubBrothersSon.
+  ///
+  /// In en, this message translates to:
+  /// **'A brother\'s son'**
+  String get inheritSubBrothersSon;
+
+  /// No description provided for @inheritSubSistersSon.
+  ///
+  /// In en, this message translates to:
+  /// **'A sister\'s son'**
+  String get inheritSubSistersSon;
+
+  /// No description provided for @inheritSubUnclesSon.
+  ///
+  /// In en, this message translates to:
+  /// **'Father\'s brother\'s son'**
+  String get inheritSubUnclesSon;
+
+  /// No description provided for @inheritSubHalfBrotherHindu.
+  ///
+  /// In en, this message translates to:
+  /// **'Same father, another mother'**
+  String get inheritSubHalfBrotherHindu;
+
+  /// No description provided for @inheritHinduHiddenMale.
+  ///
+  /// In en, this message translates to:
+  /// **'With a son, grandson or son\'s widow, daughters and everyone else take nothing, so they are not asked.'**
+  String get inheritHinduHiddenMale;
+
+  /// No description provided for @inheritHinduHiddenWidow.
+  ///
+  /// In en, this message translates to:
+  /// **'With the widow alive, daughters and the rest take nothing now; at her death the property goes on to them.'**
+  String get inheritHinduHiddenWidow;
+
+  /// No description provided for @inheritHinduDistant.
+  ///
+  /// In en, this message translates to:
+  /// **'Relatives beyond these follow a long classical order not covered here, and a will, gift or earlier partition changes things: ask a Hindu-law lawyer.'**
+  String get inheritHinduDistant;
+
+  /// No description provided for @inheritSpouseChristian.
+  ///
+  /// In en, this message translates to:
+  /// **'Widow or widower'**
+  String get inheritSpouseChristian;
+
+  /// No description provided for @inheritChristianDeadNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Their children share their share equally (Succession Act 1925, s. 40).'**
+  String get inheritChristianDeadNote;
+
+  /// No description provided for @inheritDeadSiblingAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'A brother or sister who died earlier'**
+  String get inheritDeadSiblingAdd;
+
+  /// No description provided for @inheritDeadSiblingAddSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Their children take their share'**
+  String get inheritDeadSiblingAddSub;
+
+  /// No description provided for @inheritDeadSiblingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Brother or sister who died earlier · {n}'**
+  String inheritDeadSiblingTitle(int n);
+
+  /// No description provided for @inheritSubAnyBlood.
+  ///
+  /// In en, this message translates to:
+  /// **'Full or half: the same'**
+  String get inheritSubAnyBlood;
+
+  /// No description provided for @inheritChristianHiddenDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'With children or grandchildren, parents, brothers, sisters and other relatives take nothing.'**
+  String get inheritChristianHiddenDesc;
+
+  /// No description provided for @inheritChristianHiddenFather.
+  ///
+  /// In en, this message translates to:
+  /// **'With the father alive, the mother, brothers, sisters and others take nothing.'**
+  String get inheritChristianHiddenFather;
+
+  /// No description provided for @inheritChristianDistant.
+  ///
+  /// In en, this message translates to:
+  /// **'For relatives further than first cousins, ask a lawyer. With no relative at all, the property goes to the Government.'**
+  String get inheritChristianDistant;
+
+  /// No description provided for @inheritLifeInterest.
+  ///
+  /// In en, this message translates to:
+  /// **'For life'**
+  String get inheritLifeInterest;
+
+  /// No description provided for @inheritDisclaimerHindu.
+  ///
+  /// In en, this message translates to:
+  /// **'Worked out by the Dayabhaga law followed in Bangladesh and the Hindu Women\'s Rights to Property Act 1937. Check with an expert before a deed or a court.'**
+  String get inheritDisclaimerHindu;
+
+  /// No description provided for @inheritDisclaimerChristian.
+  ///
+  /// In en, this message translates to:
+  /// **'Worked out by the Succession Act 1925 (Part V). A will, a pre-marriage contract or custom changes things. Check with an expert before a deed or a court.'**
+  String get inheritDisclaimerChristian;
+
+  /// No description provided for @inheritWhyHinduSons.
+  ///
+  /// In en, this message translates to:
+  /// **'Sons share equally.'**
+  String get inheritWhyHinduSons;
+
+  /// No description provided for @inheritWhyHinduWidow.
+  ///
+  /// In en, this message translates to:
+  /// **'The widow takes a son\'s share (widows together share one), for life (1937 Act).'**
+  String get inheritWhyHinduWidow;
+
+  /// No description provided for @inheritWhyHinduSonsLine.
+  ///
+  /// In en, this message translates to:
+  /// **'His late father\'s share, shared among his sons.'**
+  String get inheritWhyHinduSonsLine;
+
+  /// No description provided for @inheritWhyHinduSonsWidowAsSon.
+  ///
+  /// In en, this message translates to:
+  /// **'A dead son\'s widow with no son takes as a son, for life (1937 Act).'**
+  String get inheritWhyHinduSonsWidowAsSon;
+
+  /// No description provided for @inheritWhyHinduSonsWidowAsGrandson.
+  ///
+  /// In en, this message translates to:
+  /// **'Beside her sons she takes as one of them, for life (1937 Act).'**
+  String get inheritWhyHinduSonsWidowAsGrandson;
+
+  /// No description provided for @inheritWhyHinduUnmarriedDaughters.
+  ///
+  /// In en, this message translates to:
+  /// **'With no son, grandson or widow, unmarried daughters share equally, for life.'**
+  String get inheritWhyHinduUnmarriedDaughters;
+
+  /// No description provided for @inheritWhyHinduMarriedDaughters.
+  ///
+  /// In en, this message translates to:
+  /// **'With no unmarried daughter, married daughters who have or may have a son share equally, for life.'**
+  String get inheritWhyHinduMarriedDaughters;
+
+  /// No description provided for @inheritWhyHinduDaughtersSons.
+  ///
+  /// In en, this message translates to:
+  /// **'Daughters\' sons share equally, per head.'**
+  String get inheritWhyHinduDaughtersSons;
+
+  /// No description provided for @inheritWhyHinduFather.
+  ///
+  /// In en, this message translates to:
+  /// **'Next in line: the father takes all.'**
+  String get inheritWhyHinduFather;
+
+  /// No description provided for @inheritWhyHinduMother.
+  ///
+  /// In en, this message translates to:
+  /// **'Next in line: the mother takes all, for life.'**
+  String get inheritWhyHinduMother;
+
+  /// No description provided for @inheritWhyHinduBrothers.
+  ///
+  /// In en, this message translates to:
+  /// **'Next in line: brothers share equally (a full brother before a half brother).'**
+  String get inheritWhyHinduBrothers;
+
+  /// No description provided for @inheritWhyHinduNephews.
+  ///
+  /// In en, this message translates to:
+  /// **'Next in line: brothers\' sons share equally.'**
+  String get inheritWhyHinduNephews;
+
+  /// No description provided for @inheritWhyHinduGrandNephews.
+  ///
+  /// In en, this message translates to:
+  /// **'Next in line: brothers\' grandsons share equally.'**
+  String get inheritWhyHinduGrandNephews;
+
+  /// No description provided for @inheritWhyHinduSistersSons.
+  ///
+  /// In en, this message translates to:
+  /// **'Next in line: sisters\' sons share equally.'**
+  String get inheritWhyHinduSistersSons;
+
+  /// No description provided for @inheritWhyHinduGrandfather.
+  ///
+  /// In en, this message translates to:
+  /// **'Next in line: the father\'s father takes all.'**
+  String get inheritWhyHinduGrandfather;
+
+  /// No description provided for @inheritWhyHinduGrandmother.
+  ///
+  /// In en, this message translates to:
+  /// **'Next in line: the father\'s mother takes all, for life.'**
+  String get inheritWhyHinduGrandmother;
+
+  /// No description provided for @inheritWhyHinduUncles.
+  ///
+  /// In en, this message translates to:
+  /// **'Next in line: the father\'s brothers share equally.'**
+  String get inheritWhyHinduUncles;
+
+  /// No description provided for @inheritWhyHinduCousins.
+  ///
+  /// In en, this message translates to:
+  /// **'Next in line: the uncles\' sons share equally.'**
+  String get inheritWhyHinduCousins;
+
+  /// No description provided for @inheritWhyChristianSpouseThird.
+  ///
+  /// In en, this message translates to:
+  /// **'With children or grandchildren: the spouse takes 1/3 (s. 33).'**
+  String get inheritWhyChristianSpouseThird;
+
+  /// No description provided for @inheritWhyChristianSpouseHalf.
+  ///
+  /// In en, this message translates to:
+  /// **'No descendants, but other relatives: the spouse takes 1/2 (s. 33).'**
+  String get inheritWhyChristianSpouseHalf;
+
+  /// No description provided for @inheritWhyChristianSpouseAll.
+  ///
+  /// In en, this message translates to:
+  /// **'No relative at all: the spouse takes everything (s. 33).'**
+  String get inheritWhyChristianSpouseAll;
+
+  /// No description provided for @inheritWhyChristianChildren.
+  ///
+  /// In en, this message translates to:
+  /// **'Sons and daughters share equally (s. 37).'**
+  String get inheritWhyChristianChildren;
+
+  /// No description provided for @inheritWhyChristianChildOfDead.
+  ///
+  /// In en, this message translates to:
+  /// **'Their late parent\'s share, shared equally (s. 40).'**
+  String get inheritWhyChristianChildOfDead;
+
+  /// No description provided for @inheritWhyChristianGrandchildrenPerHead.
+  ///
+  /// In en, this message translates to:
+  /// **'No child alive: grandchildren share per head (s. 38).'**
+  String get inheritWhyChristianGrandchildrenPerHead;
+
+  /// No description provided for @inheritWhyChristianFather.
+  ///
+  /// In en, this message translates to:
+  /// **'No descendants: the father takes the rest (s. 42).'**
+  String get inheritWhyChristianFather;
+
+  /// No description provided for @inheritWhyChristianMotherAndSiblings.
+  ///
+  /// In en, this message translates to:
+  /// **'Father gone: the mother and each brother or sister share equally (ss. 43-45).'**
+  String get inheritWhyChristianMotherAndSiblings;
+
+  /// No description provided for @inheritWhyChristianMother.
+  ///
+  /// In en, this message translates to:
+  /// **'Father gone, no brother or sister: the mother takes the rest (s. 46).'**
+  String get inheritWhyChristianMother;
+
+  /// No description provided for @inheritWhyChristianSiblings.
+  ///
+  /// In en, this message translates to:
+  /// **'Both parents gone: brothers and sisters share equally, full or half (s. 47).'**
+  String get inheritWhyChristianSiblings;
+
+  /// No description provided for @inheritWhyChristianSiblingsChildren.
+  ///
+  /// In en, this message translates to:
+  /// **'Their late parent\'s share, shared equally (ss. 44-47).'**
+  String get inheritWhyChristianSiblingsChildren;
+
+  /// No description provided for @inheritWhyChristianNearest.
+  ///
+  /// In en, this message translates to:
+  /// **'The nearest relatives share per head (s. 48).'**
+  String get inheritWhyChristianNearest;
+
+  /// No description provided for @inheritNoteHinduLimited.
+  ///
+  /// In en, this message translates to:
+  /// **'A life interest (জীবনস্বত্ব): she uses and enjoys it, cannot sell it except for real need, and at her death it goes to the deceased\'s heirs of that time, not to hers.'**
+  String get inheritNoteHinduLimited;
+
+  /// No description provided for @inheritNoteHinduSonsWidow.
+  ///
+  /// In en, this message translates to:
+  /// **'How a dead son\'s widow shares beside her own sons is not settled by any reported case; here she counts as one of them.'**
+  String get inheritNoteHinduSonsWidow;
+
+  /// No description provided for @inheritNoteChristianSpouseAll.
+  ///
+  /// In en, this message translates to:
+  /// **'The spouse takes everything only if no relative of any degree survives; with any relative at all, the spouse takes 1/2.'**
+  String get inheritNoteChristianSpouseAll;
+
+  /// No description provided for @inheritNoteChristianPerHead.
+  ///
+  /// In en, this message translates to:
+  /// **'No child is alive, so the grandchildren share per head, not by family branch (s. 38).'**
+  String get inheritNoteChristianPerHead;
+
+  /// No description provided for @inheritNoteNoHeirs.
+  ///
+  /// In en, this message translates to:
+  /// **'With no heir at all, the property goes to the Government.'**
+  String get inheritNoteNoHeirs;
+
+  /// No description provided for @inheritOutMaleLine.
+  ///
+  /// In en, this message translates to:
+  /// **'because there is a son, grandson or son\'s widow'**
+  String get inheritOutMaleLine;
+
+  /// No description provided for @inheritOutWidowFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'while the widow lives (may take after her)'**
+  String get inheritOutWidowFirst;
+
+  /// No description provided for @inheritOutUnmarriedDaughter.
+  ///
+  /// In en, this message translates to:
+  /// **'because there is an unmarried daughter'**
+  String get inheritOutUnmarriedDaughter;
+
+  /// No description provided for @inheritOutCloserKin.
+  ///
+  /// In en, this message translates to:
+  /// **'because a nearer heir takes first'**
+  String get inheritOutCloserKin;
+
+  /// No description provided for @inheritHeirPaternalAuntConsanguine.
+  ///
+  /// In en, this message translates to:
+  /// **'Father\'s half sister (father)'**
+  String get inheritHeirPaternalAuntConsanguine;
+
+  /// No description provided for @inheritHeirPaternalAuntUterine.
+  ///
+  /// In en, this message translates to:
+  /// **'Father\'s half sister (mother)'**
+  String get inheritHeirPaternalAuntUterine;
+
+  /// No description provided for @inheritHeirFatherUterineBrother.
+  ///
+  /// In en, this message translates to:
+  /// **'Father\'s half brother (mother)'**
+  String get inheritHeirFatherUterineBrother;
+
+  /// No description provided for @inheritHeirMaternalUncleConsanguine.
+  ///
+  /// In en, this message translates to:
+  /// **'Mother\'s half brother (father)'**
+  String get inheritHeirMaternalUncleConsanguine;
+
+  /// No description provided for @inheritHeirMaternalUncleUterine.
+  ///
+  /// In en, this message translates to:
+  /// **'Mother\'s half brother (mother)'**
+  String get inheritHeirMaternalUncleUterine;
+
+  /// No description provided for @inheritHeirMaternalAuntConsanguine.
+  ///
+  /// In en, this message translates to:
+  /// **'Mother\'s half sister (father)'**
+  String get inheritHeirMaternalAuntConsanguine;
+
+  /// No description provided for @inheritHeirMaternalAuntUterine.
+  ///
+  /// In en, this message translates to:
+  /// **'Mother\'s half sister (mother)'**
+  String get inheritHeirMaternalAuntUterine;
+
+  /// No description provided for @inheritChildrenOf.
+  ///
+  /// In en, this message translates to:
+  /// **'{parent}\'s children'**
+  String inheritChildrenOf(String parent);
+
+  /// No description provided for @inheritDistantTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Distant relatives'**
+  String get inheritDistantTitle;
+
+  /// No description provided for @inheritDistantIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'With no sharer or residuary heir besides the spouse, distant relatives inherit (zawil arham). The spouse keeps their usual share; they take the rest.'**
+  String get inheritDistantIntro;
+
+  /// No description provided for @inheritSubMaternalGrandfather.
+  ///
+  /// In en, this message translates to:
+  /// **'Mother\'s father'**
+  String get inheritSubMaternalGrandfather;
+
+  /// No description provided for @inheritLineAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'A brother or sister who died, with children'**
+  String get inheritLineAdd;
+
+  /// No description provided for @inheritLineAddSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Their children may inherit here'**
+  String get inheritLineAddSub;
+
+  /// No description provided for @inheritLineTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Late brother or sister · {n}'**
+  String inheritLineTitle(int n);
+
+  /// No description provided for @inheritBloodFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Full'**
+  String get inheritBloodFull;
+
+  /// No description provided for @inheritBloodConsanguine.
+  ///
+  /// In en, this message translates to:
+  /// **'Same father'**
+  String get inheritBloodConsanguine;
+
+  /// No description provided for @inheritBloodUterine.
+  ///
+  /// In en, this message translates to:
+  /// **'Same mother'**
+  String get inheritBloodUterine;
+
+  /// No description provided for @inheritLineBrotherSons.
+  ///
+  /// In en, this message translates to:
+  /// **'His sons are nephews and take ahead of everyone here: add them above as nephews.'**
+  String get inheritLineBrotherSons;
+
+  /// No description provided for @inheritAuntsHalf.
+  ///
+  /// In en, this message translates to:
+  /// **'Half aunts and uncles'**
+  String get inheritAuntsHalf;
+
+  /// No description provided for @inheritDistantBeyond.
+  ///
+  /// In en, this message translates to:
+  /// **'For cousins through women (ফুফাতো, মামাতো, খালাতো), a paternal uncle\'s daughter, or a daughter\'s daughter\'s children, ask an expert.'**
+  String get inheritDistantBeyond;
+
+  /// No description provided for @inheritWhyDistantKindred.
+  ///
+  /// In en, this message translates to:
+  /// **'The nearest distant relative: takes what the spouse leaves.'**
+  String get inheritWhyDistantKindred;
+
+  /// No description provided for @inheritWhyDistantSiblingLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Takes as their late parent would have, a son twice a daughter (equal through a half sibling by the mother).'**
+  String get inheritWhyDistantSiblingLine;
+
+  /// No description provided for @inheritWhyDistantUnclesAunts.
+  ///
+  /// In en, this message translates to:
+  /// **'The father\'s side takes 2/3 and the mother\'s 1/3; full blood first, a man twice a woman.'**
+  String get inheritWhyDistantUnclesAunts;
+
+  /// No description provided for @inheritNoteDistantKindred.
+  ///
+  /// In en, this message translates to:
+  /// **'No sharer or residuary heir survives besides the spouse, so distant relatives inherit, by the rules in Mulla\'s Principles of Mahomedan Law (Imam Muhammad\'s method).'**
+  String get inheritNoteDistantKindred;
+
+  /// No description provided for @inheritNoteDistantGrandfather.
+  ///
+  /// In en, this message translates to:
+  /// **'The mother\'s father is put before the children of brothers and sisters, as Mulla does; an older text hints otherwise. Ask an expert for this case.'**
+  String get inheritNoteDistantGrandfather;
+
+  /// No description provided for @inheritNoteDistantAwl.
+  ///
+  /// In en, this message translates to:
+  /// **'The spouse and the siblings\' children came to more than the whole; the books give no rule for this case. Ask an expert.'**
+  String get inheritNoteDistantAwl;
+
+  /// No description provided for @inheritBaseParts.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} parts in all'**
+  String inheritBaseParts(String n);
 }
 
 class _AppLocalizationsDelegate

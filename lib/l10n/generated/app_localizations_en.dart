@@ -1836,4 +1836,894 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get divisionColLocal => 'In local units';
+
+  @override
+  String get inheritTitle => 'Inheritance shares';
+
+  @override
+  String get inheritDrawerSub => 'Who gets what share, by Islamic law';
+
+  @override
+  String inheritStep(int step, String name) {
+    final intl.NumberFormat stepNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String stepString = stepNumberFormat.format(step);
+
+    return 'Step $stepString of 3 · $name';
+  }
+
+  @override
+  String get inheritStepDeceased => 'Who has died?';
+
+  @override
+  String get inheritStepFamily => 'Who survived them?';
+
+  @override
+  String get inheritStepResult => 'Who gets what';
+
+  @override
+  String get inheritMan => 'A man';
+
+  @override
+  String get inheritWoman => 'A woman';
+
+  @override
+  String get inheritNameHint => 'Their name (optional)';
+
+  @override
+  String get inheritLand => 'Land to share (optional)';
+
+  @override
+  String get inheritLandHint => 'Leave it empty to see the shares only.';
+
+  @override
+  String get inheritFromSaved => 'Or pick a saved plot';
+
+  @override
+  String get inheritSeeResult => 'See the shares';
+
+  @override
+  String get inheritNeedHeir => 'Add at least one heir';
+
+  @override
+  String get inheritFamily => 'Close family';
+
+  @override
+  String get inheritMore => 'Other relatives';
+
+  @override
+  String get inheritPredeceasedAdd => 'A child who died before them';
+
+  @override
+  String get inheritPredeceasedAddSub => 'Their children take their share';
+
+  @override
+  String inheritPredeceasedTitle(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    return 'Child who died earlier · $nString';
+  }
+
+  @override
+  String get inheritPredeceasedNote =>
+      'Their children take what they would have taken (Muslim Family Laws Ordinance 1961, s. 4).';
+
+  @override
+  String get inheritTheirSons => 'Their sons';
+
+  @override
+  String get inheritTheirDaughters => 'Their daughters';
+
+  @override
+  String get inheritNoChildrenNote =>
+      'With no children of their own they take nothing.';
+
+  @override
+  String get inheritHalfSiblings => 'Half brothers and sisters';
+
+  @override
+  String get inheritMaleLine => 'Nephews, uncles and cousins';
+
+  @override
+  String get inheritSubGrandfather => 'Father\'s father';
+
+  @override
+  String get inheritSubPaternalGrandmother => 'Father\'s mother';
+
+  @override
+  String get inheritSubMaternalGrandmother => 'Mother\'s mother';
+
+  @override
+  String get inheritSubFull => 'Same father and mother';
+
+  @override
+  String get inheritSubPaternal => 'Same father, another mother';
+
+  @override
+  String get inheritSubMaternal => 'Same mother, another father';
+
+  @override
+  String get inheritSubFullNephew => 'A full brother\'s son';
+
+  @override
+  String get inheritSubPaternalNephew => 'A half brother\'s son (same father)';
+
+  @override
+  String get inheritSubFullUncle => 'Father\'s full brother';
+
+  @override
+  String get inheritSubPaternalUncle => 'Father\'s half brother (same father)';
+
+  @override
+  String get inheritSubFullCousin => 'Son of the father\'s full brother';
+
+  @override
+  String get inheritSubPaternalCousin => 'Son of the father\'s half brother';
+
+  @override
+  String get inheritWivesMax => 'At most four.';
+
+  @override
+  String inheritHiddenBy(String who) {
+    return 'With $who alive, brothers, sisters, uncles and others take nothing, so they are not asked.';
+  }
+
+  @override
+  String get inheritSiblingsForMother =>
+      'Brothers and sisters take nothing here, but two or more cut the mother to 1/6.';
+
+  @override
+  String get inheritDistant =>
+      'Distant relatives (মামা, খালা, ফুফু, নানা, a sister\'s children…) inherit only when no sharer or residuary is left; then they are asked about here.';
+
+  @override
+  String get inheritHeirHusband => 'Husband';
+
+  @override
+  String get inheritHeirWife => 'Wife';
+
+  @override
+  String get inheritHeirSon => 'Son';
+
+  @override
+  String get inheritHeirDaughter => 'Daughter';
+
+  @override
+  String get inheritHeirGrandson => 'son';
+
+  @override
+  String get inheritHeirGranddaughter => 'daughter';
+
+  @override
+  String get inheritHeirFather => 'Father';
+
+  @override
+  String get inheritHeirMother => 'Mother';
+
+  @override
+  String get inheritHeirGrandfather => 'Grandfather';
+
+  @override
+  String get inheritHeirPaternalGrandmother => 'Father\'s mother';
+
+  @override
+  String get inheritHeirMaternalGrandmother => 'Mother\'s mother';
+
+  @override
+  String get inheritHeirFullBrother => 'Brother';
+
+  @override
+  String get inheritHeirFullSister => 'Sister';
+
+  @override
+  String get inheritHeirPaternalBrother => 'Half brother (father)';
+
+  @override
+  String get inheritHeirPaternalSister => 'Half sister (father)';
+
+  @override
+  String get inheritHeirMaternalBrother => 'Half brother (mother)';
+
+  @override
+  String get inheritHeirMaternalSister => 'Half sister (mother)';
+
+  @override
+  String get inheritHeirFullNephew => 'Nephew';
+
+  @override
+  String get inheritHeirPaternalNephew => 'Nephew (half brother)';
+
+  @override
+  String get inheritHeirFullUncle => 'Uncle';
+
+  @override
+  String get inheritHeirPaternalUncle => 'Uncle (half)';
+
+  @override
+  String get inheritHeirFullCousin => 'Cousin';
+
+  @override
+  String get inheritHeirPaternalCousin => 'Cousin (half uncle)';
+
+  @override
+  String inheritNumbered(String heir, int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    return '$heir $nString';
+  }
+
+  @override
+  String inheritChildOf(String parent, String child) {
+    return '$parent\'s $child';
+  }
+
+  @override
+  String get inheritWhyHusbandHalf => 'No children: the husband takes 1/2.';
+
+  @override
+  String get inheritWhyHusbandQuarter =>
+      'With children: the husband takes 1/4.';
+
+  @override
+  String get inheritWhyWifeQuarter =>
+      'No children: wives take 1/4, shared equally.';
+
+  @override
+  String get inheritWhyWifeEighth =>
+      'With children: wives take 1/8, shared equally.';
+
+  @override
+  String get inheritWhySonResidue =>
+      'Sons and daughters take what is left after the fixed shares, a son twice a daughter.';
+
+  @override
+  String get inheritWhyDaughterWithSon =>
+      'With a son, a daughter takes half what a son takes.';
+
+  @override
+  String get inheritWhyDaughterHalf =>
+      'An only daughter with no son takes 1/2.';
+
+  @override
+  String get inheritWhyDaughtersTwoThirds =>
+      'Daughters with no son take 2/3 between them.';
+
+  @override
+  String get inheritWhyFatherSixth => 'With a son: the father takes 1/6.';
+
+  @override
+  String get inheritWhyFatherSixthAndRest =>
+      'Daughters but no son: the father takes 1/6 and what is left.';
+
+  @override
+  String get inheritWhyFatherRest =>
+      'No children: the father takes what is left after the fixed shares.';
+
+  @override
+  String get inheritWhyGrandfatherSixth =>
+      'With the father gone, the grandfather takes his place: 1/6 with a son.';
+
+  @override
+  String get inheritWhyGrandfatherSixthAndRest =>
+      'In the father\'s place: 1/6 and what is left.';
+
+  @override
+  String get inheritWhyGrandfatherRest =>
+      'In the father\'s place: what is left.';
+
+  @override
+  String get inheritWhyMotherSixthChild =>
+      'With children: the mother takes 1/6.';
+
+  @override
+  String get inheritWhyMotherSixthSiblings =>
+      'With two or more brothers or sisters: the mother takes 1/6.';
+
+  @override
+  String get inheritWhyMotherThird =>
+      'No children and fewer than two siblings: the mother takes 1/3.';
+
+  @override
+  String get inheritWhyMotherThirdOfRest =>
+      'Only the spouse and both parents: the mother takes 1/3 of what the spouse leaves.';
+
+  @override
+  String get inheritWhyGrandmotherSixth =>
+      'With the mother gone: grandmothers take 1/6, shared equally.';
+
+  @override
+  String get inheritWhyUterineSixth =>
+      'No children, father or grandfather: one half sibling through the mother takes 1/6.';
+
+  @override
+  String get inheritWhyUterineThird =>
+      'Half siblings through the mother take 1/3, brothers and sisters alike.';
+
+  @override
+  String get inheritWhySisterHalf =>
+      'An only sister with no brother takes 1/2.';
+
+  @override
+  String get inheritWhySistersTwoThirds =>
+      'Sisters with no brother take 2/3 between them.';
+
+  @override
+  String get inheritWhyPaternalSisterSixth =>
+      'With one full sister taking 1/2, half sisters take 1/6 to make 2/3.';
+
+  @override
+  String get inheritWhySiblingsResidue =>
+      'Brothers and sisters take what is left, a brother twice a sister.';
+
+  @override
+  String get inheritWhySisterWithDaughters =>
+      'With a daughter, a sister takes what is left.';
+
+  @override
+  String get inheritWhyAgnateResidue =>
+      'The nearest man of the family line takes what is left.';
+
+  @override
+  String get inheritWhyRepresented =>
+      'Their late parent\'s share, a son twice a daughter (Ordinance 1961).';
+
+  @override
+  String get inheritWhySole => 'With no other heir, takes everything.';
+
+  @override
+  String get inheritAwl =>
+      'The fixed shares came to more than the whole, so every share was cut in the same proportion (awl).';
+
+  @override
+  String get inheritRadd =>
+      'Something was left over, so it went back to the heirs other than the spouse, in proportion (radd).';
+
+  @override
+  String get inheritSpouseRest =>
+      'With no other heir, the spouse takes the rest too. If distant kin survive, ask an expert.';
+
+  @override
+  String get inheritExcludedTitle => 'Who gets nothing';
+
+  @override
+  String inheritOut(String heir, String reason) {
+    return '$heir: nothing, $reason';
+  }
+
+  @override
+  String get inheritOutSon => 'because there is a son';
+
+  @override
+  String get inheritOutFather => 'because the father is alive';
+
+  @override
+  String get inheritOutGrandfather => 'because the grandfather is alive';
+
+  @override
+  String get inheritOutMother => 'because the mother is alive';
+
+  @override
+  String get inheritOutChild => 'because there are children';
+
+  @override
+  String get inheritOutFullBrother => 'because there is a full brother';
+
+  @override
+  String get inheritOutPaternalBrother => 'because there is a half brother';
+
+  @override
+  String get inheritOutSisterWithDaughters =>
+      'because a sister takes the rest with the daughters';
+
+  @override
+  String get inheritOutTwoFullSisters =>
+      'because two full sisters take the 2/3';
+
+  @override
+  String get inheritOutCloser => 'because a closer relative takes the rest';
+
+  @override
+  String get inheritOutNothingLeft =>
+      'because the fixed shares took everything';
+
+  @override
+  String get inheritWhoSon => 'a son';
+
+  @override
+  String get inheritWhoFather => 'the father';
+
+  @override
+  String get inheritWhoGrandfather => 'the grandfather';
+
+  @override
+  String get inheritMotherCut =>
+      'They take nothing, but because of them the mother takes 1/6.';
+
+  @override
+  String inheritBase(String n) {
+    return 'Base $n';
+  }
+
+  @override
+  String inheritParts(String parts, String base) {
+    return '$parts of $base parts';
+  }
+
+  @override
+  String inheritEstate(String name) {
+    return '$name\'s estate';
+  }
+
+  @override
+  String get inheritDeceasedMan => 'The deceased (a man)';
+
+  @override
+  String get inheritDeceasedWoman => 'The deceased (a woman)';
+
+  @override
+  String get inheritSharesOnly => 'Shares of the whole estate';
+
+  @override
+  String get inheritDivide => 'Divide the land by these shares';
+
+  @override
+  String get inheritShare => 'Share';
+
+  @override
+  String get inheritDisclaimer =>
+      'Worked out by Hanafi rules and the Muslim Family Laws Ordinance 1961. Check with an expert before a deed or a court.';
+
+  @override
+  String get inheritPickPlot => 'Which plot is being divided?';
+
+  @override
+  String get inheritEdit => 'Change the family';
+
+  @override
+  String get inheritReligion => 'Religion of the deceased';
+
+  @override
+  String get inheritMuslim => 'Muslim';
+
+  @override
+  String get inheritHindu => 'Hindu';
+
+  @override
+  String get inheritChristian => 'Christian';
+
+  @override
+  String get inheritHinduWoman =>
+      'A Hindu woman\'s property follows other rules. What she got as a widow, daughter or mother goes back, at her death, to the heirs of the man she got it from: work it out for him instead. Her own property (stridhan) goes first to her children; beyond that, ask a Hindu-law lawyer.';
+
+  @override
+  String inheritLate(String heir, int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    return 'Late $heir $nString';
+  }
+
+  @override
+  String get inheritViaWife => 'wife';
+
+  @override
+  String get inheritHeirSonsWidow => 'Son\'s widow';
+
+  @override
+  String get inheritHeirUnmarriedDaughter => 'Unmarried daughter';
+
+  @override
+  String get inheritHeirMarriedDaughter => 'Married daughter';
+
+  @override
+  String get inheritHeirDaughtersSon => 'Daughter\'s son';
+
+  @override
+  String get inheritHeirDaughtersDaughter => 'Daughter\'s daughter';
+
+  @override
+  String get inheritHeirBrother => 'Brother';
+
+  @override
+  String get inheritHeirSister => 'Sister';
+
+  @override
+  String get inheritHeirGrandNephew => 'Nephew\'s son';
+
+  @override
+  String get inheritHeirSistersSon => 'Sister\'s son';
+
+  @override
+  String get inheritHeirSistersDaughter => 'Sister\'s daughter';
+
+  @override
+  String get inheritHeirBrothersDaughter => 'Brother\'s daughter';
+
+  @override
+  String get inheritHeirMaternalGrandfather => 'Mother\'s father';
+
+  @override
+  String get inheritHeirPaternalAunt => 'Father\'s sister';
+
+  @override
+  String get inheritHeirMaternalUncle => 'Mother\'s brother';
+
+  @override
+  String get inheritHeirMaternalAunt => 'Mother\'s sister';
+
+  @override
+  String get inheritHeirCousin => 'First cousin';
+
+  @override
+  String get inheritSubWidows => 'Together they take one son\'s share.';
+
+  @override
+  String get inheritSubUnmarried => 'Not yet married';
+
+  @override
+  String get inheritSubMarriedWithSon => 'Has a son, or may still have one';
+
+  @override
+  String get inheritHinduDaughterNote =>
+      'A widowed or childless daughter who has no son and cannot have one does not inherit.';
+
+  @override
+  String get inheritDeadSonAdd => 'A son who died before him';
+
+  @override
+  String get inheritDeadSonAddSub => 'His sons and his widow take his share';
+
+  @override
+  String inheritDeadSonTitle(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    return 'Son who died earlier · $nString';
+  }
+
+  @override
+  String get inheritTheirWidow => 'His widow is alive';
+
+  @override
+  String get inheritSubBrothersSon => 'A brother\'s son';
+
+  @override
+  String get inheritSubSistersSon => 'A sister\'s son';
+
+  @override
+  String get inheritSubUnclesSon => 'Father\'s brother\'s son';
+
+  @override
+  String get inheritSubHalfBrotherHindu => 'Same father, another mother';
+
+  @override
+  String get inheritHinduHiddenMale =>
+      'With a son, grandson or son\'s widow, daughters and everyone else take nothing, so they are not asked.';
+
+  @override
+  String get inheritHinduHiddenWidow =>
+      'With the widow alive, daughters and the rest take nothing now; at her death the property goes on to them.';
+
+  @override
+  String get inheritHinduDistant =>
+      'Relatives beyond these follow a long classical order not covered here, and a will, gift or earlier partition changes things: ask a Hindu-law lawyer.';
+
+  @override
+  String get inheritSpouseChristian => 'Widow or widower';
+
+  @override
+  String get inheritChristianDeadNote =>
+      'Their children share their share equally (Succession Act 1925, s. 40).';
+
+  @override
+  String get inheritDeadSiblingAdd => 'A brother or sister who died earlier';
+
+  @override
+  String get inheritDeadSiblingAddSub => 'Their children take their share';
+
+  @override
+  String inheritDeadSiblingTitle(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    return 'Brother or sister who died earlier · $nString';
+  }
+
+  @override
+  String get inheritSubAnyBlood => 'Full or half: the same';
+
+  @override
+  String get inheritChristianHiddenDesc =>
+      'With children or grandchildren, parents, brothers, sisters and other relatives take nothing.';
+
+  @override
+  String get inheritChristianHiddenFather =>
+      'With the father alive, the mother, brothers, sisters and others take nothing.';
+
+  @override
+  String get inheritChristianDistant =>
+      'For relatives further than first cousins, ask a lawyer. With no relative at all, the property goes to the Government.';
+
+  @override
+  String get inheritLifeInterest => 'For life';
+
+  @override
+  String get inheritDisclaimerHindu =>
+      'Worked out by the Dayabhaga law followed in Bangladesh and the Hindu Women\'s Rights to Property Act 1937. Check with an expert before a deed or a court.';
+
+  @override
+  String get inheritDisclaimerChristian =>
+      'Worked out by the Succession Act 1925 (Part V). A will, a pre-marriage contract or custom changes things. Check with an expert before a deed or a court.';
+
+  @override
+  String get inheritWhyHinduSons => 'Sons share equally.';
+
+  @override
+  String get inheritWhyHinduWidow =>
+      'The widow takes a son\'s share (widows together share one), for life (1937 Act).';
+
+  @override
+  String get inheritWhyHinduSonsLine =>
+      'His late father\'s share, shared among his sons.';
+
+  @override
+  String get inheritWhyHinduSonsWidowAsSon =>
+      'A dead son\'s widow with no son takes as a son, for life (1937 Act).';
+
+  @override
+  String get inheritWhyHinduSonsWidowAsGrandson =>
+      'Beside her sons she takes as one of them, for life (1937 Act).';
+
+  @override
+  String get inheritWhyHinduUnmarriedDaughters =>
+      'With no son, grandson or widow, unmarried daughters share equally, for life.';
+
+  @override
+  String get inheritWhyHinduMarriedDaughters =>
+      'With no unmarried daughter, married daughters who have or may have a son share equally, for life.';
+
+  @override
+  String get inheritWhyHinduDaughtersSons =>
+      'Daughters\' sons share equally, per head.';
+
+  @override
+  String get inheritWhyHinduFather => 'Next in line: the father takes all.';
+
+  @override
+  String get inheritWhyHinduMother =>
+      'Next in line: the mother takes all, for life.';
+
+  @override
+  String get inheritWhyHinduBrothers =>
+      'Next in line: brothers share equally (a full brother before a half brother).';
+
+  @override
+  String get inheritWhyHinduNephews =>
+      'Next in line: brothers\' sons share equally.';
+
+  @override
+  String get inheritWhyHinduGrandNephews =>
+      'Next in line: brothers\' grandsons share equally.';
+
+  @override
+  String get inheritWhyHinduSistersSons =>
+      'Next in line: sisters\' sons share equally.';
+
+  @override
+  String get inheritWhyHinduGrandfather =>
+      'Next in line: the father\'s father takes all.';
+
+  @override
+  String get inheritWhyHinduGrandmother =>
+      'Next in line: the father\'s mother takes all, for life.';
+
+  @override
+  String get inheritWhyHinduUncles =>
+      'Next in line: the father\'s brothers share equally.';
+
+  @override
+  String get inheritWhyHinduCousins =>
+      'Next in line: the uncles\' sons share equally.';
+
+  @override
+  String get inheritWhyChristianSpouseThird =>
+      'With children or grandchildren: the spouse takes 1/3 (s. 33).';
+
+  @override
+  String get inheritWhyChristianSpouseHalf =>
+      'No descendants, but other relatives: the spouse takes 1/2 (s. 33).';
+
+  @override
+  String get inheritWhyChristianSpouseAll =>
+      'No relative at all: the spouse takes everything (s. 33).';
+
+  @override
+  String get inheritWhyChristianChildren =>
+      'Sons and daughters share equally (s. 37).';
+
+  @override
+  String get inheritWhyChristianChildOfDead =>
+      'Their late parent\'s share, shared equally (s. 40).';
+
+  @override
+  String get inheritWhyChristianGrandchildrenPerHead =>
+      'No child alive: grandchildren share per head (s. 38).';
+
+  @override
+  String get inheritWhyChristianFather =>
+      'No descendants: the father takes the rest (s. 42).';
+
+  @override
+  String get inheritWhyChristianMotherAndSiblings =>
+      'Father gone: the mother and each brother or sister share equally (ss. 43-45).';
+
+  @override
+  String get inheritWhyChristianMother =>
+      'Father gone, no brother or sister: the mother takes the rest (s. 46).';
+
+  @override
+  String get inheritWhyChristianSiblings =>
+      'Both parents gone: brothers and sisters share equally, full or half (s. 47).';
+
+  @override
+  String get inheritWhyChristianSiblingsChildren =>
+      'Their late parent\'s share, shared equally (ss. 44-47).';
+
+  @override
+  String get inheritWhyChristianNearest =>
+      'The nearest relatives share per head (s. 48).';
+
+  @override
+  String get inheritNoteHinduLimited =>
+      'A life interest (জীবনস্বত্ব): she uses and enjoys it, cannot sell it except for real need, and at her death it goes to the deceased\'s heirs of that time, not to hers.';
+
+  @override
+  String get inheritNoteHinduSonsWidow =>
+      'How a dead son\'s widow shares beside her own sons is not settled by any reported case; here she counts as one of them.';
+
+  @override
+  String get inheritNoteChristianSpouseAll =>
+      'The spouse takes everything only if no relative of any degree survives; with any relative at all, the spouse takes 1/2.';
+
+  @override
+  String get inheritNoteChristianPerHead =>
+      'No child is alive, so the grandchildren share per head, not by family branch (s. 38).';
+
+  @override
+  String get inheritNoteNoHeirs =>
+      'With no heir at all, the property goes to the Government.';
+
+  @override
+  String get inheritOutMaleLine =>
+      'because there is a son, grandson or son\'s widow';
+
+  @override
+  String get inheritOutWidowFirst =>
+      'while the widow lives (may take after her)';
+
+  @override
+  String get inheritOutUnmarriedDaughter =>
+      'because there is an unmarried daughter';
+
+  @override
+  String get inheritOutCloserKin => 'because a nearer heir takes first';
+
+  @override
+  String get inheritHeirPaternalAuntConsanguine =>
+      'Father\'s half sister (father)';
+
+  @override
+  String get inheritHeirPaternalAuntUterine => 'Father\'s half sister (mother)';
+
+  @override
+  String get inheritHeirFatherUterineBrother =>
+      'Father\'s half brother (mother)';
+
+  @override
+  String get inheritHeirMaternalUncleConsanguine =>
+      'Mother\'s half brother (father)';
+
+  @override
+  String get inheritHeirMaternalUncleUterine =>
+      'Mother\'s half brother (mother)';
+
+  @override
+  String get inheritHeirMaternalAuntConsanguine =>
+      'Mother\'s half sister (father)';
+
+  @override
+  String get inheritHeirMaternalAuntUterine => 'Mother\'s half sister (mother)';
+
+  @override
+  String inheritChildrenOf(String parent) {
+    return '$parent\'s children';
+  }
+
+  @override
+  String get inheritDistantTitle => 'Distant relatives';
+
+  @override
+  String get inheritDistantIntro =>
+      'With no sharer or residuary heir besides the spouse, distant relatives inherit (zawil arham). The spouse keeps their usual share; they take the rest.';
+
+  @override
+  String get inheritSubMaternalGrandfather => 'Mother\'s father';
+
+  @override
+  String get inheritLineAdd => 'A brother or sister who died, with children';
+
+  @override
+  String get inheritLineAddSub => 'Their children may inherit here';
+
+  @override
+  String inheritLineTitle(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    return 'Late brother or sister · $nString';
+  }
+
+  @override
+  String get inheritBloodFull => 'Full';
+
+  @override
+  String get inheritBloodConsanguine => 'Same father';
+
+  @override
+  String get inheritBloodUterine => 'Same mother';
+
+  @override
+  String get inheritLineBrotherSons =>
+      'His sons are nephews and take ahead of everyone here: add them above as nephews.';
+
+  @override
+  String get inheritAuntsHalf => 'Half aunts and uncles';
+
+  @override
+  String get inheritDistantBeyond =>
+      'For cousins through women (ফুফাতো, মামাতো, খালাতো), a paternal uncle\'s daughter, or a daughter\'s daughter\'s children, ask an expert.';
+
+  @override
+  String get inheritWhyDistantKindred =>
+      'The nearest distant relative: takes what the spouse leaves.';
+
+  @override
+  String get inheritWhyDistantSiblingLine =>
+      'Takes as their late parent would have, a son twice a daughter (equal through a half sibling by the mother).';
+
+  @override
+  String get inheritWhyDistantUnclesAunts =>
+      'The father\'s side takes 2/3 and the mother\'s 1/3; full blood first, a man twice a woman.';
+
+  @override
+  String get inheritNoteDistantKindred =>
+      'No sharer or residuary heir survives besides the spouse, so distant relatives inherit, by the rules in Mulla\'s Principles of Mahomedan Law (Imam Muhammad\'s method).';
+
+  @override
+  String get inheritNoteDistantGrandfather =>
+      'The mother\'s father is put before the children of brothers and sisters, as Mulla does; an older text hints otherwise. Ask an expert for this case.';
+
+  @override
+  String get inheritNoteDistantAwl =>
+      'The spouse and the siblings\' children came to more than the whole; the books give no rule for this case. Ask an expert.';
+
+  @override
+  String inheritBaseParts(String n) {
+    return '$n parts in all';
+  }
 }

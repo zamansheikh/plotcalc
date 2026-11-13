@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -20,6 +21,12 @@ class SettingsDrawer extends StatelessWidget {
       label: t.calcTitle,
       sub: t.homeCalculatorSub,
       route: AppRoutes.calculator,
+    ),
+    _MenuItem(
+      icon: Icons.family_restroom_outlined,
+      label: t.inheritTitle,
+      sub: t.inheritDrawerSub,
+      route: AppRoutes.inheritance,
     ),
     _MenuItem(
       icon: Icons.pie_chart_outline,
@@ -103,20 +110,13 @@ class _Header extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   context.l10n.drawerMenuSub,
-                  style: AppTypography.mono(
-                    size: 11,
-                    color: AppColors.textDim,
-                  ),
+                  style: AppTypography.mono(size: 11, color: AppColors.textDim),
                 ),
               ],
             ),
           ),
           IconButton(
-            icon: const Icon(
-              Icons.close,
-              size: 22,
-              color: AppColors.text,
-            ),
+            icon: const Icon(Icons.close, size: 22, color: AppColors.text),
             onPressed: () => Navigator.of(context).pop(),
             tooltip: context.l10n.actionClose,
           ),
@@ -196,25 +196,44 @@ class _Tile extends StatelessWidget {
   }
 }
 
-class _Footer extends StatelessWidget {
+class _Footer extends StatefulWidget {
   const _Footer();
 
   @override
+  State<_Footer> createState() => _FooterState();
+}
+
+class _FooterState extends State<_Footer> {
+  String? _version;
+
+  @override
+  void initState() {
+    super.initState();
+    PackageInfo.fromPlatform()
+        .then((info) {
+          if (mounted) setState(() => _version = info.version);
+        })
+        .catchError((_) {});
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final version = _version;
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
       child: Row(
         children: [
           const Icon(Icons.terrain, size: 14, color: AppColors.textFaint),
           const SizedBox(width: 6),
-          Text(
-            context.l10n.drawerVersion('1.0.0'),
-            style: AppTypography.mono(
-              size: 10,
-              color: AppColors.textFaint,
-              letterSpacing: 0.6,
+          if (version != null)
+            Text(
+              context.l10n.drawerVersion(version),
+              style: AppTypography.mono(
+                size: 10,
+                color: AppColors.textFaint,
+                letterSpacing: 0.6,
+              ),
             ),
-          ),
         ],
       ),
     );

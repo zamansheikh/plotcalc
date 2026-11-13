@@ -1825,4 +1825,877 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get divisionColLocal => 'স্থানীয় মাপে';
+
+  @override
+  String get inheritTitle => 'ওয়ারিশ হিসাব';
+
+  @override
+  String get inheritDrawerSub => 'কে কত অংশ পাবেন · ফারায়েজ';
+
+  @override
+  String inheritStep(int step, String name) {
+    final intl.NumberFormat stepNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String stepString = stepNumberFormat.format(step);
+
+    return 'ধাপ $stepString/৩ · $name';
+  }
+
+  @override
+  String get inheritStepDeceased => 'কে মারা গেছেন?';
+
+  @override
+  String get inheritStepFamily => 'কে কে বেঁচে আছেন?';
+
+  @override
+  String get inheritStepResult => 'কে কত পান';
+
+  @override
+  String get inheritMan => 'পুরুষ';
+
+  @override
+  String get inheritWoman => 'নারী';
+
+  @override
+  String get inheritNameHint => 'নাম (ঐচ্ছিক)';
+
+  @override
+  String get inheritLand => 'জমির পরিমাণ (ঐচ্ছিক)';
+
+  @override
+  String get inheritLandHint => 'ফাঁকা রাখলে শুধু অংশ দেখাবে।';
+
+  @override
+  String get inheritFromSaved => 'অথবা সংরক্ষিত জমি বেছে নিন';
+
+  @override
+  String get inheritSeeResult => 'ফলাফল দেখুন';
+
+  @override
+  String get inheritNeedHeir => 'অন্তত একজন ওয়ারিশ যোগ করুন';
+
+  @override
+  String get inheritFamily => 'পরিবার';
+
+  @override
+  String get inheritMore => 'আরও আত্মীয়';
+
+  @override
+  String get inheritPredeceasedAdd => 'আগে মারা যাওয়া সন্তান';
+
+  @override
+  String get inheritPredeceasedAddSub => 'তাঁর ছেলেমেয়েরা তাঁর অংশ পান';
+
+  @override
+  String inheritPredeceasedTitle(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    return 'আগে মারা যাওয়া সন্তান · $nString';
+  }
+
+  @override
+  String get inheritPredeceasedNote =>
+      'তিনি বেঁচে থাকলে যা পেতেন, তাঁর ছেলেমেয়েরা তা পান (মুসলিম পারিবারিক আইন অধ্যাদেশ ১৯৬১, ধারা ৪)।';
+
+  @override
+  String get inheritTheirSons => 'তাঁর ছেলে';
+
+  @override
+  String get inheritTheirDaughters => 'তাঁর মেয়ে';
+
+  @override
+  String get inheritNoChildrenNote =>
+      'নিজের সন্তান না থাকলে তিনি কোনো অংশ পান না।';
+
+  @override
+  String get inheritHalfSiblings => 'সৎ ভাই-বোন';
+
+  @override
+  String get inheritMaleLine => 'ভাতিজা, চাচা ও চাচাতো ভাই';
+
+  @override
+  String get inheritSubGrandfather => 'বাবার বাবা';
+
+  @override
+  String get inheritSubPaternalGrandmother => 'বাবার মা';
+
+  @override
+  String get inheritSubMaternalGrandmother => 'মায়ের মা';
+
+  @override
+  String get inheritSubFull => 'একই বাবা-মা';
+
+  @override
+  String get inheritSubPaternal => 'বাবা এক, মা ভিন্ন';
+
+  @override
+  String get inheritSubMaternal => 'মা এক, বাবা ভিন্ন';
+
+  @override
+  String get inheritSubFullNephew => 'আপন ভাইয়ের ছেলে';
+
+  @override
+  String get inheritSubPaternalNephew => 'বৈমাত্রেয় ভাইয়ের ছেলে';
+
+  @override
+  String get inheritSubFullUncle => 'বাবার আপন ভাই';
+
+  @override
+  String get inheritSubPaternalUncle => 'বাবার বৈমাত্রেয় ভাই';
+
+  @override
+  String get inheritSubFullCousin => 'আপন চাচার ছেলে';
+
+  @override
+  String get inheritSubPaternalCousin => 'বৈমাত্রেয় চাচার ছেলে';
+
+  @override
+  String get inheritWivesMax => 'সর্বোচ্চ চারজন।';
+
+  @override
+  String inheritHiddenBy(String who) {
+    return '$who থাকায় ভাই-বোন, চাচা ও অন্যরা কিছু পান না, তাই তাঁদের কথা জিজ্ঞেস করা হচ্ছে না।';
+  }
+
+  @override
+  String get inheritSiblingsForMother =>
+      'এখানে ভাই-বোনেরা কিছু পান না, তবে দুই বা বেশি থাকলে মায়ের অংশ ১/৬ হয়।';
+
+  @override
+  String get inheritDistant =>
+      'দূরের আত্মীয়রা (মামা, খালা, ফুফু, নানা, বোনের সন্তান…) পান কেবল যখন কোনো অংশীদার বা আসাবা থাকে না — তখন এখানে তাঁদের কথা জিজ্ঞেস করা হবে।';
+
+  @override
+  String get inheritHeirHusband => 'স্বামী';
+
+  @override
+  String get inheritHeirWife => 'স্ত্রী';
+
+  @override
+  String get inheritHeirSon => 'ছেলে';
+
+  @override
+  String get inheritHeirDaughter => 'মেয়ে';
+
+  @override
+  String get inheritHeirGrandson => 'ছেলে';
+
+  @override
+  String get inheritHeirGranddaughter => 'মেয়ে';
+
+  @override
+  String get inheritHeirFather => 'বাবা';
+
+  @override
+  String get inheritHeirMother => 'মা';
+
+  @override
+  String get inheritHeirGrandfather => 'দাদা';
+
+  @override
+  String get inheritHeirPaternalGrandmother => 'দাদি';
+
+  @override
+  String get inheritHeirMaternalGrandmother => 'নানি';
+
+  @override
+  String get inheritHeirFullBrother => 'আপন ভাই';
+
+  @override
+  String get inheritHeirFullSister => 'আপন বোন';
+
+  @override
+  String get inheritHeirPaternalBrother => 'বৈমাত্রেয় ভাই';
+
+  @override
+  String get inheritHeirPaternalSister => 'বৈমাত্রেয় বোন';
+
+  @override
+  String get inheritHeirMaternalBrother => 'বৈপিত্রেয় ভাই';
+
+  @override
+  String get inheritHeirMaternalSister => 'বৈপিত্রেয় বোন';
+
+  @override
+  String get inheritHeirFullNephew => 'ভাতিজা';
+
+  @override
+  String get inheritHeirPaternalNephew => 'ভাতিজা (বৈমাত্রেয়)';
+
+  @override
+  String get inheritHeirFullUncle => 'চাচা';
+
+  @override
+  String get inheritHeirPaternalUncle => 'চাচা (বৈমাত্রেয়)';
+
+  @override
+  String get inheritHeirFullCousin => 'চাচাতো ভাই';
+
+  @override
+  String get inheritHeirPaternalCousin => 'চাচাতো ভাই (বৈমাত্রেয়)';
+
+  @override
+  String inheritNumbered(String heir, int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    return '$heir $nString';
+  }
+
+  @override
+  String inheritChildOf(String parent, String child) {
+    return '$parent-এর $child';
+  }
+
+  @override
+  String get inheritWhyHusbandHalf => 'সন্তান না থাকায় স্বামী পান ১/২।';
+
+  @override
+  String get inheritWhyHusbandQuarter => 'সন্তান থাকায় স্বামী পান ১/৪।';
+
+  @override
+  String get inheritWhyWifeQuarter =>
+      'সন্তান না থাকায় স্ত্রী পান ১/৪; একাধিক হলে সমান ভাগে।';
+
+  @override
+  String get inheritWhyWifeEighth =>
+      'সন্তান থাকায় স্ত্রী পান ১/৮; একাধিক হলে সমান ভাগে।';
+
+  @override
+  String get inheritWhySonResidue =>
+      'নির্ধারিত অংশগুলোর পর বাকি সবটা ছেলে-মেয়েরা পান, ছেলে মেয়ের দ্বিগুণ।';
+
+  @override
+  String get inheritWhyDaughterWithSon => 'ছেলে থাকায় মেয়ে ছেলের অর্ধেক পান।';
+
+  @override
+  String get inheritWhyDaughterHalf => 'ছেলে না থাকায় একমাত্র মেয়ে পান ১/২।';
+
+  @override
+  String get inheritWhyDaughtersTwoThirds =>
+      'ছেলে না থাকায় মেয়েরা মিলে পান ২/৩, সমান ভাগে।';
+
+  @override
+  String get inheritWhyFatherSixth => 'ছেলে থাকায় বাবা পান ১/৬।';
+
+  @override
+  String get inheritWhyFatherSixthAndRest =>
+      'ছেলে নেই, মেয়ে আছে: বাবা পান ১/৬ আর বাকি অংশ।';
+
+  @override
+  String get inheritWhyFatherRest =>
+      'সন্তান না থাকায় বাবা নির্ধারিত অংশগুলোর পর বাকি সবটা পান।';
+
+  @override
+  String get inheritWhyGrandfatherSixth =>
+      'বাবা না থাকায় দাদা তাঁর জায়গায়; ছেলে থাকায় পান ১/৬।';
+
+  @override
+  String get inheritWhyGrandfatherSixthAndRest =>
+      'বাবা না থাকায় দাদা তাঁর জায়গায়: ১/৬ আর বাকি অংশ।';
+
+  @override
+  String get inheritWhyGrandfatherRest =>
+      'বাবা না থাকায় দাদা তাঁর জায়গায়: বাকি সবটা।';
+
+  @override
+  String get inheritWhyMotherSixthChild => 'সন্তান থাকায় মা পান ১/৬।';
+
+  @override
+  String get inheritWhyMotherSixthSiblings =>
+      'দুই বা বেশি ভাই-বোন থাকায় মা পান ১/৬।';
+
+  @override
+  String get inheritWhyMotherThird =>
+      'সন্তান নেই, ভাই-বোন দুইজনের কম: মা পান ১/৩।';
+
+  @override
+  String get inheritWhyMotherThirdOfRest =>
+      'শুধু স্বামী/স্ত্রী ও বাবা-মা: স্বামী/স্ত্রীর অংশের পর যা থাকে, মা পান তার ১/৩।';
+
+  @override
+  String get inheritWhyGrandmotherSixth =>
+      'মা না থাকায় দাদি/নানি পান ১/৬; দুজন হলে সমান ভাগে।';
+
+  @override
+  String get inheritWhyUterineSixth =>
+      'সন্তান, বাবা বা দাদা না থাকায় একজন বৈপিত্রেয় ভাই/বোন পান ১/৬।';
+
+  @override
+  String get inheritWhyUterineThird =>
+      'বৈপিত্রেয় ভাই-বোনেরা মিলে পান ১/৩; ভাই-বোন সমান।';
+
+  @override
+  String get inheritWhySisterHalf => 'ভাই না থাকায় একমাত্র বোন পান ১/২।';
+
+  @override
+  String get inheritWhySistersTwoThirds => 'ভাই না থাকায় বোনেরা মিলে পান ২/৩।';
+
+  @override
+  String get inheritWhyPaternalSisterSixth =>
+      'একজন আপন বোন ১/২ পাওয়ায় বৈমাত্রেয় বোনেরা পান ১/৬ (মিলে ২/৩)।';
+
+  @override
+  String get inheritWhySiblingsResidue =>
+      'বাকি সবটা ভাই-বোনেরা পান, ভাই বোনের দ্বিগুণ।';
+
+  @override
+  String get inheritWhySisterWithDaughters => 'মেয়ে থাকায় বোন বাকি সবটা পান।';
+
+  @override
+  String get inheritWhyAgnateResidue =>
+      'সবচেয়ে কাছের পুরুষ আত্মীয় হিসেবে বাকি সবটা পান।';
+
+  @override
+  String get inheritWhyRepresented =>
+      'আগে মারা যাওয়া বাবা/মায়ের অংশ, ছেলে মেয়ের দ্বিগুণ (অধ্যাদেশ ১৯৬১)।';
+
+  @override
+  String get inheritWhySole => 'অন্য কোনো ওয়ারিশ না থাকায় পুরো সম্পত্তি পান।';
+
+  @override
+  String get inheritAwl =>
+      'নির্ধারিত অংশগুলোর যোগফল পুরো সম্পত্তির চেয়ে বেশি হওয়ায় সবার অংশ একই হারে কমেছে (আওল)।';
+
+  @override
+  String get inheritRadd =>
+      'সবাইকে দেওয়ার পর যা বাকি ছিল, তা স্বামী/স্ত্রী ছাড়া অন্যদের মধ্যে তাঁদের অংশের অনুপাতে ভাগ হয়েছে (রাদ)।';
+
+  @override
+  String get inheritSpouseRest =>
+      'অন্য কোনো ওয়ারিশ না থাকায় বাকিটাও স্বামী/স্ত্রী পান। খালা, মামা, ফুফুর মতো দূরের আত্মীয় থাকলে বিশেষজ্ঞের পরামর্শ নিন।';
+
+  @override
+  String get inheritExcludedTitle => 'যাঁরা পান না';
+
+  @override
+  String inheritOut(String heir, String reason) {
+    return '$heir পান না — $reason';
+  }
+
+  @override
+  String get inheritOutSon => 'ছেলে থাকায়';
+
+  @override
+  String get inheritOutFather => 'বাবা থাকায়';
+
+  @override
+  String get inheritOutGrandfather => 'দাদা থাকায়';
+
+  @override
+  String get inheritOutMother => 'মা থাকায়';
+
+  @override
+  String get inheritOutChild => 'সন্তান থাকায়';
+
+  @override
+  String get inheritOutFullBrother => 'আপন ভাই থাকায়';
+
+  @override
+  String get inheritOutPaternalBrother => 'বৈমাত্রেয় ভাই থাকায়';
+
+  @override
+  String get inheritOutSisterWithDaughters => 'মেয়ের সাথে বোন বাকিটা নেওয়ায়';
+
+  @override
+  String get inheritOutTwoFullSisters => 'দুই আপন বোন ২/৩ নেওয়ায়';
+
+  @override
+  String get inheritOutCloser => 'আরও কাছের আত্মীয় থাকায়';
+
+  @override
+  String get inheritOutNothingLeft => 'নির্ধারিত অংশের পর কিছু বাকি না থাকায়';
+
+  @override
+  String get inheritWhoSon => 'ছেলে';
+
+  @override
+  String get inheritWhoFather => 'বাবা';
+
+  @override
+  String get inheritWhoGrandfather => 'দাদা';
+
+  @override
+  String get inheritMotherCut =>
+      'তাঁরা কিছু না পেলেও তাঁদের কারণে মায়ের অংশ ১/৬।';
+
+  @override
+  String inheritBase(String n) {
+    return 'মাসআলা $n';
+  }
+
+  @override
+  String inheritParts(String parts, String base) {
+    return '$base ভাগের $parts ভাগ';
+  }
+
+  @override
+  String inheritEstate(String name) {
+    return '$name-এর সম্পত্তি';
+  }
+
+  @override
+  String get inheritDeceasedMan => 'মৃত ব্যক্তি (পুরুষ)';
+
+  @override
+  String get inheritDeceasedWoman => 'মৃত ব্যক্তি (নারী)';
+
+  @override
+  String get inheritSharesOnly => 'পুরো সম্পত্তির অংশ';
+
+  @override
+  String get inheritDivide => 'এই ভাগে জমি ভাগ করুন';
+
+  @override
+  String get inheritShare => 'শেয়ার';
+
+  @override
+  String get inheritDisclaimer =>
+      'হানাফি নিয়ম ও মুসলিম পারিবারিক আইন অধ্যাদেশ ১৯৬১ অনুযায়ী হিসাব। দলিল বা আদালতের আগে একজন বিশেষজ্ঞের সাথে মিলিয়ে নিন।';
+
+  @override
+  String get inheritPickPlot => 'কোন জমি ভাগ হবে?';
+
+  @override
+  String get inheritEdit => 'পরিবার বদলান';
+
+  @override
+  String get inheritReligion => 'মৃত ব্যক্তির ধর্ম';
+
+  @override
+  String get inheritMuslim => 'মুসলিম';
+
+  @override
+  String get inheritHindu => 'হিন্দু';
+
+  @override
+  String get inheritChristian => 'খ্রিস্টান';
+
+  @override
+  String get inheritHinduWoman =>
+      'হিন্দু নারীর সম্পত্তির নিয়ম আলাদা। স্ত্রী, মেয়ে বা মা হিসেবে যা পেয়েছিলেন, তাঁর মৃত্যুর পর তা ফেরত যায় যাঁর কাছ থেকে পেয়েছিলেন সেই পুরুষের উত্তরাধিকারীদের কাছে — তাই সেই পুরুষকে মৃত ব্যক্তি ধরে হিসাব করুন। নারীর নিজস্ব সম্পত্তি (স্ত্রীধন) প্রথমে পান তাঁর সন্তানেরা; এর বাইরে হিন্দু আইনজীবীর পরামর্শ নিন।';
+
+  @override
+  String inheritLate(String heir, int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    return 'মৃত $heir $nString';
+  }
+
+  @override
+  String get inheritViaWife => 'স্ত্রী';
+
+  @override
+  String get inheritHeirSonsWidow => 'পুত্রবধূ';
+
+  @override
+  String get inheritHeirUnmarriedDaughter => 'অবিবাহিত মেয়ে';
+
+  @override
+  String get inheritHeirMarriedDaughter => 'বিবাহিত মেয়ে';
+
+  @override
+  String get inheritHeirDaughtersSon => 'মেয়ের ছেলে';
+
+  @override
+  String get inheritHeirDaughtersDaughter => 'মেয়ের মেয়ে';
+
+  @override
+  String get inheritHeirBrother => 'ভাই';
+
+  @override
+  String get inheritHeirSister => 'বোন';
+
+  @override
+  String get inheritHeirGrandNephew => 'ভাতিজার ছেলে';
+
+  @override
+  String get inheritHeirSistersSon => 'ভাগ্নে';
+
+  @override
+  String get inheritHeirSistersDaughter => 'ভাগ্নি';
+
+  @override
+  String get inheritHeirBrothersDaughter => 'ভাতিজি';
+
+  @override
+  String get inheritHeirMaternalGrandfather => 'নানা';
+
+  @override
+  String get inheritHeirPaternalAunt => 'ফুফু';
+
+  @override
+  String get inheritHeirMaternalUncle => 'মামা';
+
+  @override
+  String get inheritHeirMaternalAunt => 'খালা';
+
+  @override
+  String get inheritHeirCousin => 'কাজিন';
+
+  @override
+  String get inheritSubWidows => 'একাধিক হলে মিলে একজন ছেলের সমান ভাগ।';
+
+  @override
+  String get inheritSubUnmarried => 'বিয়ে হয়নি';
+
+  @override
+  String get inheritSubMarriedWithSon => 'ছেলে আছে বা হতে পারে';
+
+  @override
+  String get inheritHinduDaughterNote =>
+      'ছেলে নেই এবং হওয়ার সম্ভাবনাও নেই — এমন বিধবা বা নিঃসন্তান মেয়ে উত্তরাধিকার পান না।';
+
+  @override
+  String get inheritDeadSonAdd => 'আগে মারা যাওয়া ছেলে';
+
+  @override
+  String get inheritDeadSonAddSub => 'তাঁর ছেলে ও স্ত্রী তাঁর ভাগ পান';
+
+  @override
+  String inheritDeadSonTitle(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    return 'আগে মারা যাওয়া ছেলে · $nString';
+  }
+
+  @override
+  String get inheritTheirWidow => 'তাঁর স্ত্রী জীবিত';
+
+  @override
+  String get inheritSubBrothersSon => 'ভাইয়ের ছেলে';
+
+  @override
+  String get inheritSubSistersSon => 'বোনের ছেলে';
+
+  @override
+  String get inheritSubUnclesSon => 'চাচার ছেলে';
+
+  @override
+  String get inheritSubHalfBrotherHindu => 'বাবা এক, মা ভিন্ন';
+
+  @override
+  String get inheritHinduHiddenMale =>
+      'ছেলে, নাতি বা পুত্রবধূ থাকায় মেয়ে ও অন্য কেউ কিছু পান না, তাই তাঁদের কথা জিজ্ঞেস করা হচ্ছে না।';
+
+  @override
+  String get inheritHinduHiddenWidow =>
+      'স্ত্রী জীবিত থাকায় মেয়ে ও অন্যরা এখন কিছু পান না; তাঁর মৃত্যুর পর সম্পত্তি তাঁদের কাছে যায়।';
+
+  @override
+  String get inheritHinduDistant =>
+      'এর পরের আত্মীয়দের দীর্ঘ শাস্ত্রীয় ক্রম এখানে নেই; উইল, দান বা আগের বণ্টন থাকলেও হিসাব বদলায় — হিন্দু আইনজীবীর পরামর্শ নিন।';
+
+  @override
+  String get inheritSpouseChristian => 'স্বামী বা স্ত্রী';
+
+  @override
+  String get inheritChristianDeadNote =>
+      'তাঁর ছেলেমেয়েরা তাঁর ভাগ সমানভাবে পান (উত্তরাধিকার আইন ১৯২৫, ধারা ৪০)।';
+
+  @override
+  String get inheritDeadSiblingAdd => 'আগে মারা যাওয়া ভাই বা বোন';
+
+  @override
+  String get inheritDeadSiblingAddSub => 'তাঁর ছেলেমেয়েরা তাঁর ভাগ পান';
+
+  @override
+  String inheritDeadSiblingTitle(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    return 'আগে মারা যাওয়া ভাই/বোন · $nString';
+  }
+
+  @override
+  String get inheritSubAnyBlood => 'আপন বা সৎ — একই';
+
+  @override
+  String get inheritChristianHiddenDesc =>
+      'সন্তান বা নাতি-নাতনি থাকায় বাবা-মা, ভাই-বোন ও অন্য আত্মীয়রা কিছু পান না।';
+
+  @override
+  String get inheritChristianHiddenFather =>
+      'বাবা থাকায় মা, ভাই-বোন ও অন্য আত্মীয়রা কিছু পান না।';
+
+  @override
+  String get inheritChristianDistant =>
+      'কাজিনের চেয়ে দূরের আত্মীয়ের জন্য আইনজীবীর পরামর্শ নিন। কোনো আত্মীয় না থাকলে সম্পত্তি সরকারের।';
+
+  @override
+  String get inheritLifeInterest => 'জীবনস্বত্ব';
+
+  @override
+  String get inheritDisclaimerHindu =>
+      'বাংলাদেশে প্রচলিত দায়ভাগ আইন ও হিন্দু নারীর সম্পত্তির অধিকার আইন ১৯৩৭ অনুযায়ী হিসাব। দলিল বা আদালতের আগে একজন বিশেষজ্ঞের সাথে মিলিয়ে নিন।';
+
+  @override
+  String get inheritDisclaimerChristian =>
+      'উত্তরাধিকার আইন ১৯২৫ (পঞ্চম ভাগ) অনুযায়ী হিসাব। উইল, বিয়ের আগের চুক্তি বা প্রথা থাকলে হিসাব বদলায়। দলিল বা আদালতের আগে একজন বিশেষজ্ঞের সাথে মিলিয়ে নিন।';
+
+  @override
+  String get inheritWhyHinduSons => 'ছেলেরা সমান ভাগ পান।';
+
+  @override
+  String get inheritWhyHinduWidow =>
+      'স্ত্রী একজন ছেলের সমান ভাগ পান (একাধিক হলে মিলে একটি), জীবনস্বত্ব হিসেবে (১৯৩৭ আইন)।';
+
+  @override
+  String get inheritWhyHinduSonsLine => 'মৃত বাবার ভাগ, তাঁর ছেলেরা মিলে পান।';
+
+  @override
+  String get inheritWhyHinduSonsWidowAsSon =>
+      'ছেলে না থাকায় পুত্রবধূ একজন ছেলের সমান ভাগ পান, জীবনস্বত্ব হিসেবে (১৯৩৭ আইন)।';
+
+  @override
+  String get inheritWhyHinduSonsWidowAsGrandson =>
+      'নিজের ছেলেদের সাথে তিনি তাঁদের একজনের সমান পান, জীবনস্বত্ব হিসেবে (১৯৩৭ আইন)।';
+
+  @override
+  String get inheritWhyHinduUnmarriedDaughters =>
+      'ছেলে, নাতি বা স্ত্রী না থাকায় অবিবাহিত মেয়েরা সমান ভাগ পান, জীবনস্বত্ব হিসেবে।';
+
+  @override
+  String get inheritWhyHinduMarriedDaughters =>
+      'অবিবাহিত মেয়ে না থাকায় ছেলে আছে বা হতে পারে এমন বিবাহিত মেয়েরা সমান ভাগ পান, জীবনস্বত্ব হিসেবে।';
+
+  @override
+  String get inheritWhyHinduDaughtersSons =>
+      'মেয়ের ছেলেরা মাথাপিছু সমান ভাগ পান।';
+
+  @override
+  String get inheritWhyHinduFather =>
+      'পরবর্তী উত্তরাধিকারী হিসেবে বাবা পুরোটা পান।';
+
+  @override
+  String get inheritWhyHinduMother =>
+      'পরবর্তী উত্তরাধিকারী হিসেবে মা পুরোটা পান, জীবনস্বত্ব হিসেবে।';
+
+  @override
+  String get inheritWhyHinduBrothers =>
+      'পরবর্তী উত্তরাধিকারী হিসেবে ভাইয়েরা সমান ভাগ পান (আপন ভাই আগে, সৎ ভাই পরে)।';
+
+  @override
+  String get inheritWhyHinduNephews =>
+      'পরবর্তী উত্তরাধিকারী হিসেবে ভাতিজারা সমান ভাগ পান।';
+
+  @override
+  String get inheritWhyHinduGrandNephews =>
+      'পরবর্তী উত্তরাধিকারী হিসেবে ভাতিজার ছেলেরা সমান ভাগ পান।';
+
+  @override
+  String get inheritWhyHinduSistersSons =>
+      'পরবর্তী উত্তরাধিকারী হিসেবে ভাগ্নেরা সমান ভাগ পান।';
+
+  @override
+  String get inheritWhyHinduGrandfather =>
+      'পরবর্তী উত্তরাধিকারী হিসেবে দাদা পুরোটা পান।';
+
+  @override
+  String get inheritWhyHinduGrandmother =>
+      'পরবর্তী উত্তরাধিকারী হিসেবে দাদি পুরোটা পান, জীবনস্বত্ব হিসেবে।';
+
+  @override
+  String get inheritWhyHinduUncles =>
+      'পরবর্তী উত্তরাধিকারী হিসেবে চাচারা সমান ভাগ পান।';
+
+  @override
+  String get inheritWhyHinduCousins =>
+      'পরবর্তী উত্তরাধিকারী হিসেবে চাচাতো ভাইয়েরা সমান ভাগ পান।';
+
+  @override
+  String get inheritWhyChristianSpouseThird =>
+      'সন্তান বা নাতি-নাতনি থাকায় স্বামী/স্ত্রী পান ১/৩ (ধারা ৩৩)।';
+
+  @override
+  String get inheritWhyChristianSpouseHalf =>
+      'বংশধর নেই, অন্য আত্মীয় আছে: স্বামী/স্ত্রী পান ১/২ (ধারা ৩৩)।';
+
+  @override
+  String get inheritWhyChristianSpouseAll =>
+      'কোনো আত্মীয় না থাকায় স্বামী/স্ত্রী পুরোটা পান (ধারা ৩৩)।';
+
+  @override
+  String get inheritWhyChristianChildren =>
+      'ছেলে ও মেয়ে সমান ভাগ পান (ধারা ৩৭)।';
+
+  @override
+  String get inheritWhyChristianChildOfDead =>
+      'মৃত বাবা/মায়ের ভাগ, সমানভাবে (ধারা ৪০)।';
+
+  @override
+  String get inheritWhyChristianGrandchildrenPerHead =>
+      'কোনো সন্তান বেঁচে না থাকায় নাতি-নাতনিরা মাথাপিছু সমান পান (ধারা ৩৮)।';
+
+  @override
+  String get inheritWhyChristianFather =>
+      'বংশধর না থাকায় বাবা বাকি সবটা পান (ধারা ৪২)।';
+
+  @override
+  String get inheritWhyChristianMotherAndSiblings =>
+      'বাবা না থাকায় মা ও প্রত্যেক ভাই-বোন সমান ভাগ পান (ধারা ৪৩-৪৫)।';
+
+  @override
+  String get inheritWhyChristianMother =>
+      'বাবা ও ভাই-বোন না থাকায় মা বাকি সবটা পান (ধারা ৪৬)।';
+
+  @override
+  String get inheritWhyChristianSiblings =>
+      'বাবা-মা না থাকায় ভাই-বোনেরা সমান ভাগ পান, আপন বা সৎ একই (ধারা ৪৭)।';
+
+  @override
+  String get inheritWhyChristianSiblingsChildren =>
+      'মৃত বাবা/মায়ের ভাগ, সমানভাবে (ধারা ৪৪-৪৭)।';
+
+  @override
+  String get inheritWhyChristianNearest =>
+      'সবচেয়ে কাছের আত্মীয়েরা মাথাপিছু সমান ভাগ পান (ধারা ৪৮)।';
+
+  @override
+  String get inheritNoteHinduLimited =>
+      'জীবনস্বত্ব: তিনি ভোগ-দখল করবেন, প্রকৃত প্রয়োজন ছাড়া বিক্রি করতে পারবেন না; তাঁর মৃত্যুর পর সম্পত্তি যায় মৃত ব্যক্তির তখনকার উত্তরাধিকারীদের কাছে, তাঁর নিজের উত্তরাধিকারীদের কাছে নয়।';
+
+  @override
+  String get inheritNoteHinduSonsWidow =>
+      'মৃত ছেলের স্ত্রী নিজের ছেলেদের পাশে কীভাবে ভাগ পাবেন, তা কোনো মামলায় নিষ্পত্তি হয়নি; এখানে তাঁকে ছেলেদের একজনের সমান ধরা হয়েছে।';
+
+  @override
+  String get inheritNoteChristianSpouseAll =>
+      'কোনো দূরত্বের কোনো আত্মীয় জীবিত না থাকলেই কেবল স্বামী/স্ত্রী পুরোটা পান; কোনো আত্মীয় থাকলে পান ১/২।';
+
+  @override
+  String get inheritNoteChristianPerHead =>
+      'কোনো সন্তান বেঁচে না থাকায় নাতি-নাতনিরা পরিবারভিত্তিক নয়, মাথাপিছু সমান পান (ধারা ৩৮)।';
+
+  @override
+  String get inheritNoteNoHeirs =>
+      'কোনো উত্তরাধিকারী না থাকলে সম্পত্তি সরকারের কাছে যায়।';
+
+  @override
+  String get inheritOutMaleLine => 'ছেলে, নাতি বা পুত্রবধূ থাকায়';
+
+  @override
+  String get inheritOutWidowFirst =>
+      'স্ত্রী জীবিত থাকায় (তাঁর পরে পেতে পারেন)';
+
+  @override
+  String get inheritOutUnmarriedDaughter => 'অবিবাহিত মেয়ে থাকায়';
+
+  @override
+  String get inheritOutCloserKin => 'আরও কাছের উত্তরাধিকারী থাকায়';
+
+  @override
+  String get inheritHeirPaternalAuntConsanguine => 'ফুফু (বৈমাত্রেয়)';
+
+  @override
+  String get inheritHeirPaternalAuntUterine => 'ফুফু (বৈপিত্রেয়)';
+
+  @override
+  String get inheritHeirFatherUterineBrother => 'বাবার বৈপিত্রেয় ভাই';
+
+  @override
+  String get inheritHeirMaternalUncleConsanguine => 'মামা (বৈমাত্রেয়)';
+
+  @override
+  String get inheritHeirMaternalUncleUterine => 'মামা (বৈপিত্রেয়)';
+
+  @override
+  String get inheritHeirMaternalAuntConsanguine => 'খালা (বৈমাত্রেয়)';
+
+  @override
+  String get inheritHeirMaternalAuntUterine => 'খালা (বৈপিত্রেয়)';
+
+  @override
+  String inheritChildrenOf(String parent) {
+    return '$parent-এর সন্তান';
+  }
+
+  @override
+  String get inheritDistantTitle => 'দূরের আত্মীয়';
+
+  @override
+  String get inheritDistantIntro =>
+      'স্বামী/স্ত্রী ছাড়া কোনো অংশীদার বা আসাবা না থাকায় দূরের আত্মীয়রা (যাবিল আরহাম) পান। স্বামী/স্ত্রী নিজের সাধারণ অংশ রাখেন, বাকিটা তাঁদের।';
+
+  @override
+  String get inheritSubMaternalGrandfather => 'মায়ের বাবা';
+
+  @override
+  String get inheritLineAdd => 'সন্তান রেখে মারা যাওয়া ভাই বা বোন';
+
+  @override
+  String get inheritLineAddSub => 'তাঁর সন্তানেরা এখানে পেতে পারেন';
+
+  @override
+  String inheritLineTitle(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    return 'মৃত ভাই/বোন · $nString';
+  }
+
+  @override
+  String get inheritBloodFull => 'আপন';
+
+  @override
+  String get inheritBloodConsanguine => 'বৈমাত্রেয়';
+
+  @override
+  String get inheritBloodUterine => 'বৈপিত্রেয়';
+
+  @override
+  String get inheritLineBrotherSons =>
+      'তাঁর ছেলেরা ভাতিজা (আসাবা), এখানের সবার আগে পান — উপরে ভাতিজা হিসেবে যোগ করুন।';
+
+  @override
+  String get inheritAuntsHalf => 'সৎ ফুফু, মামা, খালা';
+
+  @override
+  String get inheritDistantBeyond =>
+      'ফুফাতো, মামাতো, খালাতো ভাই-বোন, চাচাতো বোন বা মেয়ের মেয়ের সন্তানের মতো আরও দূরের আত্মীয় হলে বিশেষজ্ঞের পরামর্শ নিন।';
+
+  @override
+  String get inheritWhyDistantKindred =>
+      'সবচেয়ে কাছের দূরের আত্মীয় হিসেবে স্বামী/স্ত্রীর অংশের পর বাকিটা পান।';
+
+  @override
+  String get inheritWhyDistantSiblingLine =>
+      'মৃত বাবা/মা যেভাবে পেতেন সেভাবে, ছেলে মেয়ের দ্বিগুণ (বৈপিত্রেয় ভাই-বোনের সন্তানেরা সমান)।';
+
+  @override
+  String get inheritWhyDistantUnclesAunts =>
+      'বাবার দিক ২/৩, মায়ের দিক ১/৩; আপন আগে, পুরুষ নারীর দ্বিগুণ।';
+
+  @override
+  String get inheritNoteDistantKindred =>
+      'স্বামী/স্ত্রী ছাড়া কোনো অংশীদার বা আসাবা না থাকায় দূরের আত্মীয়রা পান — মোল্লার মুসলিম আইন অনুযায়ী (ইমাম মুহাম্মদের নিয়মে)।';
+
+  @override
+  String get inheritNoteDistantGrandfather =>
+      'মোল্লার বই অনুযায়ী নানাকে ভাই-বোনের সন্তানদের আগে ধরা হয়েছে; একটি পুরোনো গ্রন্থে ভিন্ন ইঙ্গিত আছে। এই ক্ষেত্রে বিশেষজ্ঞের পরামর্শ নিন।';
+
+  @override
+  String get inheritNoteDistantAwl =>
+      'স্বামী/স্ত্রী ও ভাই-বোনের সন্তানদের অংশ মিলে পুরো সম্পত্তির বেশি হয়েছে; এই ক্ষেত্রের নিয়ম বইয়ে পাওয়া যায়নি। বিশেষজ্ঞের পরামর্শ নিন।';
+
+  @override
+  String inheritBaseParts(String n) {
+    return 'মোট $n ভাগ';
+  }
 }

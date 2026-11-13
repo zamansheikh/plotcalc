@@ -10,6 +10,7 @@ import '../../presentation/features/draw/view/draw_screen.dart';
 import '../../presentation/features/history/view/history_screen.dart';
 import '../../presentation/features/home/view/home_screen.dart';
 import '../../presentation/features/info/data/articles.dart';
+import '../../presentation/features/inheritance/view/inheritance_screen.dart';
 import '../../presentation/features/info/view/article_screen.dart';
 import '../../presentation/features/info/view/info_screen.dart';
 import '../../presentation/features/khotiyan/view/khotiyan_screen.dart';
@@ -46,6 +47,7 @@ class AppRoutes {
   static const mouza = '/mouza';
   static const mapOverlay = '/map-overlay';
   static const divide = '/divide';
+  static const inheritance = '/inheritance';
   static const converter = '/converter';
   static const calculator = '/calculator';
   static const khotiyan = '/khotiyan';
@@ -156,10 +158,20 @@ GoRouter buildRouter() {
       GoRoute(path: AppRoutes.mouza, builder: (_, _) => const MouzaScreen()),
       GoRoute(
         path: AppRoutes.divide,
-        builder: (_, state) => Scaffold(
-          backgroundColor: AppColors.ink,
-          body: SubdivideScreen(editSheetId: state.extra as String),
-        ),
+        builder: (_, state) {
+          final extra = state.extra;
+          return Scaffold(
+            backgroundColor: AppColors.ink,
+            body: SubdivideScreen(
+              editSheetId: extra is String ? extra : null,
+              prefill: extra is DivisionPrefill ? extra : null,
+            ),
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.inheritance,
+        builder: (_, _) => const InheritanceScreen(),
       ),
       GoRoute(
         path: AppRoutes.mapOverlay,

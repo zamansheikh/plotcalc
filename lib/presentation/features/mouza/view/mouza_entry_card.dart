@@ -108,7 +108,9 @@ class MapToolsRow extends StatelessWidget {
                 ),
                 child: Icon(icon, size: 18, color: accent),
               ),
-              const SizedBox(height: 8),
+              // Gives way by a pixel when the row's measured height falls
+              // short of the text's real one.
+              const Flexible(child: SizedBox(height: 8)),
               Text(
                 title,
                 style: AppTypography.sans(size: 14, weight: FontWeight.w600),

@@ -47,6 +47,19 @@ class _OwnerRow {
   }
 }
 
+/// Owners to start a division with, and the plot when it is already known:
+/// what the inheritance shares hand over.
+class DivisionPrefill {
+  final String? plotId;
+  final List<DivisionOwner> owners;
+  final DivisionMode mode;
+  const DivisionPrefill({
+    this.plotId,
+    required this.owners,
+    this.mode = DivisionMode.shares,
+  });
+}
+
 /// Divide a plot among owners — equally, by share, or by area — with every
 /// lot facing a chosen side, a common road kept out first if needed, each
 /// lot's boundaries worked out, and the whole saved as a sheet that can be
@@ -59,7 +72,10 @@ class SubdivideScreen extends StatefulWidget {
   /// A saved division to open again, by its sheet's id.
   final String? editSheetId;
 
-  const SubdivideScreen({super.key, this.editSheetId});
+  /// Owners (and maybe the plot) to start with.
+  final DivisionPrefill? prefill;
+
+  const SubdivideScreen({super.key, this.editSheetId, this.prefill});
 
   @override
   State<SubdivideScreen> createState() => _SubdivideScreenState();
@@ -80,7 +96,23 @@ class _SubdivideScreenState extends State<SubdivideScreen> {
   @override
   void initState() {
     super.initState();
-    if (widget.editSheetId != null) _loadEdit(widget.editSheetId!);
+    if (widget.editSheetId != null) {
+      _loadEdit(widget.editSheetId!);
+    } else if (widget.prefill?.plotId != null) {
+      _loadPrefilled(widget.prefill!.plotId!);
+    }
+  }
+
+  Future<void> _loadPrefilled(String plotId) async {
+    setState(() => _loading = true);
+    final plots = await sl<GetPlots>()();
+    if (!mounted) return;
+    final plot = plots.where((p) => p.id == plotId).firstOrNull;
+    setState(() {
+      _loading = false;
+      // A plot deleted meanwhile: the picker asks for another.
+      if (plot != null) _start(plot);
+    });
   }
 
   @override
@@ -122,7 +154,10 @@ class _SubdivideScreenState extends State<SubdivideScreen> {
         spec ??
         DivisionSpec(
           parentPlotId: p.id,
-          owners: const [DivisionOwner(), DivisionOwner()],
+          owners:
+              widget.prefill?.owners ??
+              const [DivisionOwner(), DivisionOwner()],
+          mode: widget.prefill?.mode ?? DivisionMode.equal,
         );
     for (final o in _spec!.owners) {
       _rows.add(_newRow(o.name, o.amount));
@@ -381,8 +416,12 @@ class _SubdivideScreenState extends State<SubdivideScreen> {
       return SafeArea(
         child: Column(
           children: [
-            const SizedBox(height: 8),
-            _Header(title: t.subdivideTitle, subtitle: t.subdivideSubtitle),
+            if (widget.prefill != null)
+              _EditBar(title: t.subdivideTitle, subtitle: t.inheritPickPlot)
+            else ...[
+              const SizedBox(height: 8),
+              _Header(title: t.subdivideTitle, subtitle: t.subdivideSubtitle),
+            ],
             Expanded(
               child: _PlotPicker(onSelect: (p) => setState(() => _start(p))),
             ),
@@ -402,10 +441,20 @@ class _SubdivideScreenState extends State<SubdivideScreen> {
       child: LayoutBuilder(
         builder: (context, box) => Column(
           children: [
-            if (edit)
+            if (edit || widget.prefill != null)
               _EditBar(
                 title: t.subdivideTitle,
                 subtitle: t.divisionPeople(plot.name, spec.owners.length),
+                // Opened with owners: another plot keeps them.
+                trailing: edit
+                    ? null
+                    : _ChangeButton(
+                        onTap: () => setState(() {
+                          _plot = null;
+                          _spec = null;
+                          _editing = null;
+                        }),
+                      ),
               )
             else ...[
               const SizedBox(height: 8),
@@ -579,7 +628,8 @@ class _Header extends StatelessWidget {
 class _EditBar extends StatelessWidget {
   final String title;
   final String? subtitle;
-  const _EditBar({required this.title, this.subtitle});
+  final Widget? trailing;
+  const _EditBar({required this.title, this.subtitle, this.trailing});
 
   @override
   Widget build(BuildContext context) => Padding(
@@ -608,6 +658,7 @@ class _EditBar extends StatelessWidget {
             ],
           ),
         ),
+        ?trailing,
       ],
     ),
   );
@@ -628,25 +679,32 @@ class _SelectedHeader extends StatelessWidget {
     return TabHeader(
       title: context.l10n.subdivideTitle,
       subtitle: context.l10n.divisionPeople(plot.name, owners),
-      trailing: OutlinedButton.icon(
-        onPressed: onChange,
-        icon: const Icon(Icons.swap_horiz, size: 14),
-        label: Text(
-          context.l10n.actionChange,
-          style: AppTypography.sans(size: 12, weight: FontWeight.w500),
-        ),
-        style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.text,
-          backgroundColor: AppColors.surface,
-          side: const BorderSide(color: AppColors.line),
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-      ),
+      trailing: _ChangeButton(onTap: onChange),
     );
   }
+}
+
+/// "Change" — pick another plot.
+class _ChangeButton extends StatelessWidget {
+  final VoidCallback onTap;
+  const _ChangeButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) => OutlinedButton.icon(
+    onPressed: onTap,
+    icon: const Icon(Icons.swap_horiz, size: 14),
+    label: Text(
+      context.l10n.actionChange,
+      style: AppTypography.sans(size: 12, weight: FontWeight.w500),
+    ),
+    style: OutlinedButton.styleFrom(
+      foregroundColor: AppColors.text,
+      backgroundColor: AppColors.surface,
+      side: const BorderSide(color: AppColors.line),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+    ),
+  );
 }
 
 class _Tabs extends StatelessWidget {

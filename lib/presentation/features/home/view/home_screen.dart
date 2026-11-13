@@ -362,7 +362,10 @@ class _ActionTile extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            // The row's measured height can come out a pixel short of the
+            // text's real one (font fallback); the gap gives way, not the
+            // subtitle.
+            const Flexible(child: SizedBox(height: 16)),
             Text(
               label,
               style: AppTypography.sans(

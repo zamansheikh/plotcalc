@@ -65,6 +65,7 @@ void main() {
       // two language names, which are always shown in their own language.
       const allowed = {
         'historyChip',
+        'inheritNumbered',
         'settingsLanguageEnglish',
         'settingsLanguageBengali',
       };
